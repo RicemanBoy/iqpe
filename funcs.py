@@ -372,50 +372,7 @@ def control_Z_L(qc: QuantumCircuit):
     CNOT(qc, control = 0)            #aufgrund des H eine Zeile drüber, geht das normale CNOT
     H_L(qc, pos = 1)
 
-def readout(qc: QuantumCircuit, had: False, pos: int, shots: int, noise = 0):
-    anc = qc.num_qubits - 1
-
-    qc.reset(anc)
-    
-    if had == False:
-        qc.cx(3+9*pos, anc)
-        qc.cx(4+9*pos, anc)
-        qc.cx(5+9*pos, anc)
-    else:
-        qc.cx(1+9*pos, anc)
-        qc.cx(4+9*pos, anc)
-        qc.cx(7+9*pos, anc)
-    
-    qc.measure(anc, 3)
-
-    p = noise
-    p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
-    p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
-
-    noise_model = NoiseModel()
-    noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "reset", "measure"])  # Apply to single-qubit gates
-    noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
-
-    sim = AerSimulator()
-    job = sim.run(qc, noise_model = noise_model, shots=shots)
-    result = job.result()
-    counts = result.get_counts()
-
-    x_old = list(counts.keys())
-    x_old = [j[0] for j in x_old]
-    y_old = list(counts.values())
-
-    ones  =  0
-    for j in range(len(x_old)):
-        if x_old[j] == "1":
-            ones += y_old[j]
-    ones = ones/shots
-
-    zeros = 1 - ones
-
-    return zeros, ones
-
-def readout_new(qc: QuantumCircuit, had: int, pos: int, shots: int, noise = 0):
+def readout(qc: QuantumCircuit, had: int, pos: int, shots: int, noise = 0):
     code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
     code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
 
