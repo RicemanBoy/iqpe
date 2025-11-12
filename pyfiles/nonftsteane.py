@@ -209,6 +209,12 @@ def adj_root_T_L(qc: QuantumCircuit, pos: int, err=False):
             counter += 1
         if i.name == "h":
             H_L(qc, pos=pos)
+        if i.name == "s":
+            S_L(qc, pos=pos)
+        if i.name == "sdg":
+            adj_S_L(qc, pos=pos)
+        if i.name == "z":
+            Z_L(qc, pos)
 
 def CT_L(qc: QuantumCircuit, err=False):
     root_T_L(qc, 0, err=err)
@@ -263,7 +269,7 @@ def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iterat
     
     y = 0
     bruh1 = []
-    global hads
+    #global hads
     for m in range(k):
         for o in range(n):
             bitstring = ""
@@ -277,7 +283,7 @@ def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iterat
                     H_L(qc,0)
                     #############################
                     for j in range(2**(iter-t-1)):
-                        CU_L(qc, a[o], b[o], err=err)
+                        CU_L(qc, a[o], b[o])
                     ###############################
                     for l in rots:
                         if l == 0.25:
@@ -336,7 +342,7 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
 
     #print(counts)
 
-    print(counts)
+    #print(counts)
 
     bitstring = list(counts.keys())
     bitstring = [i.replace(" ","") for i in bitstring]
@@ -348,7 +354,7 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
     pre, preselected = [i[allcbits-8:allcbits-6] for i in bitstring], 0
     bits = [i[:7] for i in bitstring]
 
-    print(pre)
+    #print(pre)
 
     #print(bits)
     #print(postprocess)
