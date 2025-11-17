@@ -1,16 +1,10 @@
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
-from qiskit.visualization import plot_histogram
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import ticker
-#import bitstring
 from qiskit_aer import AerSimulator
 from qiskit.transpiler.passes.synthesis import SolovayKitaev
 from qiskit.synthesis import generate_basic_approximations
-from qiskit.quantum_info import Operator
 
-from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
-    pauli_error, depolarizing_error, thermal_relaxation_error)
+from qiskit_aer.noise import (NoiseModel, pauli_error)
 
 from qiskit.circuit.library import UnitaryGate
 
@@ -28,7 +22,7 @@ z_ideal = UnitaryGate(matrix_z)
 
 #https://www.nature.com/articles/srep19578 , https://arxiv.org/pdf/1106.2190 Figure 5b)
 def code_goto(n=2):             #encodes |00>_L
-    qr = QuantumRegister(7*n+2,"q")
+    qr = QuantumRegister(7*n+1,"q")
     cbits = ClassicalRegister(8, "c")      #Cbit 1-6: Ancillas, Cbit 7-8: Preselection, nicht mehr überschreiben bis Readout!
     qc = QuantumCircuit(qr, cbits)
     
@@ -61,7 +55,8 @@ def code_goto(n=2):             #encodes |00>_L
         qc.cx(6+7*i,anc)
 
         qc.id(anc)
-        qc.measure(anc,cbits[8-i-1])      
+        qc.measure(anc,cbits[8-i-1])  
+        qc.reset(anc)    
     return qc
 
 def gates(qc:QuantumCircuit):
@@ -86,9 +81,6 @@ def H_L(qc: QuantumCircuit, pos: int):
         qc.h(i+7*pos)
 
 def S_L(qc: QuantumCircuit, pos: int):
-    # for i in range(7):
-    #     qc.z(i+7*pos)
-    #     qc.s(i+7*pos)
     qc.s(0+7*pos), qc.s(1+7*pos), qc.s(3+7*pos), qc.s(6+7*pos)
     qc.sdg(2+7*pos), qc.sdg(4+7*pos), qc.sdg(5+7*pos)
 
@@ -98,9 +90,6 @@ def CZ_L(qc: QuantumCircuit):
     H_L(qc, 0)
 
 def adj_S_L(qc: QuantumCircuit, pos: int):
-    # for i in range(7):
-    #     qc.z(i+7*pos)
-    #     qc.sdg(i+7*pos)
     qc.sdg(0+7*pos), qc.sdg(1+7*pos), qc.sdg(3+7*pos), qc.sdg(6+7*pos)
     qc.s(2+7*pos), qc.s(4+7*pos), qc.s(5+7*pos)
 
@@ -254,16 +243,16 @@ def CU_L(qc: QuantumCircuit, Ugates: list, adjUgates: list):
     U2(qc, 1, adjUgates)
     CNOT_L(qc, control=0)
 
-def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iteration own circuit
+def avg15(iter: int, n:int, noise: float, err = False, k = 1):       #each iteration own circuit
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("text/unitary{}.txt".format(n), "r") as file:
+    with open("unitary{}.txt".format(n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("text/adjunitary{}.txt".format(n), "r") as file:
+    with open("adjunitary{}.txt".format(n), "r") as file:
         for line in file:
             b.append(list(map(str, line.strip().split(","))))
     
@@ -284,6 +273,9 @@ def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iterat
                     #############################
                     for j in range(2**(iter-t-1)):
                         CU_L(qc, a[o], b[o])
+                        if err:
+                            qec(qc, 0)
+                            qec(qc, 1)
                     ###############################
                     for l in rots:
                         if l == 0.25:
@@ -291,9 +283,7 @@ def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iterat
                         if l == 0.125:
                             adj_T_L(qc, pos=0)
                     H_L(qc, pos=0)
-                    if err:
-                        qec(qc, pos=0)
-                    zeros, ones, _,_ = readout(qc, pos=0, shots=1, noise=argh)
+                    zeros, ones, _,_ = readout(qc, pos=0, shots=1, noise=noise)
             
                     if zeros == 1:
                         bitstring += "0"
@@ -556,14 +546,14 @@ def qec(qc: QuantumCircuit, pos: int):
                 qc.z(6+7*pos)
 
 def gen_data(name):
-    p = np.linspace(0,0.1,10)
+    p = np.linspace(0,0.01,10)
     y_all, y_all1 = [],[]
     err, err1 = [], []
 
     for r in p:
-        ok, errr = avg15(3, 15, argh=r, err=False, k=1)
+        ok, errr = avg15(3, 15, noise=r, err=False, k=1)
         y_all.append(ok), err.append(errr)
-        ok1, errr1 = avg15(3, 15, argh=r, err=True, k=1)
+        ok1, errr1 = avg15(3, 15, noise=r, err=True, k=1)
         y_all1.append(ok1), err1.append(errr1)
 
     data = np.array((p, y_all, y_all1, err, err1))

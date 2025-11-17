@@ -1,0 +1,15 @@
+t,h,tdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,sdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,tdg,h,tdg
+h,tdg,h,tdg,h,tdg,h,tdg,h,sdg,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,sdg,h,tdg,h,t,h,t,h,t,h,t,h,t,h,t
+s,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,t,h,tdg
+t
+s,h,tdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,sdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,tdg,h,tdg
+h,tdg,h,tdg,h,tdg,h,sdg,h,sdg,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,t,h,t,h,t
+s,t,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,t,h,tdg
+s
+s,t,h,tdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,sdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,tdg,h,tdg
+h,tdg,h,tdg,h,tdg,h,tdg,h,z,h,tdg,h,tdg,h,t,h,tdg,h,tdg,h,t,h,t,h,sdg
+z,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,t,h,tdg
+s,t
+z,h,tdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,sdg,h,tdg,h,t,h,t,h,t,h,t,h,tdg,h,tdg,h,tdg
+z,t,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,t,h,tdg
+z,t,h,t,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,s,h,t,h,tdg,h,tdg,h,tdg,h,tdg,h,t,h,t,h,tdg

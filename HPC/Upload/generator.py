@@ -1,4 +1,4 @@
-N=1000
+N=100
 
 for i in range(N):
     file=open('{}.py'.format(i), 'a')
@@ -15,7 +15,7 @@ for i in range(N):
     file.write('#SBATCH --job-name=BScDustin{} \n'.format(i))
     file.write('#SBATCH --export=NONE \n')
     file.write('unset SLURM_EXPORT_ENV \n')
-    file.write('module load python/3.10-anaconda \n')
+    file.write('module load python \n')
     file.write('python3 {}.py'.format(i)) 
     file.close()
 
