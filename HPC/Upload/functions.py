@@ -23,15 +23,15 @@ z_ideal = UnitaryGate(matrix_z)
 #https://www.nature.com/articles/srep19578 , https://arxiv.org/pdf/1106.2190 Figure 5b)
 def code_goto(n=2):             #encodes |00>_L
     qr = QuantumRegister(7*n+1,"q")
-    cbits = ClassicalRegister(8, "c")      #Cbit 1-6: Ancillas, Cbit 7-8: Preselection, nicht mehr überschreiben bis Readout!
+    cbits = ClassicalRegister(9, "c")      #Cbit 1-6: Ancillas, Cbit 7-8: Preselection, nicht mehr überschreiben bis Readout!
     qc = QuantumCircuit(qr, cbits)
     
     anc = qc.num_qubits - 1
 
-    for i in range(7*(n-1)):                        #start noise
+    for i in range(7*n):                        #start noise
         qc.id(i)
 
-    for i in range(n-1):
+    for i in range(n):
         qc.h(1+7*i)
         qc.h(2+7*i)
         qc.h(3+7*i)
@@ -55,7 +55,7 @@ def code_goto(n=2):             #encodes |00>_L
         qc.cx(6+7*i,anc)
 
         qc.id(anc)
-        qc.measure(anc,cbits[8-i-1])  
+        qc.measure(anc,cbits[8-i])  
         qc.reset(anc)    
     return qc
 
@@ -123,9 +123,9 @@ def T_L(qc: QuantumCircuit, pos: int):
     qc.cx(7*pos+1,anc)
     qc.cx(7*pos+2,anc)
 
-    qc.measure(anc,0)
+    qc.measure(anc,6)
 
-    with qc.if_test((0,1)):
+    with qc.if_test((6,1)):
         qc.s(0+7*pos), qc.s(1+7*pos), qc.s(3+7*pos), qc.s(6+7*pos)
         qc.sdg(2+7*pos), qc.sdg(4+7*pos), qc.sdg(5+7*pos)
     
@@ -141,9 +141,9 @@ def adj_T_L(qc: QuantumCircuit, pos: int):
     qc.cx(7*pos+1,anc)
     qc.cx(7*pos+2,anc)
 
-    qc.measure(anc,0)
+    qc.measure(anc,6)
 
-    with qc.if_test((0,1)):
+    with qc.if_test((6,1)):
         qc.sdg(0+7*pos), qc.sdg(1+7*pos), qc.sdg(3+7*pos), qc.sdg(6+7*pos)
         qc.s(2+7*pos), qc.s(4+7*pos), qc.s(5+7*pos)
 
@@ -313,7 +313,7 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
     p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
 
     noise_model = NoiseModel()
-    noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id"])  # Apply to single-qubit gates
+    noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", "id"])  # Apply to single-qubit gates
     noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
 
     read = ClassicalRegister(7)
@@ -546,15 +546,15 @@ def qec(qc: QuantumCircuit, pos: int):
                 qc.z(6+7*pos)
 
 def gen_data(name):
-    p = np.linspace(0,0.01,10)
-    y_all, y_all1 = [],[]
-    err, err1 = [], []
+    p = np.linspace(0,0.0001,10)
+    y, y_qec = [],[]
+    err, err_qec = [], []
 
     for r in p:
         ok, errr = avg15(3, 15, noise=r, err=False, k=1)
-        y_all.append(ok), err.append(errr)
+        y.append(ok), err.append(errr)
         ok1, errr1 = avg15(3, 15, noise=r, err=True, k=1)
-        y_all1.append(ok1), err1.append(errr1)
+        y_qec.append(ok1), err_qec.append(errr1)
 
-    data = np.array((p, y_all, y_all1, err, err1))
-    np.savetxt("nonFTSteane_a{}.txt".format(name), data, delimiter=",")
+    data = np.array((p, y, y_qec, err, err_qec))
+    np.savetxt("nonFTSteane_c{}.txt".format(name), data, delimiter=",")
