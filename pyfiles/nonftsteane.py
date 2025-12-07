@@ -344,6 +344,8 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
 
     #print(counts)
 
+    #print(counts)
+
     bitstring = list(counts.keys())
     bitstring = [i.replace(" ","") for i in bitstring]
 
@@ -351,7 +353,7 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
     hmm = list(counts.values())
 
     allcbits = len(bitstring[0])                
-    pre, preselected = [i[allcbits-8:allcbits-6] for i in bitstring], 0
+    pre, preselected = [i[allcbits-9:allcbits-7] for i in bitstring], 0
     bits = [i[:7] for i in bitstring]
 
     #print(pre)

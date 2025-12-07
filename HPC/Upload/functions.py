@@ -305,6 +305,74 @@ def avg15(iter: int, n:int, noise: float, err = False, k = 1):       #each itera
     sigma = sigma/((k*n)**0.5)
 
     return y, sigma
+
+def avg15_coin(iter: int, n:int, noise: float, err = False, k = 1):       #each iteration own circuit
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("unitary{}.txt".format(n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("adjunitary{}.txt".format(n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                qc = code_goto()
+
+                X_L(qc,1)
+                H_L(qc,0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    CU_L(qc, a[o], b[o])
+                    if err:
+                        qec(qc, 0)
+                        qec(qc, 1)
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        adj_S_L(qc, pos=0)
+                    if l == 0.125:
+                        adj_T_L(qc, pos=0)
+                H_L(qc, pos=0)
+                if err:
+                    qec(qc, 0)
+                zeros, ones, _,_ = readout(qc, pos=0, shots=1, noise=noise)
+        
+                if zeros == 1:
+                    bitstring += "0"
+                elif ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
+
 #################################################################
 
 def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
@@ -341,7 +409,7 @@ def readout(qc: QuantumCircuit, pos: int, shots: int, noise = 0):
     hmm = list(counts.values())
 
     allcbits = len(bitstring[0])                
-    pre, preselected = [i[allcbits-8:allcbits-6] for i in bitstring], 0
+    pre, preselected = [i[allcbits-9:allcbits-7] for i in bitstring], 0
     bits = [i[:7] for i in bitstring]
 
     #print(pre)
@@ -546,15 +614,15 @@ def qec(qc: QuantumCircuit, pos: int):
                 qc.z(6+7*pos)
 
 def gen_data(name):
-    p = np.linspace(0,0.0001,10)
+    p = np.linspace(0,0.005,10)
     y, y_qec = [],[]
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15(3, 15, noise=r, err=False, k=1)
+        ok, errr = avg15_coin(3, 15, noise=r, err=False, k=1)
         y.append(ok), err.append(errr)
-        ok1, errr1 = avg15(3, 15, noise=r, err=True, k=1)
+        ok1, errr1 = avg15_coin(3, 15, noise=r, err=True, k=1)
         y_qec.append(ok1), err_qec.append(errr1)
 
     data = np.array((p, y, y_qec, err, err_qec))
-    np.savetxt("nonFTSteane_c{}.txt".format(name), data, delimiter=",")
+    np.savetxt("nonFTSteane_h+{}.txt".format(name), data, delimiter=",")
