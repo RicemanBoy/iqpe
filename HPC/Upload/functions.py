@@ -331,12 +331,14 @@ def avg15_coin(iter: int, n:int, noise: float, err = False, k = 1):       #each 
 
                 X_L(qc,1)
                 H_L(qc,0)
+                aya = 1
                 #############################
                 for j in range(2**(iter-t-1)):
                     CU_L(qc, a[o], b[o])
-                    # if err:
-                    #     qec(qc, 0)
-                    #     qec(qc, 1)
+                    if aya%2 == 0:
+                        qec(qc, 0)
+                        qec(qc, 1)
+                    aya += 1
                 ###############################
                 for l in rots:
                     if l == 0.25:
@@ -344,8 +346,8 @@ def avg15_coin(iter: int, n:int, noise: float, err = False, k = 1):       #each 
                     if l == 0.125:
                         adj_T_L(qc, pos=0)
                 H_L(qc, pos=0)
-                if err:
-                    qec(qc, 0)
+                # if err:
+                #     qec(qc, 0)
                 zeros, ones, _,_ = readout(qc, pos=0, shots=1, noise=noise)
         
                 if zeros == 1:
@@ -625,4 +627,4 @@ def gen_data(name):
         y_qec.append(ok1), err_qec.append(errr1)
 
     data = np.array((p, y, y_qec, err, err_qec))
-    np.savetxt("nonFTSteane_i{}.txt".format(name), data, delimiter=",")
+    np.savetxt("nonFTSteane_j{}.txt".format(name), data, delimiter=",")
