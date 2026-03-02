@@ -1199,7 +1199,7 @@ def CU_L(qc: QuantumCircuit, Ugates: list, adjUgates: list, qecc, err=False, ecc
     U2(qc, 1, adjUgates, qecc, err=err, ecc=ecc)
     CNOT_L(qc, control=0)
 
-def Leon(iter: int, n:int, argh: float, err = False, ecc = False, k = 1):       #each iteration own circuit
+def avg15(iter: int, n:int, argh: float, err = False, ecc = False, k = 1):       #each iteration own circuit
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
@@ -1249,6 +1249,72 @@ def Leon(iter: int, n:int, argh: float, err = False, ecc = False, k = 1):       
                         bitstring += "1"
                         rots.append(0.5)
                         break
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
+
+def avg15_coinflip(iter: int, n:int, argh: float, err = False, ecc = False, k = 1):       #each iteration own circuit
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("Unitary/unitary{}.txt".format(n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("Unitary/adjunitary{}.txt".format(n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                qc = code_goto()
+                qecc = ClassicalRegister(6)
+                qc.add_register(qecc)
+
+                X_L(qc,1)
+                H_L(qc,0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    CU_L(qc, a[o], b[o], qecc, err=err, ecc=ecc)
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        adj_S_L(qc, pos=0)
+                    if l == 0.125:
+                        adj_T_L(qc, pos=0, qecc=qecc, err=err, ecc=ecc)
+                H_L(qc, pos=0)
+                if err:
+                    qec_ft(qc, qecc=qecc, pos=0)
+                zeros, ones, _,_ = readout(qc, pos=0, shots=1, noise=argh)
+        
+                if zeros == 1:
+                    bitstring += "0"
+                elif ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
