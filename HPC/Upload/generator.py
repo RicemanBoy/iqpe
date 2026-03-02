@@ -1,4 +1,4 @@
-N=10
+N=200
 
 for i in range(N):
     file=open('{}.py'.format(i), 'a')
@@ -11,7 +11,7 @@ for i in range(N):
     file=open('job{}.script'.format(i),'a')
     file.write('#!/bin/bash -l \n')
     file.write('#SBATCH --ntasks=8 \n')
-    file.write('#SBATCH --time=02:00:00 \n')
+    file.write('#SBATCH --time=05:00:00 \n')
     file.write('#SBATCH --job-name=BScDustin{} \n'.format(i))
     file.write('#SBATCH --export=NONE \n')
     file.write('unset SLURM_EXPORT_ENV \n')
