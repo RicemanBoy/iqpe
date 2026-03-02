@@ -1379,11 +1379,11 @@ def gen_data(name):
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin(3, 15, noise=r, err=False, k=1)
-        y.append(ok), err.append(errr)
+        ok, errr = avg15_coin(3, 15, noise=r, err=True, k=1)
+        y_qec.append(ok), err_qec.append(errr)
         # ok1, errr1 = avg15_coin(3, 15, noise=r, err=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
 
     #data = np.array((p, y, y_qec, err, err_qec))
-    data = np.array((p, y, err))
-    np.savetxt("FTSteaneRAW_b{}.txt".format(name), data, delimiter=",")
+    data = np.array((p, y_qec, err_qec))
+    np.savetxt("FTSteaneRAW_b_qec{}.txt".format(name), data, delimiter=",")
