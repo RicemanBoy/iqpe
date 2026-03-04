@@ -1374,16 +1374,16 @@ def qec_ft(qc: QuantumCircuit, qecc, pos: int):         #70 gates, 72 depth
                 qc.z(6+7*pos)
 
 def gen_data(name):
-    p = np.linspace(0,0.001,4)
+    p = np.linspace(0,0.0005,4)
     y, y_qec = [],[]
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin(3, 15, noise=r, err=True, k=1)
+        ok, errr = avg15_coin(3, 15, noise=r, err=False, k=1)
         y_qec.append(ok), err_qec.append(errr)
         # ok1, errr1 = avg15_coin(3, 15, noise=r, err=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y_qec, err_qec))
-    np.savetxt("FTSteaneRAW_b_qec{}.txt".format(name), data, delimiter=",")
+    np.savetxt("FTSteaneRAW_c_noqec{}.txt".format(name), data, delimiter=",")
