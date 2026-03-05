@@ -909,7 +909,7 @@ class RotSurf9q:
             if i == "z":
                  self.z(pos=pos)
 
-    def CU_L(self, Ugates: list, adjUgates: list, err = False):
+    def cu(self, Ugates: list, adjUgates: list, err = False):
         self.u2(0, Ugates)
         if err:
             self.qec(pos=0)
