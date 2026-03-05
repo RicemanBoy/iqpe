@@ -261,17 +261,17 @@ class Steane7q:
     def u2(self, pos: int, gate: list):
         for i in gate:
             if i == "s":
-                self.qc.s(pos=pos)
+                self.s(pos=pos)
             if i == "sdg":
-                self.qc.sdg(pos=pos)
+                self.sdg(pos=pos)
             if i == "t":
-                self.qc.t(pos=pos)
+                self.t(pos=pos)
             if i == "tdg":
-                self.qc.tdg(pos=pos)
+                self.tdg(pos=pos)
             if i == "h":
-                self.qc.h(pos=pos)
+                self.h(pos=pos)
             if i == "z":
-                self.qc.z(pos=pos)
+                self.z(pos=pos)
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
@@ -467,25 +467,25 @@ class Steane7q:
                 for t in range(iter):
                     rots = [k*0.5 for k in rots]
 
-                    self.qc.x(pos=1)
-                    self.qc.h(pos=0)
+                    self.x(pos=1)
+                    self.h(pos=0)
                     #############################
                     for j in range(2**(iter-t-1)):
                         self.cu(a[o], b[o])
                     ###############################
                     for l in rots:
                         if l == 0.25:
-                            self.qc.sdg(pos=0)
+                            self.sdg(pos=0)
                         if l == 0.125:
-                            self.qc.tdg(pos=0, err=err)
-                    self.qc.h(pos=0)
+                            self.tdg(pos=0, err=err)
+                    self.h(pos=0)
                     if err:
                         self.qec_ft(pos=0)
-                    zeros, ones, _,_ = self.readout(pos=0, shots=1, noise=noise)
+                    self.readout(pos=0, shots=1, noise=noise)
             
-                    if zeros == 1:
+                    if self.zeros == 1:
                         bitstring += "0"
-                    elif ones == 1:
+                    elif self.ones == 1:
                         bitstring += "1"
                         rots.append(0.5)
                     else:
@@ -893,6 +893,97 @@ class RotSurf9q:
         self.cnot(control=0, target=1)
         self.tdg(pos=1)
         self.cnot(control=0, target=1)
+
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                self.s(pos=pos)
+            if i == "sdg":
+                 self.sdg(pos=pos)
+            if i == "t":
+                 self.t(pos=pos)
+            if i == "tdg":
+                 self.tdg(pos=pos)
+            if i == "h":
+                 self.h(pos=pos)
+            if i == "z":
+                 self.z(pos=pos)
+
+    def CU_L(self, Ugates: list, adjUgates: list, err = False):
+        self.u2(0, Ugates)
+        if err:
+            self.qec(pos=0)
+        self.u2(1, Ugates)
+        if err:
+            self.qec(pos=1)
+        self.cnot(control=0, target=1)
+        self.u2(1, adjUgates)
+        if err:
+            self.qec(pos=0)
+        self.cnot(control=0, target=1)
+
+    def avg15coin(self, iter: int, n:int, noise: float, err = False, k = 1, path = ""):       #each iteration own circuit
+        angle = np.linspace(0,1,n+2)
+        angle = np.delete(angle, [n+1])
+        angle = np.delete(angle, [0])
+
+        a, b = [], []
+        with open("{}unitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
+        
+        y = 0
+        bruh1 = []
+        for m in range(k):
+            for o in range(n):
+                bitstring = ""
+                rots = []
+                for t in range(iter):
+                    rots = [k*0.5 for k in rots]
+
+                    self.x(pos=1)
+                    self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu(a[o], b[o], err=err)
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
+                    self.h(pos=0)
+                    if err:
+                        self.qec(pos = 0)
+                    self.readout(pos=0, shots=1, noise=noise)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                    elif self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                    else:
+                        if np.random.rand() < 0.5:
+                            bitstring += "0"
+                        else:
+                            bitstring += "1"
+                            rots.append(0.5)
+                bitstring = bitstring[::-1]
+                hmm = convert(bitstring)
+                diff = np.abs(hmm-angle[o])
+                y += diff
+                bruh1.append(diff)
+        y = y/(n*k)
+        arg = 0
+        for i in range(len(bruh1)):
+            arg += (y-bruh1[i])**2
+        sigma = ((1/(k*n))*arg)**0.5
+        sigma = sigma/((k*n)**0.5)
+
+        return y, sigma
 
     def qec(self, pos: int):
         anc = self.qc.num_qubits - 1

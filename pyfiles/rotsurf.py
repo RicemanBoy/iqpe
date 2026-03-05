@@ -21,6 +21,15 @@ x_ideal = UnitaryGate(matrix_x)
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
+def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
+    k = list(bin)
+    a = [int(i) for i in k]
+    n = 0
+    for i in range(len(a)):
+        if a[i] == 1:
+            n += 1/2**(i+1)
+    return n
+
 def rot_surf_code(n: int) -> QuantumCircuit:              #1st anc = third last qubit = syndrome/parity measurement qubit, 2nd anc = sec last qubit = magic state for S Gate, 3rd anc = last qubit = magic state for T-Gate
     qr = QuantumRegister(9*n+1, "q")
     cbit = ClassicalRegister(9,"c")
@@ -371,6 +380,163 @@ def control_Z_L(qc: QuantumCircuit):
     H_L(qc, pos = 1)
     CNOT(qc, control = 0)            #aufgrund des H eine Zeile drüber, geht das normale CNOT
     H_L(qc, pos = 1)
+
+def U2(qc: QuantumCircuit, pos: int, gate: list):
+    for i in gate:
+        if i == "s":
+            S_L(qc, pos=pos)
+        if i == "sdg":
+            adj_S_L(qc, pos=pos)
+        if i == "t":
+            T_L(qc, pos=pos)
+        if i == "tdg":
+            adj_T_L(qc, pos=pos)
+        if i == "h":
+            H_L(qc, pos=pos)
+        if i == "z":
+            Z_L(qc, pos=pos)
+
+def CU_L(qc: QuantumCircuit, Ugates: list, adjUgates: list, err = False):
+    U2(qc, 0, Ugates)
+    if err:
+        qec(qc, pos=0)
+    U2(qc, 1, Ugates)
+    if err:
+        qec(qc, pos=1)
+    CNOT(qc, control=0)
+    U2(qc, 1, adjUgates)
+    if err:
+        qec(qc, pos=1)
+    CNOT(qc, control=0)
+
+def avg15(iter: int, n:int, argh: float, err = False, k = 1):       #each iteration own circuit
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("Unitary/unitary{}.txt".format(n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("Unitary/adjunitary{}.txt".format(n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    global hads
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                while True:
+                    hads = [0,0]
+                    qc = rot_surf_code(2)
+
+                    X_L(qc, 1)
+                    H_L(qc, pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        CU_L(qc, a[o], b[o], err=err)
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            adj_S_L(qc, pos=0)
+                        if l == 0.125:
+                            adj_T_L(qc, pos=0)
+                    H_L(qc, pos=0)
+                    if err:
+                        qec(qc, pos = 0)
+                    zeros, ones, err = readout(qc, pos=0, shots=1, noise=argh)
+            
+                    if zeros == 1:
+                        bitstring += "0"
+                        break
+                    if ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
+
+def avg15coin(iter: int, n:int, argh: float, err = False, k = 1):       #each iteration own circuit
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("unitary{}.txt".format(n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("adjunitary{}.txt".format(n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    global hads
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                hads = [0,0]
+                qc = rot_surf_code(2)
+
+                X_L(qc, 1)
+                H_L(qc, pos=0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    CU_L(qc, a[o], b[o], err=err)
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        adj_S_L(qc, pos=0)
+                    if l == 0.125:
+                        adj_T_L(qc, pos=0)
+                H_L(qc, pos=0)
+                if err:
+                    qec(qc, pos = 0)
+                zeros, ones, err = readout(qc, pos=0, shots=1, noise=argh)
+        
+                if zeros == 1:
+                    bitstring += "0"
+                elif ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
 
 def readout(qc: QuantumCircuit, had: int, pos: int, shots: int, noise = 0):
     code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
