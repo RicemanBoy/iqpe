@@ -860,7 +860,6 @@ def avg15(iter: int, n:int, noise: float, err = False, ecc = False, k = 1):     
     
     y = 0
     bruh1 = []
-    global hads
     for m in range(k):
         for o in range(n):
             bitstring = ""

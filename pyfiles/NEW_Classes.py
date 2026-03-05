@@ -1,3 +1,4 @@
+from HPC.Upload.functions import code_goto
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 from qiskit.visualization import plot_histogram
 import numpy as np
@@ -26,6 +27,15 @@ x_ideal = UnitaryGate(matrix_x)
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
+def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
+    k = list(bin)
+    a = [int(i) for i in k]
+    n = 0
+    for i in range(len(a)):
+        if a[i] == 1:
+            n += 1/2**(i+1)
+    return n
+
 class Steane7q:
     def __init__(self, n: int, magic = 1):
         self.n = n
@@ -34,6 +44,8 @@ class Steane7q:
         self.ones = 0
         self.preselected = 0
         self.post = 0
+
+        self.postselection = True
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
@@ -246,6 +258,28 @@ class Steane7q:
         self.tdg(pos=target)
         self.cnot(control=control, target=target)
 
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                self.qc.s(pos=pos)
+            if i == "sdg":
+                self.qc.sdg(pos=pos)
+            if i == "t":
+                self.qc.t(pos=pos)
+            if i == "tdg":
+                self.qc.tdg(pos=pos)
+            if i == "h":
+                self.qc.h(pos=pos)
+            if i == "z":
+                self.qc.z(pos=pos)
+
+    def cu(self, gate: list, adjgate: list):
+        self.u2(0, gate=gate)
+        self.u2(1, gate=gate)
+        self.qc.cnot(control=0, target=1)
+        self.u2(1, gate=adjgate)
+        self.qc.cnot(control=0, target=1)
+
     def qec_ft(self, pos: int, ft: bool):
         flags = ClassicalRegister(6)
         self.qc.add_register(flags)
@@ -407,6 +441,73 @@ class Steane7q:
                     self.qc.z(6+7*pos)
         return True
 
+    def err_mitigation(self, setting: bool):
+        self.postselection = setting
+    
+    def avg15_coin(self, iter: int, noise: float, err = False, k = 1, path = ""):       #each iteration own circuit
+        n = 15
+        angle = np.linspace(0,1,n+2)
+        angle = np.delete(angle, [n+1])
+        angle = np.delete(angle, [0])
+
+        a, b = [], []
+        with open("{}unitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
+        
+        y = 0
+        bruh1 = []
+        for m in range(k):
+            for o in range(n):
+                bitstring = ""
+                rots = []
+                for t in range(iter):
+                    rots = [k*0.5 for k in rots]
+
+                    self.qc.x(pos=1)
+                    self.qc.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu(a[o], b[o])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.qc.sdg(pos=0)
+                        if l == 0.125:
+                            self.qc.tdg(pos=0, err=err)
+                    self.qc.h(pos=0)
+                    if err:
+                        self.qec_ft(pos=0)
+                    zeros, ones, _,_ = self.readout(pos=0, shots=1, noise=noise)
+            
+                    if zeros == 1:
+                        bitstring += "0"
+                    elif ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                    else:
+                        if np.random.rand() < 0.5:
+                            bitstring += "0"
+                        else:
+                            bitstring += "1"
+                            rots.append(0.5)
+                bitstring = bitstring[::-1]
+                hmm = convert(bitstring)
+                diff = np.abs(hmm-angle[o])
+                y += diff
+                bruh1.append(diff)
+        y = y/(n*k)
+        arg = 0
+        for i in range(len(bruh1)):
+            arg += (y-bruh1[i])**2
+        sigma = ((1/(k*n))*arg)**0.5
+        sigma = sigma/((k*n)**0.5)
+
+        return y, sigma
+
     def readout(self, pos: int, shots: int, noise = 0):
         p = noise
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
@@ -441,9 +542,9 @@ class Steane7q:
         hmm = list(counts.values())
 
         allcbits = len(bitstring[0])                
-        pre, preselected = [i[allcbits-3:allcbits-1] for i in bitstring], 0
-        bits = [i[:7] for i in bitstring]
-        postprocess = [i[7:allcbits-10] for i in bitstring]
+        pre, preselected = [i[allcbits-3:allcbits-1] for i in bitstring], 0                 #Flags during intialization
+        bits = [i[:7] for i in bitstring]                                                   #Bits that make up the logical qubits
+        postprocess = [i[7:allcbits-10] for i in bitstring]                                 #Flags during qec to make it fault tolerant, if at least one strikes, need to discard shot
 
         #print(bits)
         #print(postprocess)
@@ -467,7 +568,13 @@ class Steane7q:
                         bits[i] = 1
                         break
             if bits[i] != 1 and bits[i] != 0 and bits[i] != "pre":
-                bits[i] = "post"
+                if self.postselection:
+                    bits[i] = "post"
+                else:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
 
         for i in range(len(postprocess)):
             if postprocess[i].count("1") != 0:
@@ -516,6 +623,8 @@ class RotSurf9q:
         self.preselected = 0
         self.post = 0
 
+        self.postselection = True
+
         self.hadamards = [0,0]
 
         qr = QuantumRegister(9*n+1, "q")
@@ -543,7 +652,7 @@ class RotSurf9q:
             self.qc.cx(9*i+6,9*i+7)
 
     def x(self, pos: int):
-        if self.hads%2==0:
+        if self.hadamards[pos]%2==0:
             self.qc.x(9*pos+1)
             self.qc.x(9*pos+4)
             self.qc.x(9*pos+7)
@@ -553,7 +662,7 @@ class RotSurf9q:
             self.qc.x(9*pos+5)
     
     def z(self, pos: int):
-        if self.hads%2==0:
+        if self.hadamards[pos]%2==0:
             self.qc.z(9*pos+3)
             self.qc.z(9*pos+4)
             self.qc.z(9*pos+5)
@@ -1057,6 +1166,9 @@ class RotSurf9q:
                     with self.qc.if_test((3,0)):
                         self.qc.x(7+9*pos)
 
+    def err_mitigation(self, setting: bool):
+        self.postselection = setting
+
     def readout(self, pos: int, shots: int, noise = 0):
         code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
         code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
@@ -1096,18 +1208,35 @@ class RotSurf9q:
         #print("Anzahl der versch. Bitstring: ", len(bits))
         hmm = list(counts.values())
 
-        for i in range(len(bits)):
-            for j in code0:
-                if j == bits[i]:
-                    bits[i] = 0
-                    break
-            if bits[i] != 0:
-                for j in code1:
+        if self.postselection:
+            for i in range(len(bits)):
+                for j in code0:
                     if j == bits[i]:
-                        bits[i] = 1
+                        bits[i] = 0
                         break
-            if bits[i] != 1 and bits[i] != 0:
-                bits[i] = 2
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    bits[i] = 2
+        else:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
 
         ones = 0
         zeros = 0
@@ -1127,5 +1256,5 @@ class RotSurf9q:
 
         self.ones = ones
         self.zeros = zeros
-        self.err = err
+        self.post = err
         #return zeros, ones, err
