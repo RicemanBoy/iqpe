@@ -45,6 +45,7 @@ class Steane7q:
         self.post = 0
         self.qec = False
 
+        self.classical_ec = False
         self.postselection = False
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
@@ -403,7 +404,7 @@ class Steane7q:
                     self.qc.x(5+7*pos)
         
         with self.qc.if_test((self.qecc[0],1)):             #qbit 6
-            with self.c.if_test((self.qecc[1],1)):
+            with self.qc.if_test((self.qecc[1],1)):
                 with self.qc.if_test((self.qecc[2],1)):
                     self.qc.x(6+7*pos)
 
@@ -448,6 +449,35 @@ class Steane7q:
     def err_mitigation(self, setting: bool):
         self.postselection = setting
     
+    def __classical_error_correction__(self, bits: list):
+        code0 = ["0000000","1010101","0110011","1100110","0001111","1011010","0111100","1101001"]
+        code1 = ["1111111","0101010","1001100","0011001","1110000","0100101","1000011","0010110"]
+        hmm = 0
+        for i,val in enumerate(bits):
+            for j in code0:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+            for j in code1:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+        return bits
+
     def avg15_coin(self, iter: int, noise: float, k = 1, path = ""):       #each iteration own circuit
         n = 15
         angle = np.linspace(0,1,n+2)
@@ -560,6 +590,9 @@ class Steane7q:
 
         test_0 = ["0000000","1010101","0110011","1100110","0001111","1011010","0111100","1101001"]
         test_1 = ["1111111","0101010","1001100","0011001","1110000","0100101","1000011","0010110"]
+
+        if self.classical_ec:
+            bits = self.__classical_error_correction__(bits)
 
         for i in range(len(bits)):
             for j in test_0:
