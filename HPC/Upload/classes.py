@@ -629,6 +629,7 @@ class RotSurf9q:
 
         self.err = False
         self.postselection = False
+        self.classical_ec = False
 
         self.hadamards = [0,0]
 
@@ -925,7 +926,8 @@ class RotSurf9q:
         self.u2(1, adjUgates)
         self.cnot(control=0, target=1)
 
-    def avg15coin(self, iter: int, n:int, noise: float, k = 1, path = ""):       #each iteration own circuit
+    def avg15_coin(self, iter: int, noise: float, k = 1, path = ""):       #each iteration own circuit
+        n = 15
         angle = np.linspace(0,1,n+2)
         angle = np.delete(angle, [n+1])
         angle = np.delete(angle, [0])
@@ -1578,25 +1580,57 @@ class RotSurf9q:
     def err_mitigation(self, setting: bool):
         self.postselection = setting
 
+    def __classical_error_correction__(self, bits: list):
+        code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
+        code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
+        hmm = 0
+        for i,val in enumerate(bits):
+            for j in code0:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+            for j in code1:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+        return bits
+
     def readout(self, pos: int, shots: int, noise = 0):
         code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
         code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
 
-        # for i in range(9):
-        #     qc.id(i+9*pos)
+
+        read = ClassicalRegister(9)
+        self.qc.add_register(read)
+        for i in range(9):
+            self.qc.id(i+9*pos)
         if self.hadamards[pos]%2 == 0:
             for i in range(9):
-                self.qc.measure(i+9*pos, 8-i)
+                self.qc.measure(i+9*pos, read[8-i])
         else:
-            self.qc.measure(0+9*pos, 8-6)
-            self.qc.measure(1+9*pos, 8-3)
-            self.qc.measure(2+9*pos, 8-0)
-            self.qc.measure(3+9*pos, 8-7)
-            self.qc.measure(4+9*pos, 8-4)
-            self.qc.measure(5+9*pos, 8-1)
-            self.qc.measure(6+9*pos, 8-8)
-            self.qc.measure(7+9*pos, 8-5)
-            self.qc.measure(8+9*pos, 8-2)
+            self.qc.measure(0+9*pos, read[8-6])
+            self.qc.measure(1+9*pos, read[8-3])
+            self.qc.measure(2+9*pos, read[8-0])
+            self.qc.measure(3+9*pos, read[8-7])
+            self.qc.measure(4+9*pos, read[8-4])
+            self.qc.measure(5+9*pos, read[8-1])
+            self.qc.measure(6+9*pos, read[8-8])
+            self.qc.measure(7+9*pos, read[8-5])
+            self.qc.measure(8+9*pos, read[8-2])
 
         p = noise
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
@@ -1611,11 +1645,16 @@ class RotSurf9q:
         result = job.result()
         counts = result.get_counts()
 
-        #print(counts)
 
-        bits = list(counts.keys())
-        #print("Anzahl der versch. Bitstring: ", len(bits))
+        bitstring = list(counts.keys())
+        bitstring = [i.replace(" ","") for i in bitstring]
         hmm = list(counts.values())
+
+        bits = [i[:9] for i in bitstring]
+        flags = [i[9:len(bitstring[0])-9] for i in bitstring]
+
+        if self.classical_ec:
+            bits = self.__classical_error_correction__(bits)
 
         if self.postselection:
             for i in range(len(bits)):
@@ -1629,7 +1668,7 @@ class RotSurf9q:
                             bits[i] = 1
                             break
                 if bits[i] != 1 and bits[i] != 0:
-                    bits[i] = 2
+                    bits[i] = "post"
         else:
             for i in range(len(bits)):
                 for j in code0:
@@ -1647,6 +1686,10 @@ class RotSurf9q:
                     else:
                         bits[i] = 1
 
+        for i in range(len(flags)):
+            if flags[i].count("1") != 0:
+                bits[i] = "post"
+
         ones = 0
         zeros = 0
         err = 0
@@ -1656,7 +1699,7 @@ class RotSurf9q:
                 zeros += hmm[i]
             if bits[i] == 1:
                 ones += hmm[i]
-            if bits[i] == 2:
+            if bits[i] == "post":
                 err += hmm[i]
         
         ones = (ones/shots)

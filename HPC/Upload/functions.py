@@ -9,7 +9,7 @@ def gen_data(name):
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = code.avg15_coin(3, noise=r, k=1)
+        ok, errr = code.avg15coin(3, noise=r, k=1)
         y.append(ok), err.append(errr)
         # ok1, errr1 = avg15_coin(3, 15, noise=r, err=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
