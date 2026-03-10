@@ -1765,23 +1765,10 @@ class RotSurf16q:
         qr = QuantumRegister(16*n+1, "q")
         cbit = ClassicalRegister(16,"c")
         self.qc = QuantumCircuit(qr,cbit)
-        for i in range(16*n):
-            self.qc.id(i)
-        for i in range(n):
-            self.qc.h(16*i+1)
-            self.qc.h(16*i+3)
-            self.qc.h(16*i+5)
-            self.qc.h(16*i+7)
-
-            self.qc.cx(16*i+1,16*i)
-            self.qc.cx(16*i+5,16*i+4)
-            self.qc.cx(16*i+7,16*i+8)
-
-            self.qc.cx(16*i+5,16*i+2)
-
-            self.qc.cx(16*i+3,16*i+4)
-            self.qc.cx(16*i+2,16*i+1)
-
-            self.qc.cx(16*i+3,16*i+6)
-
-            self.qc.cx(16*i+6,16*i+7)
+        # for i in range(16*n):
+        #     self.qc.id(i)
+    
+    def qec(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        
+        
