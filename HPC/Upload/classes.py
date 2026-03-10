@@ -987,6 +987,9 @@ class RotSurf9q:
                     #############################
                     for j in range(2**(iter-t-1)):
                         self.cu(a[o], b[o])
+                        if self.err:
+                            self.qec(pos = 0)
+                            self.qec(pos = 1)
                     ###############################
                     for l in rots:
                         if l == 0.25:
@@ -1743,3 +1746,42 @@ class RotSurf9q:
         self.zeros = zeros
         self.post = err
         #return zeros, ones, err
+
+class RotSurf16q:
+    def __init__(self, n: int):
+        self.n = n
+
+        self.zeros = 0
+        self.ones = 0
+        self.preselected = 0
+        self.post = 0
+
+        self.err = False
+        self.postselection = False
+        self.classical_ec = False
+
+        self.hadamards = [0,0]
+
+        qr = QuantumRegister(16*n+1, "q")
+        cbit = ClassicalRegister(16,"c")
+        self.qc = QuantumCircuit(qr,cbit)
+        for i in range(16*n):
+            self.qc.id(i)
+        for i in range(n):
+            self.qc.h(16*i+1)
+            self.qc.h(16*i+3)
+            self.qc.h(16*i+5)
+            self.qc.h(16*i+7)
+
+            self.qc.cx(16*i+1,16*i)
+            self.qc.cx(16*i+5,16*i+4)
+            self.qc.cx(16*i+7,16*i+8)
+
+            self.qc.cx(16*i+5,16*i+2)
+
+            self.qc.cx(16*i+3,16*i+4)
+            self.qc.cx(16*i+2,16*i+1)
+
+            self.qc.cx(16*i+3,16*i+6)
+
+            self.qc.cx(16*i+6,16*i+7)
