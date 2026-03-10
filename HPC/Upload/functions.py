@@ -1,10 +1,10 @@
 from classes import *
 
 #code = Steane7q(2)
-code = RotSurf9q(2)
+code = Steane7q(2)
 
 def gen_data(name):
-    p = np.linspace(0,0.01,4)
+    p = np.linspace(0,0.005,4)
     y, y_qec = [],[]
     err, err_qec = [], []
 
@@ -16,4 +16,4 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("RotSurf_test{}.txt".format(name), data, delimiter=",")
+    np.savetxt("FTSteane_test{}.txt".format(name), data, delimiter=",")
