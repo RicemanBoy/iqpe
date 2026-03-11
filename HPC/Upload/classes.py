@@ -35,6 +35,76 @@ def convert(bin: str):                  #konvertiert den bitstring in decimal, e
             n += 1/2**(i+1)
     return n
 
+def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                if code == "steane":
+                    self = Steane7q(2)
+                else:
+                    self = RotSurf9q(2)
+                self.err = qec
+                rots = [k*0.5 for k in rots]
+
+                self.x(pos=1)
+                self.h(pos=0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    self.cu(a[o], b[o])
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        self.sdg(pos=0)
+                    if l == 0.125:
+                        self.tdg(pos=0)
+                self.h(pos=0)
+                if self.err:
+                    self.qec(pos = 0)
+                self.readout(pos=0, shots=1, p=noise)
+        
+                if self.zeros == 1:
+                    bitstring += "0"
+                elif self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
+                del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
+
 class Steane7q:
     def __init__(self, n: int, magic = 1):
         self.n = n
@@ -478,70 +548,6 @@ class Steane7q:
                     break
         return bits
 
-    def avg15_coin(self, iter: int, noise: float, k = 1, path = ""):       #each iteration own circuit
-        n = 15
-        angle = np.linspace(0,1,n+2)
-        angle = np.delete(angle, [n+1])
-        angle = np.delete(angle, [0])
-
-        a, b = [], []
-        with open("{}unitary{}.txt".format(path, n), "r") as file:
-            for line in file:
-                a.append(list(map(str, line.strip().split(","))))
-        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-            for line in file:
-                b.append(list(map(str, line.strip().split(","))))
-        
-        y = 0
-        bruh1 = []
-        for m in range(k):
-            for o in range(n):
-                bitstring = ""
-                rots = []
-                for t in range(iter):
-                    rots = [k*0.5 for k in rots]
-
-                    self.x(pos=1)
-                    self.h(pos=0)
-                    #############################
-                    for j in range(2**(iter-t-1)):
-                        self.cu(a[o], b[o])
-                    ###############################
-                    for l in rots:
-                        if l == 0.25:
-                            self.sdg(pos=0)
-                        if l == 0.125:
-                            self.tdg(pos=0)
-                    self.h(pos=0)
-                    if self.qec:
-                        self.qec_ft(pos=0)
-                    self.readout(pos=0, shots=1, noise=noise)
-            
-                    if self.zeros == 1:
-                        bitstring += "0"
-                    elif self.ones == 1:
-                        bitstring += "1"
-                        rots.append(0.5)
-                    else:
-                        if np.random.rand() < 0.5:
-                            bitstring += "0"
-                        else:
-                            bitstring += "1"
-                            rots.append(0.5)
-                bitstring = bitstring[::-1]
-                hmm = convert(bitstring)
-                diff = np.abs(hmm-angle[o])
-                y += diff
-                bruh1.append(diff)
-        y = y/(n*k)
-        arg = 0
-        for i in range(len(bruh1)):
-            arg += (y-bruh1[i])**2
-        sigma = ((1/(k*n))*arg)**0.5
-        sigma = sigma/((k*n)**0.5)
-
-        return y, sigma
-
     def readout(self, pos: int, shots: int, noise = 0):
         p = noise
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
@@ -805,7 +811,6 @@ class RotSurf9q:
         self.qc.reset(anc)
 
         self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
         self.qc.sdg(anc)
 
         if self.hadamards[pos]%2 == 0:
@@ -847,14 +852,14 @@ class RotSurf9q:
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(7+9*pos, anc)  
 
-        self.qc.measure(anc, 4)
+        self.qc.measure(anc, 0)
         # if z_stab:
         #     z_qec_ideal(qc, had=had, pos=pos)
 
         if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((4,1)):
+            with self.qc.if_test((0,1)):
                 self.qc.reset(anc)
-                self.qc.append(h_ideal,[anc])
+                self.qc.h(anc)
                 self.qc.s(anc)
                 self.qc.cx(3+9*pos, anc)
                 self.qc.cx(4+9*pos, anc)
@@ -865,9 +870,9 @@ class RotSurf9q:
                     self.qc.z(4+9*pos)
                     self.qc.z(5+9*pos)
         else:
-            with self.qc.if_test((4,1)):
+            with self.qc.if_test((0,1)):
                 self.qc.reset(anc)
-                self.qc.append(h_ideal,[anc])
+                self.qc.h(anc)
                 self.qc.s(anc)
                 self.qc.cx(1+9*pos, anc)
                 self.qc.cx(4+9*pos, anc)
@@ -895,14 +900,14 @@ class RotSurf9q:
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(7+9*pos, anc)  
 
-        self.qc.measure(anc, 4)
+        self.qc.measure(anc, 0)
         # if z_stab:
         #     z_qec_ideal(qc, had=had, pos=pos)
 
         if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((4,1)):
+            with self.qc.if_test((0,1)):
                 self.qc.reset(anc)
-                self.qc.append(h_ideal,[anc])
+                self.qc.h(anc)
                 self.qc.sdg(anc)
                 self.qc.cx(3+9*pos, anc)
                 self.qc.cx(4+9*pos, anc)
@@ -913,9 +918,9 @@ class RotSurf9q:
                     self.qc.z(4+9*pos)
                     self.qc.z(5+9*pos)
         else:
-            with self.qc.if_test((4,1)):
+            with self.qc.if_test((0,1)):
                 self.qc.reset(anc)
-                self.qc.append(h_ideal,[anc])
+                self.qc.h(anc)
                 self.qc.sdg(anc)
                 self.qc.cx(1+9*pos, anc)
                 self.qc.cx(4+9*pos, anc)
@@ -959,73 +964,6 @@ class RotSurf9q:
         self.u2(1, adjUgates)
         self.cnot(control=0, target=1)
 
-    def avg15_coin(self, iter: int, noise: float, k = 1, path = ""):       #each iteration own circuit
-        n = 15
-        angle = np.linspace(0,1,n+2)
-        angle = np.delete(angle, [n+1])
-        angle = np.delete(angle, [0])
-
-        a, b = [], []
-        with open("{}unitary{}.txt".format(path, n), "r") as file:
-            for line in file:
-                a.append(list(map(str, line.strip().split(","))))
-        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-            for line in file:
-                b.append(list(map(str, line.strip().split(","))))
-        
-        y = 0
-        bruh1 = []
-        for m in range(k):
-            for o in range(n):
-                bitstring = ""
-                rots = []
-                for t in range(iter):
-                    rots = [k*0.5 for k in rots]
-
-                    self.x(pos=1)
-                    self.h(pos=0)
-                    #############################
-                    for j in range(2**(iter-t-1)):
-                        self.cu(a[o], b[o])
-                        if self.err:
-                            self.qec(pos = 0)
-                            self.qec(pos = 1)
-                    ###############################
-                    for l in rots:
-                        if l == 0.25:
-                            self.sdg(pos=0)
-                        if l == 0.125:
-                            self.tdg(pos=0)
-                    self.h(pos=0)
-                    if self.err:
-                        self.qec(pos = 0)
-                    self.readout(pos=0, shots=1, noise=noise)
-            
-                    if self.zeros == 1:
-                        bitstring += "0"
-                    elif self.ones == 1:
-                        bitstring += "1"
-                        rots.append(0.5)
-                    else:
-                        if np.random.rand() < 0.5:
-                            bitstring += "0"
-                        else:
-                            bitstring += "1"
-                            rots.append(0.5)
-                bitstring = bitstring[::-1]
-                hmm = convert(bitstring)
-                diff = np.abs(hmm-angle[o])
-                y += diff
-                bruh1.append(diff)
-        y = y/(n*k)
-        arg = 0
-        for i in range(len(bruh1)):
-            arg += (y-bruh1[i])**2
-        sigma = ((1/(k*n))*arg)**0.5
-        sigma = sigma/((k*n)**0.5)
-
-        return y, sigma
-
     def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         if self.hadamards[pos]%2==1:
@@ -1041,10 +979,10 @@ class RotSurf9q:
             #X0 X1 X3 X4 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 0+9*pos)
             self.qc.cx(anc, 1+9*pos)
-            self.qc.cx(anc, 3+9*pos)
             self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 0+9*pos)
+            self.qc.cx(anc, 3+9*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
@@ -1053,8 +991,8 @@ class RotSurf9q:
             self.qc.reset(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 4+9*pos)
-            self.qc.cx(anc, 5+9*pos)
             self.qc.cx(anc, 7+9*pos)
+            self.qc.cx(anc, 5+9*pos)
             self.qc.cx(anc, 8+9*pos)
             self.qc.h(anc)
             self.qc.id(anc)
@@ -1110,10 +1048,10 @@ class RotSurf9q:
 
             #Z1 Z2 Z4 Z5 Stabilizer:
             self.qc.reset(anc)
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(2+9*pos, anc)
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(2+9*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
         
@@ -1176,10 +1114,10 @@ class RotSurf9q:
             #X1 X2 X4 X5 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 1+9*pos)
-            self.qc.cx(anc, 2+9*pos)
             self.qc.cx(anc, 4+9*pos)
             self.qc.cx(anc, 5+9*pos)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 2+9*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
@@ -1245,18 +1183,18 @@ class RotSurf9q:
 
             #Z0 Z1 Z3 Z4 Stabilizer:
             self.qc.reset(anc)
-            self.qc.cx(0+9*pos, anc)
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(3+9*pos, anc)
             self.qc.cx(4+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(3+9*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z4 Z5 Z7 Z8 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(4+9*pos, anc)
-            self.qc.cx(5+9*pos, anc)
             self.qc.cx(7+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
             self.qc.cx(8+9*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,2)
@@ -1645,11 +1583,11 @@ class RotSurf9q:
                     break
         return bits
 
-    def readout(self, pos: int, shots: int, noise = 0):
+    def readout(self, pos: int, shots: int, p = 0):
         code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
         code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
 
-
+        
         read = ClassicalRegister(9)
         self.qc.add_register(read)
         for i in range(9):
@@ -1668,7 +1606,6 @@ class RotSurf9q:
             self.qc.measure(7+9*pos, read[8-5])
             self.qc.measure(8+9*pos, read[8-2])
 
-        p = noise
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
         p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
 
@@ -1724,6 +1661,7 @@ class RotSurf9q:
 
         for i in range(len(flags)):
             if flags[i].count("1") != 0:
+                print("AHAAA")
                 bits[i] = "post"
 
         ones = 0
@@ -1747,28 +1685,28 @@ class RotSurf9q:
         self.post = err
         #return zeros, ones, err
 
-class RotSurf16q:
-    def __init__(self, n: int):
-        self.n = n
+# class RotSurf16q:
+#     def __init__(self, n: int):
+#         self.n = n
 
-        self.zeros = 0
-        self.ones = 0
-        self.preselected = 0
-        self.post = 0
+#         self.zeros = 0
+#         self.ones = 0
+#         self.preselected = 0
+#         self.post = 0
 
-        self.err = False
-        self.postselection = False
-        self.classical_ec = False
+#         self.err = False
+#         self.postselection = False
+#         self.classical_ec = False
 
-        self.hadamards = [0,0]
+#         self.hadamards = [0,0]
 
-        qr = QuantumRegister(16*n+1, "q")
-        cbit = ClassicalRegister(16,"c")
-        self.qc = QuantumCircuit(qr,cbit)
-        # for i in range(16*n):
-        #     self.qc.id(i)
+#         qr = QuantumRegister(16*n+1, "q")
+#         cbit = ClassicalRegister(16,"c")
+#         self.qc = QuantumCircuit(qr,cbit)
+#         # for i in range(16*n):
+#         #     self.qc.id(i)
     
-    def qec(self, pos: int):
-        anc = self.qc.num_qubits - 1
+#     def qec(self, pos: int):
+#         anc = self.qc.num_qubits - 1
         
         
