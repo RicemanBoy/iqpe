@@ -13,4 +13,4 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("RotSurf_test_more_qec{}.txt".format(name), data, delimiter=",")
+    np.savetxt("RotSurf_test_one_qec{}.txt".format(name), data, delimiter=",")

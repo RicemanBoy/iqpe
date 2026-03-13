@@ -954,15 +954,15 @@ class RotSurf9q:
 
     def cu(self, Ugates: list, adjUgates: list):
         self.u2(0, Ugates)
-        if self.err:
-            self.qec(pos=0)
+        # if self.err:
+        #     self.qec(pos=0)
         self.u2(1, Ugates)
-        if self.err:
-            self.qec(pos=1)
+        # if self.err:
+        #     self.qec(pos=1)
         self.cnot(control=0, target=1)
         self.u2(1, adjUgates)
-        if self.err:
-            self.qec(pos=1)
+        # if self.err:
+        #     self.qec(pos=1)
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
@@ -1726,28 +1726,28 @@ class RotSurf16q:
 
             #Z1 Z2 Z5 Z6 Stabilizer:
             self.qc.reset(anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
             self.qc.cx(5+16*pos, anc)
             self.qc.cx(6+16*pos, anc)
+            self.qc.cx(1+16*pos, anc)
+            self.qc.cx(2+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #Z4 Z5 Z8 Z9 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(4+16*pos, anc)
-            self.qc.cx(5+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
             self.qc.cx(9+16*pos, anc)
+            self.qc.cx(8+16*pos, anc)
+            self.qc.cx(5+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,3)
 
             #Z6 Z7 Z10 Z11 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(6+16*pos, anc)
-            self.qc.cx(7+16*pos, anc)
-            self.qc.cx(10+16*pos, anc)
             self.qc.cx(11+16*pos, anc)
+            self.qc.cx(10+16*pos, anc)
+            self.qc.cx(7+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,4)
 
@@ -1778,36 +1778,101 @@ class RotSurf16q:
             self.qc.measure(anc,7)
 
 
-            with self.qc.if_test((0,1)):             #6
-                with self.qc.if_test((1,0)):
-                    self.qc.z(6+16*pos)
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((2,0)):    
+                    self.qc.x(0+16*pos)
 
-            with self.qc.if_test((0,1)):             #3
-                with self.qc.if_test((1,1)):
-                    self.qc.z(3+16*pos)
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((1,0)):
+                        with self.qc.if_test((3,0)):
+                            with self.qc.if_test((4,0)):
+                                self.qc.x(1+16*pos)
 
-            with self.qc.if_test((3,1)):             #2
+            with self.qc.if_test((1,1)):             #2
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((0,0)):
+                        with self.qc.if_test((3,0)):
+                            with self.qc.if_test((4,0)):
+                                self.qc.x(2+16*pos)
+
+            with self.qc.if_test((1,1)):             #3
                 with self.qc.if_test((2,0)):
-                    self.qc.z(2+16*pos)
-            
-            with self.qc.if_test((3,1)):             #5
-                with self.qc.if_test((2,1)):
-                    self.qc.z(5+16*pos)
-            
-            with self.qc.if_test((1,1)):             #4
-                with self.qc.if_test((2,1)):
-                    self.qc.z(4+16*pos)
+                    self.qc.x(3+16*pos)
 
-            with self.qc.if_test((0,0)):             #0 und 1
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        self.qc.z(0+16*pos)
+            with self.qc.if_test((3,1)):             #4 und 8
+                with self.qc.if_test((2,0)):
+                    with self.qc.if_test((5,0)):
+                        self.qc.x(4+16*pos)
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((0,0)):
+                        with self.qc.if_test((5,0)):
+                            with self.qc.if_test((4,0)):
+                                with self.qc.if_test((1,0)):
+                                    self.qc.x(5+16*pos)
             
-            with self.qc.if_test((1,0)):             #7 und 8
-                with self.qc.if_test((2,1)):
+            with self.qc.if_test((2,1)):             #6
+                with self.qc.if_test((4,1)):
+                    with self.qc.if_test((0,0)):
+                        with self.qc.if_test((1,0)):
+                            with self.qc.if_test((5,0)):
+                                with self.qc.if_test((3,0)):
+                                    self.qc.x(6+16*pos)
+
+            with self.qc.if_test((4,1)):             #7 und 11
+                with self.qc.if_test((2,0)):
+                    with self.qc.if_test((5,0)):
+                        self.qc.x(7+16*pos)
+            
+            with self.qc.if_test((5,1)):             #9
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((6,0)): 
+                        with self.qc.if_test((7,0)):
+                            with self.qc.if_test((2,0)):
+                                with self.qc.if_test((4,0)):
+                                    self.qc.x(9+16*pos)
+
+            with self.qc.if_test((5,1)):             #10
+                with self.qc.if_test((4,1)):
+                    with self.qc.if_test((6,0)):
+                        with self.qc.if_test((2,0)):
+                            with self.qc.if_test((7,0)):
+                                with self.qc.if_test((3,0)):
+                                    self.qc.x(10+16*pos)
+            
+            with self.qc.if_test((6,1)):             #12
+                with self.qc.if_test((5,0)):
+                    self.qc.x(12+16*pos)
+
+            with self.qc.if_test((5,1)):             #13
+                with self.qc.if_test((6,1)):
                     with self.qc.if_test((3,0)):
-                        self.qc.z(7+16*pos)
+                        with self.qc.if_test((4,0)):
+                            with self.qc.if_test((7,0)):
+                                self.qc.x(13+16*pos)
 
+            with self.qc.if_test((7,1)):             #14
+                with self.qc.if_test((5,1)):
+                    with self.qc.if_test((3,0)):
+                        with self.qc.if_test((4,0)):
+                            with self.qc.if_test((6,0)):
+                                self.qc.x(14+16*pos)
+
+            with self.qc.if_test((7,1)):             #15
+                with self.qc.if_test((5,0)):
+                    self.qc.x(15+16*pos)
+
+            with self.qc.if_test((2,1)):             #special case for hook error on X5 X6 X9 X10 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((4,1)):
+                        with self.qc.if_test((5,1)):
+                            with self.qc.if_test((0,0)):
+                                with self.qc.if_test((1,0)):
+                                    with self.qc.if_test((6,0)):
+                                        with self.qc.if_test((7,0)):
+                                            self.qc.x(5+16*pos), self.qc.x(10+16*pos)
         ###########################################################################################################
 
             #X4 X8 Stabilizer:
@@ -1822,10 +1887,10 @@ class RotSurf16q:
             #X0 X1 X4 X5 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 0+16*pos)
+            self.qc.cx(anc, 5+16*pos)
             self.qc.cx(anc, 1+16*pos)
             self.qc.cx(anc, 4+16*pos)
-            self.qc.cx(anc, 5+16*pos)
+            self.qc.cx(anc, 0+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
@@ -1834,8 +1899,8 @@ class RotSurf16q:
             self.qc.reset(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 2+16*pos)
-            self.qc.cx(anc, 3+16*pos)
             self.qc.cx(anc, 6+16*pos)
+            self.qc.cx(anc, 3+16*pos)
             self.qc.cx(anc, 7+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
@@ -1845,9 +1910,9 @@ class RotSurf16q:
             self.qc.reset(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 5+16*pos)
-            self.qc.cx(anc, 6+16*pos)
-            self.qc.cx(anc, 9+16*pos)
             self.qc.cx(anc, 10+16*pos)
+            self.qc.cx(anc, 9+16*pos)
+            self.qc.cx(anc, 6+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,3)
@@ -1855,10 +1920,10 @@ class RotSurf16q:
             #X8 X9 X12 X13 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 8+16*pos)
+            self.qc.cx(anc, 13+16*pos)
             self.qc.cx(anc, 9+16*pos)
             self.qc.cx(anc, 12+16*pos)
-            self.qc.cx(anc, 13+16*pos)
+            self.qc.cx(anc, 8+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,4)
@@ -1867,8 +1932,8 @@ class RotSurf16q:
             self.qc.reset(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 10+16*pos)
-            self.qc.cx(anc, 11+16*pos)
             self.qc.cx(anc, 14+16*pos)
+            self.qc.cx(anc, 11+16*pos)
             self.qc.cx(anc, 15+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
@@ -1883,35 +1948,97 @@ class RotSurf16q:
             self.qc.id(anc)
             self.qc.measure(anc,6)
             
-            with self.qc.if_test((0,1)):             #0
-                with self.qc.if_test((1,0)):
-                    self.qc.x(0+16*pos)
-
-            with self.qc.if_test((0,1)):             #1
-                with self.qc.if_test((1,1)):
-                    self.qc.x(1+16*pos)
-            
-            with self.qc.if_test((3,1)):             #8
-                with self.qc.if_test((2,0)):
-                    self.qc.x(8+16*pos)
-            
-            with self.qc.if_test((3,1)):             #7
-                with self.qc.if_test((2,1)):
-                    self.qc.x(7+16*pos)
-            
-            with self.qc.if_test((1,1)):             #4
-                with self.qc.if_test((2,1)):
-                    self.qc.x(4+16*pos)
-
-            with self.qc.if_test((0,0)):             #2 und 5
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        self.qc.x(2+16*pos)
-            
-            with self.qc.if_test((1,0)):             #3 und 6
-                with self.qc.if_test((2,1)):
+            with self.qc.if_test((1,1)):             #0 und 1
+                with self.qc.if_test((0,0)):
                     with self.qc.if_test((3,0)):
-                        self.qc.x(3+16*pos)
+                        self.qc.z(0+16*pos)
+
+            with self.qc.if_test((2,1)):             #2 und 3
+                with self.qc.if_test((3,0)):
+                    with self.qc.if_test((6,0)):
+                        self.qc.z(2+16*pos)
+
+            with self.qc.if_test((0,1)):             #4
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((4,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(4+16*pos)
+
+            with self.qc.if_test((1,1)):             #5
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((0,0)):
+                        with self.qc.if_test((2,0)):
+                            with self.qc.if_test((4,0)):
+                                with self.qc.if_test((5,0)):
+                                    self.qc.z(5+16*pos)
+
+            with self.qc.if_test((2,1)):             #6
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((1,0)):
+                        with self.qc.if_test((6,0)):
+                            with self.qc.if_test((4,0)):
+                                with self.qc.if_test((5,0)):
+                                    self.qc.z(6+16*pos)
+
+            with self.qc.if_test((2,1)):             #7
+                with self.qc.if_test((6,1)):
+                    with self.qc.if_test((3,0)):
+                        with self.qc.if_test((5,0)):
+                            self.qc.z(7+16*pos)
+
+            with self.qc.if_test((0,1)):             #8
+                with self.qc.if_test((4,1)):
+                    with self.qc.if_test((1,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(7+16*pos)
+            
+            with self.qc.if_test((3,1)):             #9
+                with self.qc.if_test((4,1)):
+                    with self.qc.if_test((0,0)):
+                        with self.qc.if_test((1,0)):
+                            with self.qc.if_test((2,0)):
+                                with self.qc.if_test((5,0)):
+                                    self.qc.z(9+16*pos)
+
+            with self.qc.if_test((3,1)):             #10
+                with self.qc.if_test((5,1)):
+                    with self.qc.if_test((4,0)):
+                        with self.qc.if_test((1,0)):
+                            with self.qc.if_test((2,0)):
+                                with self.qc.if_test((6,0)):
+                                    self.qc.z(10+16*pos)
+            
+            with self.qc.if_test((5,1)):             #11
+                with self.qc.if_test((6,1)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(11+16*pos)
+            
+            with self.qc.if_test((4,1)):             #12 und 13
+                with self.qc.if_test((0,0)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.z(12+16*pos)
+
+            with self.qc.if_test((5,1)):             #14 und 15
+                with self.qc.if_test((3,0)):
+                    with self.qc.if_test((6,0)):
+                        self.qc.z(14+16*pos)
+
+            with self.qc.if_test((2,1)):             #special case for hook error on Z6 Z7 Z10 Z11 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((6,1)):
+                        with self.qc.if_test((5,1)):
+                            with self.qc.if_test((4,0)):
+                                with self.qc.if_test((1,0)):
+                                    self.qc.z(6+16*pos), self.qc.z(11+16*pos)
+
+            with self.qc.if_test((0,1)):             #special case for hook error on Z4 Z5 Z8 Z9 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((1,1)):
+                        with self.qc.if_test((4,1)):
+                            with self.qc.if_test((2,0)):
+                                with self.qc.if_test((5,0)):
+                                    self.qc.z(4+16*pos), self.qc.z(9+16*pos)
 
         else:
             #X0 X1 Stabilizer:
@@ -1935,10 +2062,10 @@ class RotSurf16q:
             #X1 X2 X5 X6 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 1+16*pos)
-            self.qc.cx(anc, 2+16*pos)
             self.qc.cx(anc, 5+16*pos)
             self.qc.cx(anc, 6+16*pos)
+            self.qc.cx(anc, 1+16*pos)
+            self.qc.cx(anc, 2+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,2)
@@ -1947,10 +2074,10 @@ class RotSurf16q:
             #X4 X5 X8 X9 Stabilizer:
             self.qc.reset(anc)
             self.qc.h(anc)
-            self.qc.cx(anc, 4+16*pos)
-            self.qc.cx(anc, 5+16*pos)
             self.qc.cx(anc, 8+16*pos)
+            self.qc.cx(anc, 5+16*pos)
             self.qc.cx(anc, 9+16*pos)
+            self.qc.cx(anc, 4+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,3)
@@ -1959,9 +2086,9 @@ class RotSurf16q:
             self.qc.reset(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 6+16*pos)
+            self.qc.cx(anc, 11+16*pos)
             self.qc.cx(anc, 7+16*pos)
             self.qc.cx(anc, 10+16*pos)
-            self.qc.cx(anc, 11+16*pos)
             self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc,4)
@@ -2081,6 +2208,16 @@ class RotSurf16q:
                 with self.qc.if_test((5,0)):
                     self.qc.z(15+16*pos)
 
+            with self.qc.if_test((2,1)):             #special case for hook error on Z5 Z6 Z9 Z10 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((4,1)):
+                        with self.qc.if_test((5,1)):
+                            with self.qc.if_test((0,0)):
+                                with self.qc.if_test((1,0)):
+                                    with self.qc.if_test((6,0)):
+                                        with self.qc.if_test((7,0)):
+                                            self.qc.z(5+16*pos), self.qc.z(10+16*pos)
+
         ###########################################################################################################
 
             #Z4 Z8 Stabilizer:
@@ -2092,18 +2229,18 @@ class RotSurf16q:
 
             #Z0 Z1 Z4 Z5 Stabilizer:
             self.qc.reset(anc)
-            self.qc.cx(0+16*pos, anc)
             self.qc.cx(1+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
             self.qc.cx(5+16*pos, anc)
+            self.qc.cx(0+16*pos, anc)
+            self.qc.cx(4+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z2 Z3 Z6 Z7 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)
             self.qc.cx(6+16*pos, anc)
+            self.qc.cx(3+16*pos, anc)
             self.qc.cx(7+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,2)
@@ -2111,26 +2248,26 @@ class RotSurf16q:
             #Z5 Z6 Z9 Z10 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(5+16*pos, anc)
-            self.qc.cx(6+16*pos, anc)
-            self.qc.cx(9+16*pos, anc)
             self.qc.cx(10+16*pos, anc)
+            self.qc.cx(9+16*pos, anc)
+            self.qc.cx(6+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,3)
 
             #Z8 Z9 Z12 Z13 Stabilizer:
             self.qc.reset(anc)
-            self.qc.cx(8+16*pos, anc)
+            self.qc.cx(13+16*pos, anc)
             self.qc.cx(9+16*pos, anc)
             self.qc.cx(12+16*pos, anc)
-            self.qc.cx(13+16*pos, anc)
+            self.qc.cx(8+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,4)
 
             #Z10 Z11 Z14 Z15 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(10+16*pos, anc)
-            self.qc.cx(11+16*pos, anc)
             self.qc.cx(14+16*pos, anc)
+            self.qc.cx(11+16*pos, anc)
             self.qc.cx(15+16*pos, anc)
             self.qc.id(anc)
             self.qc.measure(anc,5)
@@ -2217,7 +2354,22 @@ class RotSurf16q:
                 with self.qc.if_test((3,0)):
                     with self.qc.if_test((6,0)):
                         self.qc.x(14+16*pos)
-            
+
+            with self.qc.if_test((2,1)):             #special case for hook error on X6 X7 X10 X11 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((6,1)):
+                        with self.qc.if_test((5,1)):
+                            with self.qc.if_test((4,0)):
+                                with self.qc.if_test((1,0)):
+                                    self.qc.x(6+16*pos), self.qc.x(11+16*pos)
+
+            with self.qc.if_test((0,1)):             #special case for hook error on X4 X5 X8 X9 Stabilizer
+                with self.qc.if_test((3,1)):
+                    with self.qc.if_test((1,1)):
+                        with self.qc.if_test((4,1)):
+                            with self.qc.if_test((2,0)):
+                                with self.qc.if_test((5,0)):
+                                    self.qc.x(4+16*pos), self.qc.x(9+16*pos)
 
         
         
