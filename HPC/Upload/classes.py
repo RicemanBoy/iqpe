@@ -591,6 +591,7 @@ class Steane7q:
         for i in range(len(pre)):
             if pre[i].count("1") != 0:
                 bits[i] = "pre"
+                # print("AHAAAA wieso flag???")
                 preselected += hmm[i]
 
         test_0 = ["0000000","1010101","0110011","1100110","0001111","1011010","0111100","1101001"]
@@ -632,9 +633,12 @@ class Steane7q:
         for i in range(len(bits)):
             if bits[i] == 0:
                 zeros += hmm[i]
+                print("0")
             if bits[i] == 1:
                 ones += hmm[i]
+                print("1")
             if bits[i] == "post":
+                print("AHAAAA wieso flag???")
                 post += hmm[i]
             # if bits[i] == "magic":
             #     magic += hmm[i]
@@ -1706,7 +1710,39 @@ class RotSurf16q:
         self.qc = QuantumCircuit(qr,cbit)
         # for i in range(16*n):
         #     self.qc.id(i)
-    
+            #1st step
+        for i in range(n):
+            self.qc.h(0+16*i)
+            self.qc.h(2+16*i)
+            self.qc.h(5+16*i)
+            self.qc.h(7+16*i)
+            self.qc.h(8+16*i)
+            self.qc.h(10+16*i)
+            self.qc.h(13+16*i)
+            self.qc.h(15+16*i)
+
+            self.qc.cx(0+16*i, 1+16*i)
+            self.qc.cx(2+16*i, 3+16*i)
+            self.qc.cx(13+16*i, 12+16*i)
+            self.qc.cx(15+16*i, 14+16*i)
+
+            self.qc.cx(5+16*i, 1+16*i)
+            self.qc.cx(5+16*i, 6+16*i)
+
+            self.qc.cx(7+16*i, 6+16*i)
+            self.qc.cx(7+16*i, 11+16*i)
+
+            self.qc.cx(8+16*i, 4+16*i)
+            self.qc.cx(8+16*i, 9+16*i)
+
+            self.qc.cx(10+16*i, 9+16*i)
+            self.qc.cx(10+16*i, 14+16*i)
+            #### 2nd step
+            self.qc.cx(1+16*i, 2+16*i)
+            self.qc.cx(6+16*i, 10+16*i)
+            self.qc.cx(9+16*i, 5+16*i)
+            self.qc.cx(14+16*i, 13+16*i)
+
     def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         if self.hadamards[pos]%2==1:
@@ -2371,5 +2407,21 @@ class RotSurf16q:
                                 with self.qc.if_test((5,0)):
                                     self.qc.x(4+16*pos), self.qc.x(9+16*pos)
 
-        
+    def readout(self, pos: int, shots: int, p = 0):
+
+        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+
+        noise_model = NoiseModel()
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+
+        sim = AerSimulator()
+        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
+
+        result = job.result()
+        counts = result.get_counts()
+
+        print(counts)
         
