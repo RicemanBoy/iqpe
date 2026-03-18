@@ -1,6 +1,6 @@
 from pdb import pm
 
-from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
 from qiskit.visualization import plot_histogram
 import numpy as np
 import matplotlib.pyplot as plt
@@ -92,35 +92,41 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                 self.h(pos=0)
                 if self.err:
                     self.qec(pos = 0)
-                self.readout(pos=0, shots=1, p=noise)
+                print("Unoptimized: ")
+                gates(self.qc)
+                new_qc = transpile(self.qc, optimization_level=1)
+                print("Optimized: ")
+                gates(new_qc)
+
+    #             self.readout(pos=0, shots=1, p=noise)
         
-                if self.zeros == 1:
-                    bitstring += "0"
-                elif self.ones == 1:
-                    bitstring += "1"
-                    rots.append(0.5)
-                else:
-                    if np.random.rand() < 0.5:
-                        bitstring += "0"
-                    else:
-                        bitstring += "1"
-                        rots.append(0.5)
-                del self
-            bitstring = bitstring[::-1]
-            hmm = convert(bitstring)
-            diff = np.abs(hmm-angle[o])
-            y += diff
-            bruh1.append(diff)
-    y = y/(n*k)
-    arg = 0
-    for i in range(len(bruh1)):
-        arg += (y-bruh1[i])**2
-    sigma = ((1/(k*n))*arg)**0.5
-    sigma = sigma/((k*n)**0.5)
+    #             if self.zeros == 1:
+    #                 bitstring += "0"
+    #             elif self.ones == 1:
+    #                 bitstring += "1"
+    #                 rots.append(0.5)
+    #             else:
+    #                 if np.random.rand() < 0.5:
+    #                     bitstring += "0"
+    #                 else:
+    #                     bitstring += "1"
+    #                     rots.append(0.5)
+    #             del self
+    #         bitstring = bitstring[::-1]
+    #         hmm = convert(bitstring)
+    #         diff = np.abs(hmm-angle[o])
+    #         y += diff
+    #         bruh1.append(diff)
+    # y = y/(n*k)
+    # arg = 0
+    # for i in range(len(bruh1)):
+    #     arg += (y-bruh1[i])**2
+    # sigma = ((1/(k*n))*arg)**0.5
+    # sigma = sigma/((k*n)**0.5)
 
-    return y, sigma
+    # return y, sigma
 
-def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = ""):       #each iteration own circuit
+def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = "", name=""):       #each iteration own circuit
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
@@ -156,20 +162,19 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
     for i in range(16):
             self.qc.measure(i, i)
 
-    print(dict(self.qc.count_ops()))
-    gates(self.qc)
-
-    basis_gates = ["reset", "measure", "if_else", "cz", "id", "s", "x", "h", "z", 'sdg', 'tdg', 't', 'cx']
-
-    # pm = PassManager([BasisTranslator(SessionEquivalenceLibrary, basis_gates)])
-    # new_circuit = pm.run(self.qc)
+    # print(dict(self.qc.count_ops()))
+    # gates(self.qc)
 
     new_qc = transpile(self.qc, optimization_level=1)
-    text_circuit = new_qc.draw(output="text")
-    with open('circuit.txt', 'w') as f:
-        f.write(str(text_circuit))
-    print(dict(new_qc.count_ops()))
-    gates(new_qc)
+    # text_circuit = new_qc.draw(output="text")
+    # with open('Circuits for Timo/{}.txt'.format(name), 'w') as f:
+    #     f.write(str(text_circuit))
+    qasm_str = qasm3.dumps(new_qc)
+
+    with open("Circuits for Timo/{}.qasm".format(name), "w") as f:
+        f.write(qasm_str)
+    # print(dict(new_qc.count_ops()))
+    # gates(new_qc)
 
 # def decoding(counts: dict):
 
@@ -182,7 +187,7 @@ class Steane7q:
         self.ones = 0
         self.preselected = 0
         self.post = 0
-        self.qec = False
+        self.err = False
 
         self.classical_ec = False
         self.postselection = False
@@ -323,8 +328,8 @@ class Steane7q:
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
-        if self.qec:
-            self.qec_ft(pos=pos, ft=True)
+        if self.err:
+            self.qec(pos=pos)
 
     def tdg(self, pos: int):
         self.h(pos=pos)
@@ -392,8 +397,8 @@ class Steane7q:
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
-        if self.qec:
-            self.qec_ft(pos=pos, ft=True)
+        if self.err:
+            self.qec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
@@ -424,7 +429,7 @@ class Steane7q:
         self.u2(1, gate=adjgate)
         self.cnot(control=0, target=1)
 
-    def qec_ft(self, pos: int, ft: bool):
+    def qec(self, pos: int):
         flags = ClassicalRegister(6)
         self.qc.add_register(flags)
         anc = self.qc.num_qubits - 1
@@ -1310,7 +1315,7 @@ class RotSurf9q:
                     with self.qc.if_test((3,0)):
                         self.qc.x(7+9*pos)
 
-    def qec_ft(self, pos: int):
+    def qec(self, pos: int):
         flags = ClassicalRegister(8)
         self.qc.add_register(flags)
         anc = self.qc.num_qubits - 1
