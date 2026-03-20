@@ -1978,111 +1978,140 @@ class RotSurf16q:
                 self.qc.z(8+16*pos)
                 self.qc.z(12+16*pos) 
 
+    # def t(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
+
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.t(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(1+16*pos, anc)
+    #         self.qc.cx(2+16*pos, anc)
+    #         self.qc.cx(3+16*pos, anc)       
+    #     else:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(4+16*pos, anc)
+    #         self.qc.cx(8+16*pos, anc)
+    #         self.qc.cx(12+16*pos, anc)     
+
+    #     self.qc.measure(anc, 0)
+    #     # if z_stab:
+    #     #     z_qec_ideal(qc, had=had, pos=pos)
+    #     self.qc.reset(anc)
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.h(anc)
+    #             self.qc.s(anc)
+    #             self.qc.cx(0+16*pos, anc)
+    #             self.qc.cx(1+16*pos, anc)
+    #             self.qc.cx(2+16*pos, anc)
+    #             self.qc.cx(3+16*pos, anc)  
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(0+16*pos)
+    #                 self.qc.z(1+16*pos)
+    #                 self.qc.z(2+16*pos)
+    #                 self.qc.z(3+16*pos)  
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.h(anc)
+    #             self.qc.s(anc)
+    #             self.qc.cx(0+16*pos, anc)
+    #             self.qc.cx(4+16*pos, anc)
+    #             self.qc.cx(8+16*pos, anc)
+    #             self.qc.cx(12+16*pos, anc)   
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(0+16*pos)
+    #                 self.qc.z(4+16*pos)
+    #                 self.qc.z(8+16*pos)
+    #                 self.qc.z(12+16*pos)   
+    
     def t(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1,
+            (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2),
+            (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2),
+            1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        t_timo = UnitaryGate(T_alt, label="t_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.t(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)       
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(t_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
-            self.qc.cx(12+16*pos, anc)     
+            self.qc.append(t_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
 
-        self.qc.measure(anc, 0)
-        # if z_stab:
-        #     z_qec_ideal(qc, had=had, pos=pos)
-        self.qc.reset(anc)
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.h(anc)
-                self.qc.s(anc)
-                self.qc.cx(0+16*pos, anc)
-                self.qc.cx(1+16*pos, anc)
-                self.qc.cx(2+16*pos, anc)
-                self.qc.cx(3+16*pos, anc)  
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(0+16*pos)
-                    self.qc.z(1+16*pos)
-                    self.qc.z(2+16*pos)
-                    self.qc.z(3+16*pos)  
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.h(anc)
-                self.qc.s(anc)
-                self.qc.cx(0+16*pos, anc)
-                self.qc.cx(4+16*pos, anc)
-                self.qc.cx(8+16*pos, anc)
-                self.qc.cx(12+16*pos, anc)   
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(0+16*pos)
-                    self.qc.z(4+16*pos)
-                    self.qc.z(8+16*pos)
-                    self.qc.z(12+16*pos)   
+    # def tdg(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
+
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.tdg(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(1+16*pos, anc)
+    #         self.qc.cx(2+16*pos, anc)
+    #         self.qc.cx(3+16*pos, anc)       
+    #     else:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(4+16*pos, anc)
+    #         self.qc.cx(8+16*pos, anc)
+    #         self.qc.cx(12+16*pos, anc)     
+
+    #     self.qc.measure(anc, 0)
+    #     # if z_stab:
+    #     #     z_qec_ideal(qc, had=had, pos=pos)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.sdg(anc)
+    #             self.qc.cx(0+16*pos, anc)
+    #             self.qc.cx(1+16*pos, anc)
+    #             self.qc.cx(2+16*pos, anc)
+    #             self.qc.cx(3+16*pos, anc)  
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(0+16*pos)
+    #                 self.qc.z(1+16*pos)
+    #                 self.qc.z(2+16*pos)
+    #                 self.qc.z(3+16*pos)  
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.sdg(anc)
+    #             self.qc.cx(0+16*pos, anc)
+    #             self.qc.cx(4+16*pos, anc)
+    #             self.qc.cx(8+16*pos, anc)
+    #             self.qc.cx(12+16*pos, anc)   
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(0+16*pos)
+    #                 self.qc.z(4+16*pos)
+    #                 self.qc.z(8+16*pos)
+    #                 self.qc.z(12+16*pos)   
 
     def tdg(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
-
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.tdg(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)       
-        else:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
-            self.qc.cx(12+16*pos, anc)     
-
-        self.qc.measure(anc, 0)
-        # if z_stab:
-        #     z_qec_ideal(qc, had=had, pos=pos)
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1,
+            (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2),
+            (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2),
+            1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1])
+        # threshold = 1e-10
+        # T_alt[np.abs(T_alt) < threshold] = np.nan
+        Tdg_alt = np.conjugate(T_alt)
+        tdg_timo = UnitaryGate(Tdg_alt, label="t_timo")
 
         if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.sdg(anc)
-                self.qc.cx(0+16*pos, anc)
-                self.qc.cx(1+16*pos, anc)
-                self.qc.cx(2+16*pos, anc)
-                self.qc.cx(3+16*pos, anc)  
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(0+16*pos)
-                    self.qc.z(1+16*pos)
-                    self.qc.z(2+16*pos)
-                    self.qc.z(3+16*pos)  
+            self.qc.append(tdg_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])
         else:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.sdg(anc)
-                self.qc.cx(0+16*pos, anc)
-                self.qc.cx(4+16*pos, anc)
-                self.qc.cx(8+16*pos, anc)
-                self.qc.cx(12+16*pos, anc)   
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(0+16*pos)
-                    self.qc.z(4+16*pos)
-                    self.qc.z(8+16*pos)
-                    self.qc.z(12+16*pos)   
+            self.qc.append(tdg_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
 
     def u2(self, pos: int, gate: list):
         for i in gate:

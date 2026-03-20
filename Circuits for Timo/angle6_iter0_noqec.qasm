@@ -1,5 +1,1924 @@
 OPENQASM 3.0;
 include "stdgates.inc";
+gate unitary _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_0 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_1 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_2 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_3 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_4 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_5 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_6 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_7 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_8 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_9 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_10 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_11 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_12 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_13 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_14 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_15 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_16 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_17 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_18 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_19 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_20 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_21 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_22 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_23 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_24 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_25 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_26 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_27 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_28 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_29 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_30 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_31 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_32 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_33 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_34 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_35 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_36 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_37 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_38 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_39 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_40 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_41 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_42 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_43 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_44 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_45 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_46 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_47 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_48 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_49 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_50 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_51 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_52 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_53 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_54 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_55 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_56 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_57 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_58 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_59 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_60 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_61 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_62 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_63 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_64 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_65 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_66 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_67 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_68 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_69 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_70 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_71 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_72 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_73 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_74 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_75 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_76 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_77 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_78 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_79 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_80 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_81 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_82 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_83 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_84 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_85 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_86 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_87 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_88 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_89 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_90 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_91 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_92 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_93 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_94 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_95 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_96 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_97 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_98 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
+gate unitary_99 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  rz(-pi/4) _gate_q_3;
+  cx _gate_q_1, _gate_q_3;
+  cx _gate_q_0, _gate_q_3;
+  cx _gate_q_2, _gate_q_3;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+  cx _gate_q_0, _gate_q_2;
+  cx _gate_q_1, _gate_q_2;
+}
 bit[16] c;
 qubit[33] q;
 h q[0];
@@ -71,189 +1990,21 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_0 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_1 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_2 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_3 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -269,193 +2020,25 @@ if (c[0]) {
   z q[12];
 }
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_4 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_5 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_6 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_7 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
+unitary_8 q[0], q[4], q[8], q[12];
 h q[1];
 h q[2];
 h q[3];
 reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
-reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
 cx q[17], q[32];
@@ -468,189 +2051,21 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_9 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_10 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_11 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_12 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -666,192 +2081,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_13 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_14 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_15 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_16 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_17 q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -864,189 +2111,21 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_18 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_19 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_20 q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(-pi/2, -pi) q[32];
@@ -1062,192 +2141,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_21 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_22 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_23 q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_24 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -1289,189 +2200,21 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_25 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_26 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_27 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_28 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -1487,193 +2230,25 @@ if (c[0]) {
   z q[12];
 }
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_29 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_30 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_31 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_32 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
+unitary_33 q[0], q[4], q[8], q[12];
 h q[1];
 h q[2];
 h q[3];
 reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
-reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
 cx q[17], q[32];
@@ -1686,189 +2261,21 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_34 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_35 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_36 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_37 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -1884,192 +2291,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_38 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_39 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_40 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_41 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_42 q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -2082,189 +2321,21 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_43 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_44 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_45 q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(-pi/2, -pi) q[32];
@@ -2280,192 +2351,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_46 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_47 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_48 q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_49 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -2507,189 +2410,21 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_50 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_51 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_52 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_53 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -2705,193 +2440,25 @@ if (c[0]) {
   z q[12];
 }
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_54 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_55 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_56 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_57 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
+unitary_58 q[0], q[4], q[8], q[12];
 h q[1];
 h q[2];
 h q[3];
 reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
-reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
 cx q[17], q[32];
@@ -2904,189 +2471,21 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_59 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_60 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_61 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_62 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -3102,192 +2501,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_63 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_64 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_65 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_66 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_67 q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -3300,189 +2531,21 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_68 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_69 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_70 q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(-pi/2, -pi) q[32];
@@ -3498,192 +2561,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_71 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_72 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_73 q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_74 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -3725,189 +2620,21 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_75 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_76 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_77 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_78 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -3923,193 +2650,25 @@ if (c[0]) {
   z q[12];
 }
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_79 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_80 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary_81 q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary_82 q[0], q[1], q[2], q[3];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
+unitary q[0], q[4], q[8], q[12];
 h q[0];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[1], q[32];
-cx q[2], q[32];
-cx q[3], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[1], q[32];
-  cx q[2], q[32];
-  cx q[3], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[1];
-    z q[2];
-    z q[3];
-  }
-}
+unitary q[0], q[1], q[2], q[3];
 h q[0];
+unitary_83 q[0], q[4], q[8], q[12];
 h q[1];
 h q[2];
 h q[3];
 reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[0], q[32];
-cx q[4], q[32];
-cx q[8], q[32];
-cx q[12], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[0], q[32];
-  cx q[4], q[32];
-  cx q[8], q[32];
-  cx q[12], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[0];
-    z q[4];
-    z q[8];
-    z q[12];
-  }
-}
-reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
 cx q[17], q[32];
@@ -4122,189 +2681,21 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_84 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_85 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_86 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_87 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(pi/2, -pi) q[32];
@@ -4320,192 +2711,24 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_88 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_89 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_90 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_91 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 cz q[8], q[24];
 cz q[12], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_92 q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -4518,189 +2741,21 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_93 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_94 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_95 q[16], q[20], q[24], q[28];
 h q[16];
 reset q[32];
 u2(-pi/2, -pi) q[32];
@@ -4716,166 +2771,19 @@ if (c[0]) {
   z q[19];
 }
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_96 q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-reset q[32];
-if (c[0]) {
-  u2(pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary q[16], q[20], q[24], q[28];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
+unitary_97 q[16], q[17], q[18], q[19];
 h q[16];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[20], q[32];
-cx q[24], q[32];
-cx q[28], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[20], q[32];
-  cx q[24], q[32];
-  cx q[28], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[20];
-    z q[24];
-    z q[28];
-  }
-}
+unitary_98 q[16], q[20], q[24], q[28];
 cz q[4], q[20];
 h q[4];
 cz q[8], q[24];
@@ -4883,31 +2791,10 @@ h q[8];
 cz q[12], q[28];
 h q[12];
 h q[16];
+unitary_99 q[16], q[17], q[18], q[19];
 h q[20];
 h q[24];
 h q[28];
-reset q[32];
-u2(-pi/4, -pi) q[32];
-cx q[16], q[32];
-cx q[17], q[32];
-cx q[18], q[32];
-cx q[19], q[32];
-c[0] = measure q[32];
-if (c[0]) {
-  reset q[32];
-  u2(-pi/2, -pi) q[32];
-  cx q[16], q[32];
-  cx q[17], q[32];
-  cx q[18], q[32];
-  cx q[19], q[32];
-  c[0] = measure q[32];
-  if (c[0]) {
-    z q[16];
-    z q[17];
-    z q[18];
-    z q[19];
-  }
-}
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];

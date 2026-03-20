@@ -1,100 +1,5 @@
 OPENQASM 3.0;
 include "stdgates.inc";
-gate unitary _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  rz(pi/4) _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-}
-gate unitary_0 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  rz(-pi/4) _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-}
-gate unitary_1 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  rz(-pi/4) _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-}
-gate unitary_2 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  rz(-pi/4) _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-}
-gate unitary_3 _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  rz(-pi/4) _gate_q_3;
-  cx _gate_q_1, _gate_q_3;
-  cx _gate_q_0, _gate_q_3;
-  cx _gate_q_2, _gate_q_3;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-  cx _gate_q_0, _gate_q_2;
-  cx _gate_q_1, _gate_q_2;
-}
 bit[16] c;
 qubit[33] q;
 h q[0];
@@ -169,7 +74,6 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-unitary q[0], q[4], q[8], q[12];
 reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -183,7 +87,6 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-unitary q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -196,7 +99,6 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-unitary_0 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -235,7 +137,6 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-unitary q[0], q[4], q[8], q[12];
 reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -249,7 +150,6 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-unitary q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -262,7 +162,6 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-unitary_1 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -301,7 +200,6 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-unitary q[0], q[4], q[8], q[12];
 reset q[32];
 u2(pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -315,7 +213,6 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-unitary q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -328,7 +225,6 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-unitary_2 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
@@ -367,7 +263,6 @@ if (c[0]) {
   z q[8];
   z q[12];
 }
-unitary q[0], q[4], q[8], q[12];
 h q[4];
 h q[8];
 h q[12];
@@ -384,7 +279,6 @@ if (c[0]) {
   z q[18];
   z q[19];
 }
-unitary q[16], q[17], q[18], q[19];
 h q[16];
 cz q[0], q[16];
 h q[16];
@@ -397,7 +291,6 @@ h q[18];
 h q[19];
 cz q[3], q[19];
 h q[19];
-unitary_3 q[16], q[17], q[18], q[19];
 reset q[32];
 u2(-pi/2, -pi) q[32];
 cx q[16], q[32];
