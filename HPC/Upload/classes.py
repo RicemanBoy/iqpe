@@ -98,33 +98,33 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                 print("Optimized: ")
                 gates(new_qc)
 
-    #             self.readout(pos=0, shots=1, p=noise)
+                self.readout(pos=0, shots=1, p=noise)
         
-    #             if self.zeros == 1:
-    #                 bitstring += "0"
-    #             elif self.ones == 1:
-    #                 bitstring += "1"
-    #                 rots.append(0.5)
-    #             else:
-    #                 if np.random.rand() < 0.5:
-    #                     bitstring += "0"
-    #                 else:
-    #                     bitstring += "1"
-    #                     rots.append(0.5)
-    #             del self
-    #         bitstring = bitstring[::-1]
-    #         hmm = convert(bitstring)
-    #         diff = np.abs(hmm-angle[o])
-    #         y += diff
-    #         bruh1.append(diff)
-    # y = y/(n*k)
-    # arg = 0
-    # for i in range(len(bruh1)):
-    #     arg += (y-bruh1[i])**2
-    # sigma = ((1/(k*n))*arg)**0.5
-    # sigma = sigma/((k*n)**0.5)
+                if self.zeros == 1:
+                    bitstring += "0"
+                elif self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
+                del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
 
-    # return y, sigma
+    return y, sigma
 
 def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = "", name=""):       #each iteration own circuit
     n = 15
@@ -262,143 +262,157 @@ class Steane7q:
         self.qc.sdg(0+7*pos), self.qc.sdg(1+7*pos), self.qc.sdg(3+7*pos), self.qc.sdg(6+7*pos)
         self.qc.s(2+7*pos), self.qc.s(4+7*pos), self.qc.s(5+7*pos)
 
-    def t(self, pos: int):
-        self.h(pos=pos)
-        self.sdg(pos=pos)
-        self.h(pos=pos)
-        state_inj = ClassicalRegister(1)
-        self.qc.add_register(state_inj)
+    # def t(self, pos: int):
+    #     self.h(pos=pos)
+    #     self.sdg(pos=pos)
+    #     self.h(pos=pos)
+    #     state_inj = ClassicalRegister(1)
+    #     self.qc.add_register(state_inj)
 
-        anc = self.qc.num_qubits - 1
-        ancc = anc - 1
+    #     anc = self.qc.num_qubits - 1
+    #     ancc = anc - 1
 
-        for i in range(7):
-            self.qc.reset(i+7*2)
+    #     for i in range(7):
+    #         self.qc.reset(i+7*2)
 
-        self.qc.append(h_ideal,[0+7*2])
-        self.qc.append(h_ideal,[1+7*2])
-        self.qc.ry(np.pi/4,2+7*2)
-        self.qc.append(h_ideal,[3+7*2])
+    #     self.qc.append(h_ideal,[0+7*2])
+    #     self.qc.append(h_ideal,[1+7*2])
+    #     self.qc.ry(np.pi/4,2+7*2)
+    #     self.qc.append(h_ideal,[3+7*2])
 
-        self.qc.append(cx_ideal, [4+7*2, 2+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 0+7*2])
+    #     self.qc.append(cx_ideal, [4+7*2, 2+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 0+7*2])
         
-        self.qc.append(cx_ideal, [5+7*2, 3+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 3+7*2])
 
-        self.qc.append(cx_ideal, [5+7*2, 2+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 2+7*2])
 
-        self.qc.append(cx_ideal, [4+7*2, 0+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [4+7*2, 0+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 1+7*2])
 
-        self.qc.append(cx_ideal, [2+7*2, 0+7*2])
+    #     self.qc.append(cx_ideal, [2+7*2, 0+7*2])
 
-        self.qc.append(cx_ideal, [5+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 1+7*2])
 
-        self.qc.append(cx_ideal, [2+7*2, 1+7*2])
-        self.qc.append(cx_ideal, [4+7*2, 3+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 3+7*2])
-        #################################Controlled Hadamards##########################################
-        self.qc.reset(ancc)
-        self.qc.append(h_ideal,[ancc])
-        for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+2*7)
-            self.qc.cz(ancc,6-i+2*7)
-            self.qc.ry(np.pi/4,6-i+2*7)
-        self.qc.append(h_ideal,[ancc])
-        self.qc.measure(ancc, state_inj[0])
-        ########################Controlled-Y Gate####################################################
-        self.sdg(pos=pos)
-        for i in range(7):
-            self.qc.cx(i+7*2,i+7*pos)
-        self.s(pos=pos)
-        self.qc.reset(anc-1)
-        #############################Measure logical state of the magic state for state injection#############################
-        self.sdg(pos=2)
-        self.h(pos=2)
-        for i in range(7):
-            self.qc.cx(i+2*7, anc-1)
-        self.qc.measure(anc-1,0)
-        #################################Apply conditioned Ry(pi/2) onto the Target###########################
-        for i in range(7):
-            with self.qc.if_test((0,1)):
-                self.qc.h(i+7*pos)
-        for i in range(3):
-            with self.qc.if_test((0,1)):
-                self.qc.x(i+7*pos)
-        self.h(pos=pos)
-        self.s(pos=pos)
-        self.h(pos=pos)
-        if self.err:
-            self.qec(pos=pos)
+    #     self.qc.append(cx_ideal, [2+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [4+7*2, 3+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 3+7*2])
+    #     #################################Controlled Hadamards##########################################
+    #     self.qc.reset(ancc)
+    #     self.qc.append(h_ideal,[ancc])
+    #     for i in range(7):
+    #         self.qc.ry(-np.pi/4,6-i+2*7)
+    #         self.qc.cz(ancc,6-i+2*7)
+    #         self.qc.ry(np.pi/4,6-i+2*7)
+    #     self.qc.append(h_ideal,[ancc])
+    #     self.qc.measure(ancc, state_inj[0])
+    #     ########################Controlled-Y Gate####################################################
+    #     self.sdg(pos=pos)
+    #     for i in range(7):
+    #         self.qc.cx(i+7*2,i+7*pos)
+    #     self.s(pos=pos)
+    #     self.qc.reset(anc-1)
+    #     #############################Measure logical state of the magic state for state injection#############################
+    #     self.sdg(pos=2)
+    #     self.h(pos=2)
+    #     for i in range(7):
+    #         self.qc.cx(i+2*7, anc-1)
+    #     self.qc.measure(anc-1,0)
+    #     #################################Apply conditioned Ry(pi/2) onto the Target###########################
+    #     for i in range(7):
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.h(i+7*pos)
+    #     for i in range(3):
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.x(i+7*pos)
+    #     self.h(pos=pos)
+    #     self.s(pos=pos)
+    #     self.h(pos=pos)
+    #     if self.err:
+    #         self.qec(pos=pos)
+
+    def t(self, pos: int):
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+        self.qc.t(2+7*pos)
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
 
     def tdg(self, pos: int):
-        self.h(pos=pos)
-        self.sdg(pos=pos)
-        self.h(pos=pos)
-        state_inj = ClassicalRegister(1)
-        self.qc.add_register(state_inj)
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+        self.qc.tdg(2+7*pos)
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
 
-        anc = self.qc.num_qubits - 1
-        ancc = anc - 1
+    # def tdg(self, pos: int):
+    #     self.h(pos=pos)
+    #     self.sdg(pos=pos)
+    #     self.h(pos=pos)
+    #     state_inj = ClassicalRegister(1)
+    #     self.qc.add_register(state_inj)
 
-        for i in range(7):
-            self.qc.reset(i+7*2)
+    #     anc = self.qc.num_qubits - 1
+    #     ancc = anc - 1
 
-        self.qc.append(h_ideal,[0+7*2])
-        self.qc.append(h_ideal,[1+7*2])
-        self.qc.ry(np.pi/4,2+7*2)
-        self.qc.append(h_ideal,[3+7*2])
+    #     for i in range(7):
+    #         self.qc.reset(i+7*2)
 
-        self.qc.append(cx_ideal, [4+7*2, 2+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 0+7*2])
+    #     self.qc.append(h_ideal,[0+7*2])
+    #     self.qc.append(h_ideal,[1+7*2])
+    #     self.qc.ry(np.pi/4,2+7*2)
+    #     self.qc.append(h_ideal,[3+7*2])
+
+    #     self.qc.append(cx_ideal, [4+7*2, 2+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 0+7*2])
         
-        self.qc.append(cx_ideal, [5+7*2, 3+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 3+7*2])
 
-        self.qc.append(cx_ideal, [5+7*2, 2+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 2+7*2])
 
-        self.qc.append(cx_ideal, [4+7*2, 0+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [4+7*2, 0+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 1+7*2])
 
-        self.qc.append(cx_ideal, [2+7*2, 0+7*2])
+    #     self.qc.append(cx_ideal, [2+7*2, 0+7*2])
 
-        self.qc.append(cx_ideal, [5+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [5+7*2, 1+7*2])
 
-        self.qc.append(cx_ideal, [2+7*2, 1+7*2])
-        self.qc.append(cx_ideal, [4+7*2, 3+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 3+7*2])
-        #################################Controlled Hadamards##########################################
-        self.qc.reset(ancc)
-        self.qc.append(h_ideal,[ancc])
-        for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+2*7)
-            self.qc.cz(ancc,6-i+2*7)
-            self.qc.ry(np.pi/4,6-i+2*7)
-        self.qc.append(h_ideal,[ancc])
-        self.qc.measure(ancc, state_inj[0])
-        ########################Controlled-Y Gate####################################################
-        self.sdg(pos=pos)
-        for i in range(7):
-            self.qc.cx(i+7*2,i+7*pos)
-        self.s(pos=pos)
-        self.qc.reset(anc-1)
-        #############################Measure logical state of the magic state for state injection#############################
-        self.sdg(pos=2)
-        self.h(pos=2)
-        for i in range(7):
-            self.qc.cx(i+2*7, anc-1)
-        self.qc.measure(anc-1,0)
-        #################################Apply conditioned Ry(pi/2) onto the Target###########################
-        for i in range(7):
-            with self.qc.if_test((0,1)):
-                self.qc.h(i+7*pos)
-        for i in range(3):
-            with self.qc.if_test((0,1)):
-                self.qc.x(i+7*pos)
-        self.h(pos=pos)
-        self.s(pos=pos)
-        self.h(pos=pos)
-        if self.err:
-            self.qec(pos=pos)
+    #     self.qc.append(cx_ideal, [2+7*2, 1+7*2])
+    #     self.qc.append(cx_ideal, [4+7*2, 3+7*2])
+    #     self.qc.append(cx_ideal, [6+7*2, 3+7*2])
+    #     #################################Controlled Hadamards##########################################
+    #     self.qc.reset(ancc)
+    #     self.qc.append(h_ideal,[ancc])
+    #     for i in range(7):
+    #         self.qc.ry(-np.pi/4,6-i+2*7)
+    #         self.qc.cz(ancc,6-i+2*7)
+    #         self.qc.ry(np.pi/4,6-i+2*7)
+    #     self.qc.append(h_ideal,[ancc])
+    #     self.qc.measure(ancc, state_inj[0])
+    #     ########################Controlled-Y Gate####################################################
+    #     self.sdg(pos=pos)
+    #     for i in range(7):
+    #         self.qc.cx(i+7*2,i+7*pos)
+    #     self.s(pos=pos)
+    #     self.qc.reset(anc-1)
+    #     #############################Measure logical state of the magic state for state injection#############################
+    #     self.sdg(pos=2)
+    #     self.h(pos=2)
+    #     for i in range(7):
+    #         self.qc.cx(i+2*7, anc-1)
+    #     self.qc.measure(anc-1,0)
+    #     #################################Apply conditioned Ry(pi/2) onto the Target###########################
+    #     for i in range(7):
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.h(i+7*pos)
+    #     for i in range(3):
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.x(i+7*pos)
+    #     self.h(pos=pos)
+    #     self.s(pos=pos)
+    #     self.h(pos=pos)
+    #     if self.err:
+    #         self.qec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
