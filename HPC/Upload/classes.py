@@ -1,6 +1,6 @@
 from pdb import pm
 
-from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3, qasm2, qpy
 from qiskit.visualization import plot_histogram
 import numpy as np
 import matplotlib.pyplot as plt
@@ -48,6 +48,18 @@ def convert(bin: str):                  #konvertiert den bitstring in decimal, e
             n += 1/2**(i+1)
     return n
 
+def closest_bitstring(num: float, depth: int):
+    bitstring = ""
+    
+    for i in range(depth):
+        if num >= 2**(-i-1):
+            bitstring += "1"
+            num = num - 2**(-i-1)
+        else:
+            bitstring += "0"
+    
+    return bitstring
+
 def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -92,11 +104,11 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                 self.h(pos=0)
                 if self.err:
                     self.qec(pos = 0)
-                print("Unoptimized: ")
-                gates(self.qc)
+                # print("Unoptimized: ")
+                # gates(self.qc)
                 new_qc = transpile(self.qc, optimization_level=1)
-                print("Optimized: ")
-                gates(new_qc)
+                # print("Optimized: ")
+                # gates(new_qc)
 
                 self.readout(pos=0, shots=1, p=noise)
         
@@ -125,6 +137,80 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
     sigma = sigma/((k*n)**0.5)
 
     return y, sigma
+
+def avg15_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                if code == "steane":
+                    self = Steane7q(2)
+                elif code == "rotsurf9":
+                    self = RotSurf9q(2)
+                else:
+                    self = RotSurf16q(2)
+                self.err = qec
+                rots = [k*0.5 for k in rots]
+
+                self.x(pos=1)
+                self.h(pos=0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    self.cu(a[o], b[o])
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        self.sdg(pos=0)
+                    if l == 0.125:
+                        self.tdg(pos=0)
+                self.h(pos=0)
+                if self.err:
+                    self.qec(pos = 0)
+                # print("Unoptimized: ")
+                # gates(self.qc)
+                #new_qc = transpile(self.qc, optimization_level=1)
+                self.qc = transpile(self.qc, optimization_level=1)
+                # print("Optimized: ")
+                # gates(new_qc)
+
+                self.readout(pos=0, shots=1, p=noise)
+        
+                if self.zeros == 1:
+                    bitstring += "0"
+                elif self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                else:
+                    if np.random.rand() < 0.5:
+                        bitstring += "0"
+                    else:
+                        bitstring += "1"
+                        rots.append(0.5)
+                del self
+            bitstring = bitstring[::-1]
+            angle_bit = closest_bitstring(angle[o], iter)
+            
+            if bitstring == angle_bit:
+                y += 1
+
+    y = y/(k*n)
+    return y
 
 def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = "", name=""):       #each iteration own circuit
     n = 15
@@ -157,10 +243,10 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
         if l == 0.125:
             self.tdg(pos=0)
     self.h(pos=0)
-    if self.err:
-        self.qec(pos = 0)
-    for i in range(16):
-            self.qc.measure(i, i)
+    # if self.err:
+    #     self.qec(pos = 0)
+    # for i in range(16):
+    #         self.qc.measure(i, i)
 
     # print(dict(self.qc.count_ops()))
     # gates(self.qc)
@@ -169,10 +255,16 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
     # text_circuit = new_qc.draw(output="text")
     # with open('Circuits for Timo/{}.txt'.format(name), 'w') as f:
     #     f.write(str(text_circuit))
-    qasm_str = qasm3.dumps(new_qc)
 
-    with open("Circuits for Timo/{}.qasm".format(name), "w") as f:
-        f.write(qasm_str)
+
+    # qasm_str = qasm3.dumps(new_qc)
+    # with open("Circuits for Timo/{}.qasm".format(name), "w") as f:
+    #     f.write(qasm_str)
+
+
+    with open("Circuits for Timo/{}.qpy".format(name), "wb") as file:
+        qpy.dump(new_qc, file)
+
     # print(dict(new_qc.count_ops()))
     # gates(new_qc)
 
@@ -438,9 +530,15 @@ class Steane7q:
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
+        if self.err:
+            self.qec(pos = 0)
         self.u2(1, gate=gate)
+        if self.err:
+            self.qec(pos = 1)
         self.cnot(control=0, target=1)
         self.u2(1, gate=adjgate)
+        if self.err:
+            self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
@@ -721,12 +819,9 @@ class Steane7q:
         for i in range(len(bits)):
             if bits[i] == 0:
                 zeros += hmm[i]
-                print("0")
             if bits[i] == 1:
                 ones += hmm[i]
-                print("1")
             if bits[i] == "post":
-                print("AHAAAA wieso flag???")
                 post += hmm[i]
             # if bits[i] == "magic":
             #     magic += hmm[i]
@@ -1924,73 +2019,101 @@ class RotSurf16q:
                 for i in range(16):
                     self.qc.cx(16+i,i)
 
+    # def s(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
+
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.s(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(1+16*pos, anc)
+    #         self.qc.cx(2+16*pos, anc)
+    #         self.qc.cx(3+16*pos, anc)        
+    #     else:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(4+16*pos, anc)
+    #         self.qc.cx(8+16*pos, anc)
+    #         self.qc.cx(12+16*pos, anc)    
+
+    #     self.qc.measure(anc, 0)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(0+16*pos)
+    #             self.qc.z(1+16*pos)
+    #             self.qc.z(2+16*pos)
+    #             self.qc.z(3+16*pos)        
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(0+16*pos)
+    #             self.qc.z(4+16*pos)
+    #             self.qc.z(8+16*pos)
+    #             self.qc.z(12+16*pos) 
+
     def s(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        S_alt = np.diag([1, 1j, 1j, 1,
+            1j, 1, 1, 1j,
+            1j, 1, 1, 1j,
+            1, 1j, 1j, 1])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        S_timo = UnitaryGate(S_alt, label="t_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.s(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(S_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
-            self.qc.cx(12+16*pos, anc)    
+            self.qc.append(S_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
 
-        self.qc.measure(anc, 0)
+    # def sdg(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
 
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.z(0+16*pos)
-                self.qc.z(1+16*pos)
-                self.qc.z(2+16*pos)
-                self.qc.z(3+16*pos)        
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.z(0+16*pos)
-                self.qc.z(4+16*pos)
-                self.qc.z(8+16*pos)
-                self.qc.z(12+16*pos) 
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.sdg(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(1+16*pos, anc)
+    #         self.qc.cx(2+16*pos, anc)
+    #         self.qc.cx(3+16*pos, anc)        
+    #     else:
+    #         self.qc.cx(0+16*pos, anc)
+    #         self.qc.cx(4+16*pos, anc)
+    #         self.qc.cx(8+16*pos, anc)
+    #         self.qc.cx(12+16*pos, anc)    
+
+    #     self.qc.measure(anc, 0)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(0+16*pos)
+    #             self.qc.z(1+16*pos)
+    #             self.qc.z(2+16*pos)
+    #             self.qc.z(3+16*pos)        
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(0+16*pos)
+    #             self.qc.z(4+16*pos)
+    #             self.qc.z(8+16*pos)
+    #             self.qc.z(12+16*pos) 
 
     def sdg(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        Sdg_alt = np.diag([1, -1j, -1j, 1,
+            -1j, 1, 1, -1j,
+            -1j, 1, 1, -1j,
+            1, -1j, -1j, 1])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        S_timo = UnitaryGate(Sdg_alt, label="t_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.sdg(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(S_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
-            self.qc.cx(12+16*pos, anc)    
-
-        self.qc.measure(anc, 0)
-
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.z(0+16*pos)
-                self.qc.z(1+16*pos)
-                self.qc.z(2+16*pos)
-                self.qc.z(3+16*pos)        
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.z(0+16*pos)
-                self.qc.z(4+16*pos)
-                self.qc.z(8+16*pos)
-                self.qc.z(12+16*pos) 
+            self.qc.append(S_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
 
     # def t(self, pos: int):
     #     anc = self.qc.num_qubits - 1
