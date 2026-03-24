@@ -8,6 +8,8 @@ from matplotlib import ticker
 #import bitstring
 from qiskit_aer import AerSimulator
 from qiskit.transpiler.passes.synthesis import SolovayKitaev
+from qiskit.synthesis import generate_basic_approximations
+from qiskit.quantum_info import Operator
 
 from qiskit import transpile
 from qiskit.transpiler import PassManager
@@ -1891,8 +1893,8 @@ class RotSurf16q:
         self.hadamards = [0,0]
 
         qr = QuantumRegister(16*n+1, "q")
-        cbit = ClassicalRegister(16,"c")
-        self.qc = QuantumCircuit(qr,cbit)
+        # cbit = ClassicalRegister(16,"c")
+        self.qc = QuantumCircuit(qr)
         # for i in range(16*n):
         #     self.qc.id(i)
             #1st step
