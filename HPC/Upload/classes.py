@@ -229,7 +229,7 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
             b.append(list(map(str, line.strip().split(","))))
     
     bitstring = ""
-    self = RotSurf16q(2)
+    self = RotSurf9q(2)
     self.err = qec
     rots = [k*0.5 for k in rots]
 
@@ -964,160 +964,205 @@ class RotSurf9q:
         self.cnot(control = 0, target=1)
         self.h(pos=1)
 
+    # def s(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
+
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.s(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(3+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(5+9*pos, anc)        
+    #     else:
+    #         self.qc.cx(1+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(7+9*pos, anc)  
+
+    #     self.qc.measure(anc, 0)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(3+9*pos)
+    #             self.qc.z(4+9*pos)
+    #             self.qc.z(5+9*pos)
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(1+9*pos)
+    #             self.qc.z(4+9*pos)
+    #             self.qc.z(7+9*pos)
+    
     def s(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        S_alt = np.diag([1, 1j, 1j, 1, 1j, 1, 1, 1j])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        s_timo = UnitaryGate(S_alt, label="s_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.s(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(3+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(5+9*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(s_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(7+9*pos, anc)  
+            self.qc.append(s_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-        self.qc.measure(anc, 0)
+    # def sdg(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
 
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.z(3+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(5+9*pos)
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.z(1+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(7+9*pos)
+    #     self.qc.h(anc)
+    #     self.qc.sdg(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(3+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(5+9*pos, anc)        
+    #     else:
+    #         self.qc.cx(1+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(7+9*pos, anc)  
+
+    #     self.qc.measure(anc, 0)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(3+9*pos)
+    #             self.qc.z(4+9*pos)
+    #             self.qc.z(5+9*pos)
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.z(1+9*pos)
+    #             self.qc.z(4+9*pos)
+    #             self.qc.z(7+9*pos)
     
     def sdg(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        Sdg_alt = np.diag([1, -1j, -1j, 1, -1j, 1, 1, -1j])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        sdg_timo = UnitaryGate(Sdg_alt, label="s_timo")
 
-        self.qc.h(anc)
-        self.qc.sdg(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(3+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(5+9*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(sdg_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(7+9*pos, anc)  
+            self.qc.append(sdg_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-        self.qc.measure(anc, 0)
+    # def t(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
 
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.z(3+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(5+9*pos)
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.z(1+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(7+9*pos)
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.t(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(3+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(5+9*pos, anc)        
+    #     else:
+    #         self.qc.cx(1+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(7+9*pos, anc)  
+
+    #     self.qc.measure(anc, 0)
+    #     # if z_stab:
+    #     #     z_qec_ideal(qc, had=had, pos=pos)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.s(anc)
+    #             self.qc.cx(3+9*pos, anc)
+    #             self.qc.cx(4+9*pos, anc)
+    #             self.qc.cx(5+9*pos, anc) 
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(3+9*pos)
+    #                 self.qc.z(4+9*pos)
+    #                 self.qc.z(5+9*pos)
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.s(anc)
+    #             self.qc.cx(1+9*pos, anc)
+    #             self.qc.cx(4+9*pos, anc)
+    #             self.qc.cx(7+9*pos, anc) 
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(1+9*pos)
+    #                 self.qc.z(4+9*pos)
+    #                 self.qc.z(7+9*pos)
     
     def t(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        t_timo = UnitaryGate(T_alt, label="t_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.t(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(3+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(5+9*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(t_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(7+9*pos, anc)  
+            self.qc.append(t_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-        self.qc.measure(anc, 0)
-        # if z_stab:
-        #     z_qec_ideal(qc, had=had, pos=pos)
+    # def tdg(self, pos: int):
+    #     anc = self.qc.num_qubits - 1
+    #     self.qc.reset(anc)
 
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.s(anc)
-                self.qc.cx(3+9*pos, anc)
-                self.qc.cx(4+9*pos, anc)
-                self.qc.cx(5+9*pos, anc) 
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(3+9*pos)
-                    self.qc.z(4+9*pos)
-                    self.qc.z(5+9*pos)
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.s(anc)
-                self.qc.cx(1+9*pos, anc)
-                self.qc.cx(4+9*pos, anc)
-                self.qc.cx(7+9*pos, anc) 
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(1+9*pos)
-                    self.qc.z(4+9*pos)
-                    self.qc.z(7+9*pos)
+    #     self.qc.h(anc)
+    #     #self.qc.append(h_ideal,[anc])
+    #     self.qc.tdg(anc)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         self.qc.cx(3+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(5+9*pos, anc)        
+    #     else:
+    #         self.qc.cx(1+9*pos, anc)
+    #         self.qc.cx(4+9*pos, anc)
+    #         self.qc.cx(7+9*pos, anc)  
+
+    #     self.qc.measure(anc, 0)
+    #     # if z_stab:
+    #     #     z_qec_ideal(qc, had=had, pos=pos)
+
+    #     if self.hadamards[pos]%2 == 0:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.sdg(anc)
+    #             self.qc.cx(3+9*pos, anc)
+    #             self.qc.cx(4+9*pos, anc)
+    #             self.qc.cx(5+9*pos, anc) 
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(3+9*pos)
+    #                 self.qc.z(4+9*pos)
+    #                 self.qc.z(5+9*pos)
+    #     else:
+    #         with self.qc.if_test((0,1)):
+    #             self.qc.reset(anc)
+    #             self.qc.h(anc)
+    #             self.qc.sdg(anc)
+    #             self.qc.cx(1+9*pos, anc)
+    #             self.qc.cx(4+9*pos, anc)
+    #             self.qc.cx(7+9*pos, anc) 
+    #             self.qc.measure(anc, 0)
+    #             with self.qc.if_test((0,1)):
+    #                 self.qc.z(1+9*pos)
+    #                 self.qc.z(4+9*pos)
+    #                 self.qc.z(7+9*pos)
 
     def tdg(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
+        Tdg_alt = np.conjugate(T_alt)
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        tdg_timo = UnitaryGate(Tdg_alt, label="tdg_timo")
 
-        self.qc.h(anc)
-        #self.qc.append(h_ideal,[anc])
-        self.qc.tdg(anc)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(3+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(5+9*pos, anc)        
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(tdg_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(4+9*pos, anc)
-            self.qc.cx(7+9*pos, anc)  
-
-        self.qc.measure(anc, 0)
-        # if z_stab:
-        #     z_qec_ideal(qc, had=had, pos=pos)
-
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.sdg(anc)
-                self.qc.cx(3+9*pos, anc)
-                self.qc.cx(4+9*pos, anc)
-                self.qc.cx(5+9*pos, anc) 
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(3+9*pos)
-                    self.qc.z(4+9*pos)
-                    self.qc.z(5+9*pos)
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.reset(anc)
-                self.qc.h(anc)
-                self.qc.sdg(anc)
-                self.qc.cx(1+9*pos, anc)
-                self.qc.cx(4+9*pos, anc)
-                self.qc.cx(7+9*pos, anc) 
-                self.qc.measure(anc, 0)
-                with self.qc.if_test((0,1)):
-                    self.qc.z(1+9*pos)
-                    self.qc.z(4+9*pos)
-                    self.qc.z(7+9*pos)
+            self.qc.append(tdg_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
     def cs(self):
         self.t(pos=0)
@@ -1810,8 +1855,6 @@ class RotSurf9q:
 
 
         bitstring = list(counts.keys())
-        print(bitstring)
-        print(len(bitstring))
         bitstring = [i.replace(" ","") for i in bitstring]
         hmm = list(counts.values())
 
