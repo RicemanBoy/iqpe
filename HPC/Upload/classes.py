@@ -108,7 +108,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     self.qec(pos = 0)
                 # print("Unoptimized: ")
                 # gates(self.qc)
-                new_qc = transpile(self.qc, optimization_level=1)
+                self.qc = transpile(self.qc, optimization_level=1)
                 # print("Optimized: ")
                 # gates(new_qc)
 
@@ -965,37 +965,37 @@ class RotSurf9q:
         self.cnot(control = 0, target=1)
         self.h(pos=1)
 
-    # def s(self, pos: int):
-    #     anc = self.qc.num_qubits - 1
-    #     self.qc.reset(anc)
-
-    #     self.qc.h(anc)
-    #     #self.qc.append(h_ideal,[anc])
-    #     self.qc.s(anc)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         self.qc.cx(3+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(5+9*pos, anc)        
-    #     else:
-    #         self.qc.cx(1+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(7+9*pos, anc)  
-
-    #     self.qc.measure(anc, 0)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.z(3+9*pos)
-    #             self.qc.z(4+9*pos)
-    #             self.qc.z(5+9*pos)
-    #     else:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.z(1+9*pos)
-    #             self.qc.z(4+9*pos)
-    #             self.qc.z(7+9*pos)
-    
     def s(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.s(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(3+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(1+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(7+9*pos)
+    
+    def s_cheat(self, pos: int):
         S_alt = np.diag([1, 1j, 1j, 1, 1j, 1, 1, 1j])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1006,36 +1006,36 @@ class RotSurf9q:
         else:
             self.qc.append(s_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-    # def sdg(self, pos: int):
-    #     anc = self.qc.num_qubits - 1
-    #     self.qc.reset(anc)
-
-    #     self.qc.h(anc)
-    #     self.qc.sdg(anc)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         self.qc.cx(3+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(5+9*pos, anc)        
-    #     else:
-    #         self.qc.cx(1+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(7+9*pos, anc)  
-
-    #     self.qc.measure(anc, 0)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.z(3+9*pos)
-    #             self.qc.z(4+9*pos)
-    #             self.qc.z(5+9*pos)
-    #     else:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.z(1+9*pos)
-    #             self.qc.z(4+9*pos)
-    #             self.qc.z(7+9*pos)
-    
     def sdg(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.sdg(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(3+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(1+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(7+9*pos)
+    
+    def sdg_cheat(self, pos: int):
         Sdg_alt = np.diag([1, -1j, -1j, 1, -1j, 1, 1, -1j])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1046,55 +1046,55 @@ class RotSurf9q:
         else:
             self.qc.append(sdg_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-    # def t(self, pos: int):
-    #     anc = self.qc.num_qubits - 1
-    #     self.qc.reset(anc)
-
-    #     self.qc.h(anc)
-    #     #self.qc.append(h_ideal,[anc])
-    #     self.qc.t(anc)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         self.qc.cx(3+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(5+9*pos, anc)        
-    #     else:
-    #         self.qc.cx(1+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(7+9*pos, anc)  
-
-    #     self.qc.measure(anc, 0)
-    #     # if z_stab:
-    #     #     z_qec_ideal(qc, had=had, pos=pos)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.reset(anc)
-    #             self.qc.h(anc)
-    #             self.qc.s(anc)
-    #             self.qc.cx(3+9*pos, anc)
-    #             self.qc.cx(4+9*pos, anc)
-    #             self.qc.cx(5+9*pos, anc) 
-    #             self.qc.measure(anc, 0)
-    #             with self.qc.if_test((0,1)):
-    #                 self.qc.z(3+9*pos)
-    #                 self.qc.z(4+9*pos)
-    #                 self.qc.z(5+9*pos)
-    #     else:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.reset(anc)
-    #             self.qc.h(anc)
-    #             self.qc.s(anc)
-    #             self.qc.cx(1+9*pos, anc)
-    #             self.qc.cx(4+9*pos, anc)
-    #             self.qc.cx(7+9*pos, anc) 
-    #             self.qc.measure(anc, 0)
-    #             with self.qc.if_test((0,1)):
-    #                 self.qc.z(1+9*pos)
-    #                 self.qc.z(4+9*pos)
-    #                 self.qc.z(7+9*pos)
-    
     def t(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.t(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+        # if z_stab:
+        #     z_qec_ideal(qc, had=had, pos=pos)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.s(anc)
+                self.qc.cx(3+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(5+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(3+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.s(anc)
+                self.qc.cx(1+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(7+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(1+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(7+9*pos)
+    
+    def t_cheat(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1105,55 +1105,55 @@ class RotSurf9q:
         else:
             self.qc.append(t_timo, [1+9*pos, 4+9*pos, 7+9*pos])
 
-    # def tdg(self, pos: int):
-    #     anc = self.qc.num_qubits - 1
-    #     self.qc.reset(anc)
-
-    #     self.qc.h(anc)
-    #     #self.qc.append(h_ideal,[anc])
-    #     self.qc.tdg(anc)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         self.qc.cx(3+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(5+9*pos, anc)        
-    #     else:
-    #         self.qc.cx(1+9*pos, anc)
-    #         self.qc.cx(4+9*pos, anc)
-    #         self.qc.cx(7+9*pos, anc)  
-
-    #     self.qc.measure(anc, 0)
-    #     # if z_stab:
-    #     #     z_qec_ideal(qc, had=had, pos=pos)
-
-    #     if self.hadamards[pos]%2 == 0:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.reset(anc)
-    #             self.qc.h(anc)
-    #             self.qc.sdg(anc)
-    #             self.qc.cx(3+9*pos, anc)
-    #             self.qc.cx(4+9*pos, anc)
-    #             self.qc.cx(5+9*pos, anc) 
-    #             self.qc.measure(anc, 0)
-    #             with self.qc.if_test((0,1)):
-    #                 self.qc.z(3+9*pos)
-    #                 self.qc.z(4+9*pos)
-    #                 self.qc.z(5+9*pos)
-    #     else:
-    #         with self.qc.if_test((0,1)):
-    #             self.qc.reset(anc)
-    #             self.qc.h(anc)
-    #             self.qc.sdg(anc)
-    #             self.qc.cx(1+9*pos, anc)
-    #             self.qc.cx(4+9*pos, anc)
-    #             self.qc.cx(7+9*pos, anc) 
-    #             self.qc.measure(anc, 0)
-    #             with self.qc.if_test((0,1)):
-    #                 self.qc.z(1+9*pos)
-    #                 self.qc.z(4+9*pos)
-    #                 self.qc.z(7+9*pos)
-
     def tdg(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.tdg(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+        # if z_stab:
+        #     z_qec_ideal(qc, had=had, pos=pos)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.sdg(anc)
+                self.qc.cx(3+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(5+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(3+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.sdg(anc)
+                self.qc.cx(1+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(7+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(1+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(7+9*pos)
+
+    def tdg_cheat(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         Tdg_alt = np.conjugate(T_alt)
         #threshold = 1e-10
@@ -1189,15 +1189,15 @@ class RotSurf9q:
 
     def cu(self, Ugates: list, adjUgates: list):
         self.u2(0, Ugates)
-        if self.err:
-            self.qec(pos=0)
+        # if self.err:
+        #     self.qec(pos=0)
         self.u2(1, Ugates)
-        if self.err:
-            self.qec(pos=1)
+        # if self.err:
+        #     self.qec(pos=1)
         self.cnot(control=0, target=1)
         self.u2(1, adjUgates)
-        if self.err:
-            self.qec(pos=1)
+        # if self.err:
+        #     self.qec(pos=1)
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
@@ -1472,7 +1472,7 @@ class RotSurf9q:
                     with self.qc.if_test((3,0)):
                         self.qc.x(7+9*pos)
 
-    def qec(self, pos: int):
+    def qec_ft(self, pos: int):
         flags = ClassicalRegister(8)
         self.qc.add_register(flags)
         anc = self.qc.num_qubits - 1
