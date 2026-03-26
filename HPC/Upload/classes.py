@@ -140,8 +140,8 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
 
     return y, sigma
 
-def avg15_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
-    n = 15
+def avg14_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
+    n = 14
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
@@ -163,10 +163,10 @@ def avg15_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, p
             for t in range(iter):
                 if code == "steane":
                     self = Steane7q(2)
-                elif code == "rotsurf9":
-                    self = RotSurf9q(2)
                 else:
-                    self = RotSurf16q(2)
+                    self = RotSurf9q(2)
+                # else:
+                #     self = RotSurf16q(2)
                 self.err = qec
                 rots = [k*0.5 for k in rots]
 
@@ -192,7 +192,7 @@ def avg15_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, p
                 # gates(new_qc)
 
                 self.readout(pos=0, shots=1, p=noise)
-        
+
                 if self.zeros == 1:
                     bitstring += "0"
                 elif self.ones == 1:
@@ -207,7 +207,8 @@ def avg15_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, p
                 del self
             bitstring = bitstring[::-1]
             angle_bit = closest_bitstring(angle[o], iter)
-            
+            print("bitstring measured: ", bitstring)
+            print("Expected bitstring: ", angle_bit)
             if bitstring == angle_bit:
                 y += 1
 
@@ -1188,15 +1189,15 @@ class RotSurf9q:
 
     def cu(self, Ugates: list, adjUgates: list):
         self.u2(0, Ugates)
-        # if self.err:
-        #     self.qec(pos=0)
+        if self.err:
+            self.qec(pos=0)
         self.u2(1, Ugates)
-        # if self.err:
-        #     self.qec(pos=1)
+        if self.err:
+            self.qec(pos=1)
         self.cnot(control=0, target=1)
         self.u2(1, adjUgates)
-        # if self.err:
-        #     self.qec(pos=1)
+        if self.err:
+            self.qec(pos=1)
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
@@ -1936,8 +1937,8 @@ class RotSurf16q:
         self.hadamards = [0,0]
 
         qr = QuantumRegister(16*n+1, "q")
-        # cbit = ClassicalRegister(16,"c")
-        self.qc = QuantumCircuit(qr)
+        cbit = ClassicalRegister(16,"c")
+        self.qc = QuantumCircuit(qr, cbit)
         # for i in range(16*n):
         #     self.qc.id(i)
             #1st step
