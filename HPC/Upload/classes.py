@@ -861,7 +861,7 @@ class RotSurf9q:
 
         self.hadamards = [0,0]
 
-        qr = QuantumRegister(9*n+1, "q")
+        qr = QuantumRegister(9*n+3, "q")
         cbit = ClassicalRegister(9,"c")
         self.qc = QuantumCircuit(qr,cbit)
         for i in range(9*n):
@@ -1094,6 +1094,79 @@ class RotSurf9q:
                     self.qc.z(4+9*pos)
                     self.qc.z(7+9*pos)
     
+    def s_rep(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc), self.qc.reset(anc-1), self.qc.reset(anc-2)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, anc-1), self.qc.cx(anc, anc-2)
+        self.qc.s(anc-2)
+        
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc-1)
+            self.qc.cx(5+9*pos, anc-2)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc-1)
+            self.qc.cx(7+9*pos, anc-2)  
+                
+        self.qc.measure(anc, 0)
+        self.qc.measure(anc-1, 1)
+        self.qc.measure(anc-2, 2)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(3+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(5+9*pos)
+                        #self.qc.x(3+9*pos)
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(3+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(5+9*pos)
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        self.qc.z(3+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(5+9*pos)
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        self.qc.z(3+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(1+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(7+9*pos)
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(1+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(7+9*pos)
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        self.qc.z(1+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(7+9*pos)
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        self.qc.z(1+9*pos)
+                        self.qc.z(4+9*pos)
+                        self.qc.z(7+9*pos)
+
     def t_cheat(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         #threshold = 1e-10
@@ -1877,6 +1950,7 @@ class RotSurf9q:
                             bits[i] = 1
                             break
                 if bits[i] != 1 and bits[i] != 0:
+                    print("AHA")
                     bits[i] = "post"
         else:
             for i in range(len(bits)):
@@ -1936,7 +2010,7 @@ class RotSurf16q:
 
         self.hadamards = [0,0]
 
-        qr = QuantumRegister(16*n+1, "q")
+        qr = QuantumRegister(16*n+4, "q")
         cbit = ClassicalRegister(16,"c")
         self.qc = QuantumCircuit(qr, cbit)
         # for i in range(16*n):
@@ -2112,6 +2186,161 @@ class RotSurf16q:
             self.qc.append(S_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
             self.qc.append(S_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
+
+    def s_rep(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc), self.qc.reset(anc-1), self.qc.reset(anc-2), self.qc.reset(anc-3)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, anc-1), self.qc.cx(anc, anc-2), self.qc.cx(anc, anc-3)
+        self.qc.s(anc-3)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(0+16*pos, anc)
+            self.qc.cx(1+16*pos, anc)
+            self.qc.cx(2+16*pos, anc)
+            self.qc.cx(3+16*pos, anc)        
+        else:
+            self.qc.cx(0+16*pos, anc)
+            self.qc.cx(4+16*pos, anc)
+            self.qc.cx(8+16*pos, anc)
+            self.qc.cx(12+16*pos, anc)    
+
+        self.qc.measure(anc, 0)
+        self.qc.measure(anc-1, 1)
+        self.qc.measure(anc-2, 2)
+        self.qc.measure(anc-3, 3)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(1+16*pos)
+                            self.qc.z(2+16*pos)
+                            self.qc.z(3+16*pos)        
+        else:
+            with self.qc.if_test((0,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,0)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((0,0)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
+            with self.qc.if_test((1,1)):
+                with self.qc.if_test((1,0)):
+                    with self.qc.if_test((2,1)):
+                        with self.qc.if_test((3,1)):
+                            self.qc.z(0+16*pos)
+                            self.qc.z(4+16*pos)
+                            self.qc.z(8+16*pos)
+                            self.qc.z(12+16*pos) 
 
     # def sdg(self, pos: int):
     #     anc = self.qc.num_qubits - 1
