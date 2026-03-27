@@ -1127,6 +1127,7 @@ class RotSurf9q:
                 self.qc.z(1+9*pos)
                 self.qc.z(4+9*pos)
                 self.qc.z(7+9*pos)
+        #self.hadamards[pos] += 1
 
     def t_cheat(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
