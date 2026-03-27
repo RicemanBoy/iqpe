@@ -6,7 +6,7 @@ def gen_data(name):
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin("rotsurf9", 3, noise=r, qec=True,k=1)
+        ok, errr = avg15_coin("steane", 3, noise=r, qec=False,k=1)
         y.append(ok), err.append(errr)
         # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
@@ -14,4 +14,4 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("RotSurf_noPS_1qec{}.txt".format(name), data, delimiter=",")
+    np.savetxt("Steane_noPS{}.txt".format(name), data, delimiter=",")
