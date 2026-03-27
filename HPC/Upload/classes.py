@@ -862,7 +862,7 @@ class RotSurf9q:
         self.hadamards = [0,0]
 
         qr = QuantumRegister(9*n+4, "q")
-        cbit = ClassicalRegister(9,"c")
+        cbit = ClassicalRegister(1,"c")
         self.qc = QuantumCircuit(qr,cbit)
         for i in range(9*n):
             self.qc.id(i)
@@ -1890,10 +1890,12 @@ class RotSurf9q:
 
 
         bitstring = list(counts.keys())
+        print(bitstring)
         bitstring = [i.replace(" ","") for i in bitstring]
         hmm = list(counts.values())
 
         bits = [i[:9] for i in bitstring]
+        print(bits)
         flags = [i[9:len(bitstring[0])-9] for i in bitstring]
 
         if self.classical_ec:
