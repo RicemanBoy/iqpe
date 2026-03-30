@@ -361,8 +361,8 @@ class Steane7q:
         self.h(pos=pos)
         self.sdg(pos=pos)
         self.h(pos=pos)
-        state_inj = ClassicalRegister(1)
-        self.qc.add_register(state_inj)
+        # state_inj = ClassicalRegister(1)
+        # self.qc.add_register(state_inj)
 
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
@@ -400,7 +400,7 @@ class Steane7q:
             self.qc.cz(ancc,6-i+2*7)
             self.qc.ry(np.pi/4,6-i+2*7)
         self.qc.append(h_ideal,[ancc])
-        self.qc.measure(ancc, state_inj[0])
+        # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
         self.sdg(pos=pos)
         for i in range(7):
@@ -444,8 +444,8 @@ class Steane7q:
         self.h(pos=pos)
         self.sdg(pos=pos)
         self.h(pos=pos)
-        state_inj = ClassicalRegister(1)
-        self.qc.add_register(state_inj)
+        # state_inj = ClassicalRegister(1)
+        # self.qc.add_register(state_inj)
 
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
@@ -483,7 +483,7 @@ class Steane7q:
             self.qc.cz(ancc,6-i+2*7)
             self.qc.ry(np.pi/4,6-i+2*7)
         self.qc.append(h_ideal,[ancc])
-        self.qc.measure(ancc, state_inj[0])
+        # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
         self.sdg(pos=pos)
         for i in range(7):
@@ -497,12 +497,12 @@ class Steane7q:
             self.qc.cx(i+2*7, anc-1)
         self.qc.measure(anc-1,0)
         #################################Apply conditioned Ry(pi/2) onto the Target###########################
-        for i in range(7):
-            with self.qc.if_test((0,1)):
-                self.qc.h(i+7*pos)
         for i in range(3):
-            with self.qc.if_test((0,1)):
+            with self.qc.if_test((0,0)):
                 self.qc.x(i+7*pos)
+        for i in range(7):
+            with self.qc.if_test((0,0)):
+                self.qc.h(i+7*pos)
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
@@ -751,6 +751,8 @@ class Steane7q:
         for i in range(7):
             self.qc.id(i+7*pos)
             self.qc.measure(i+7*pos,read[6-i])
+
+        self.qc = transpile(self.qc, optimization_level=1)
 
         sim = AerSimulator()
         
