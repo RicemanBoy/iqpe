@@ -346,15 +346,19 @@ class Steane7q:
 
     def t_ghz(self, pos: int):
         anc = self.qc.num_qubits - 1
-        self.qc.reset(anc), self.qc.reset(anc-1), self.qc.reset(anc-2), self.qc.reset(anc-3)
+        self.qc.reset(anc)
+        self.qc.reset(anc-1)
+        self.qc.reset(anc-2)
+        self.qc.reset(anc-3)
 
         self.qc.h(anc)
-        self.qc.cx(anc, anc-1), self.qc.cx(anc, anc-2)
+        self.qc.cx(anc, anc-1)
+        self.qc.cx(anc, anc-2)
         self.qc.t(anc)
         
-        self.qc.cx(0+9*pos, anc)
-        self.qc.cx(1+9*pos, anc-1)
-        self.qc.cx(2+9*pos, anc-2)        
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(1+7*pos, anc-1)
+        self.qc.cx(2+7*pos, anc-2)        
         
         self.qc.cx(anc, anc-3)
         self.qc.cx(anc-1, anc-3)
