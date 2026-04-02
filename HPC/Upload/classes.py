@@ -555,8 +555,12 @@ class Steane7q:
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
+                if self.err:
+                    self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
+                if self.err:
+                    self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -564,15 +568,15 @@ class Steane7q:
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
-        if self.err:
-            self.qec(pos = 0)
+        # if self.err:
+        #     self.qec(pos = 0)
         self.u2(1, gate=gate)
-        if self.err:
-            self.qec(pos = 1)
+        # if self.err:
+        #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
         self.u2(1, gate=adjgate)
-        if self.err:
-            self.qec(pos = 1)
+        # if self.err:
+        #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
