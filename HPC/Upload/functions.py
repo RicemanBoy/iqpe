@@ -1,7 +1,7 @@
 from classes import *
 
 def gen_data(name):
-    p = np.linspace(0,0.001,10)[5]
+    p = [np.linspace(0,0.001,10)[5]]
     y, y_qec = [],[]
     err, err_qec = [], []
 
