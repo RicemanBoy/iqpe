@@ -283,6 +283,7 @@ class Steane7q:
         self.preselected = 0
         self.post = 0
         self.err = False
+        self.qec_counter = 0
 
         self.classical_ec = False
         self.postselection = False
@@ -565,11 +566,11 @@ class Steane7q:
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
-                if self.err:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
@@ -590,6 +591,7 @@ class Steane7q:
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
+        self.qec_counter += 1
         flags = ClassicalRegister(6)
         self.qc.add_register(flags)
         anc = self.qc.num_qubits - 1
