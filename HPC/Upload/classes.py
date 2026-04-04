@@ -590,7 +590,7 @@ class Steane7q:
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
-    def qec(self, pos: int):
+    def qec_ft(self, pos: int):
         self.qec_counter += 1
         flags = ClassicalRegister(6)
         self.qc.add_register(flags)
@@ -750,7 +750,149 @@ class Steane7q:
             with self.qc.if_test((self.qecc[4],1)):
                 with self.qc.if_test((self.qecc[5],1)):
                     self.qc.z(6+7*pos)
-        return True
+
+    def qec(self, pos: int):
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        ##################################Z-Stabilizers##########################################
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(2+7*pos, anc)
+        self.qc.cx(4+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[2])
+        self.qc.reset(anc)
+        self.qc.id(anc)
+
+        self.qc.cx(1+7*pos, anc)
+        self.qc.cx(2+7*pos, anc)
+        self.qc.cx(5+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[1])
+        self.qc.reset(anc)
+        self.qc.id(anc)
+
+        self.qc.cx(3+7*pos, anc)
+        self.qc.cx(4+7*pos, anc)
+        self.qc.cx(5+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[0])
+        self.qc.reset(anc)
+        self.qc.id(anc)
+        ##################################X-Stabilizers##############################################
+        self.qc.h(anc)
+        self.qc.cx(anc, 0+7*pos)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[5])
+        self.qc.reset(anc)
+        self.qc.id(anc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 1+7*pos)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[4])
+        self.qc.reset(anc)
+        self.qc.id(anc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 3+7*pos)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[3])
+        self.qc.reset(anc)
+        ##################################Bitflip Error correction##############################################
+        
+        with self.qc.if_test((self.qecc[0],0)):             #qbit 0
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(0+7*pos)
+
+        with self.qc.if_test((self.qecc[0],0)):             #qbit 1
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(1+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],0)):             #qbit 2
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(2+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):             #qbit 3
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(3+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):             #qbit 4
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(4+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):             #qbit 5
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(5+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):             #qbit 6
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(6+7*pos)
+
+        ##################################Phaseflip Error correction##############################################
+        
+        with self.qc.if_test((self.qecc[3],0)):             #qbit 0
+            with self.qc.if_test((self.qecc[4],0)):
+                with self.qc.if_test((self.qecc[5],1)):
+                    self.qc.z(0+7*pos)
+
+        with self.qc.if_test((self.qecc[3],0)):             #qbit 1
+            with self.qc.if_test((self.qecc[4],1)):
+                with self.qc.if_test((self.qecc[5],0)):
+                    self.qc.z(1+7*pos)
+        
+        with self.qc.if_test((self.qecc[3],0)):             #qbit 2
+            with self.qc.if_test((self.qecc[4],1)):
+                with self.qc.if_test((self.qecc[5],1)):
+                    self.qc.z(2+7*pos)
+        
+        with self.qc.if_test((self.qecc[3],1)):             #qbit 3
+            with self.qc.if_test((self.qecc[4],0)):
+                with self.qc.if_test((self.qecc[5],0)):
+                    self.qc.z(3+7*pos)
+        
+        with self.qc.if_test((self.qecc[3],1)):             #qbit 4
+            with self.qc.if_test((self.qecc[4],0)):
+                with self.qc.if_test((self.qecc[5],1)):
+                    self.qc.z(4+7*pos)
+        
+        with self.qc.if_test((self.qecc[3],1)):             #qbit 5
+            with self.qc.if_test((self.qecc[4],1)):
+                with self.qc.if_test((self.qecc[5],0)):
+                    self.qc.z(5+7*pos)
+        
+        with self.qc.if_test((self.qecc[3],1)):             #qbit 6
+            with self.qc.if_test((self.qecc[4],1)):
+                with self.qc.if_test((self.qecc[5],1)):
+                    self.qc.z(6+7*pos)
 
     def err_mitigation(self, setting: bool):
         self.postselection = setting
