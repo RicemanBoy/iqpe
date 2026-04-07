@@ -14,4 +14,4 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("Steane_noPS_qec3_noflags_5{}.txt".format(name), data, delimiter=",")
+    np.savetxt("Steane_noPS_qec4_noflags_5{}.txt".format(name), data, delimiter=",")
