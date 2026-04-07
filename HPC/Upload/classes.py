@@ -352,39 +352,38 @@ class Steane7q:
         self.qc.reset(anc-2)
         self.qc.reset(anc-3)
 
-        # self.qc.h(anc)
-        # self.qc.t(anc)
-        # self.qc.cx(anc, anc-1)
-        # self.qc.cx(anc, anc-2)
+        self.qc.h(anc)
+        self.qc.t(anc)
+        self.qc.cx(anc, anc-1)
+        self.qc.cx(anc, anc-2)
         
         self.qc.cx(0+7*pos, anc)
-        self.qc.cx(1+7*pos, anc)
-        self.qc.cx(2+7*pos, anc)          
+        self.qc.cx(1+7*pos, anc-1)
+        self.qc.cx(2+7*pos, anc-2)          
 
-        # self.qc.cx(anc, anc-3)
-        # self.qc.cx(anc-1, anc-3)
-        # self.qc.cx(anc-2, anc-3)
+        self.qc.cx(anc, anc-3)
+        self.qc.cx(anc-1, anc-3)
+        self.qc.cx(anc-2, anc-3)
 
-        flags = ClassicalRegister(4)
+        flags = ClassicalRegister(1)
         self.qc.add_register(flags)
+        self.qc.measure(anc-3, flags[0])
 
-        self.qc.measure(anc, flags[0])
-        # # self.qc.measure(anc-2, flags[1])
-        # # self.qc.measure(anc-1, flags[2])
-        # # self.qc.measure(anc, flags[3])
+        hmm = ClassicalRegister(3)
+        self.qc.add_register(hmm)
 
-        # # self.qc.cx(0+7*pos, anc)
-        # # self.qc.cx(1+7*pos, anc-1)
-        # # self.qc.cx(2+7*pos, anc-2) 
+        self.qc.measure(anc-2, hmm[0])
+        self.qc.measure(anc-1, hmm[1])
+        self.qc.measure(anc-0, hmm[2])
 
         with self.qc.if_test((flags[0],1)):
-            self.qc.h(0+7*pos)
-            self.qc.h(1+7*pos)
-            self.qc.h(3+7*pos)
-            self.qc.h(6+7*pos)
-            self.qc.h(2+7*pos)
-            self.qc.h(4+7*pos)
-            self.qc.h(5+7*pos)
+            self.qc.s(0+7*pos)
+            self.qc.s(1+7*pos)
+            self.qc.s(3+7*pos)
+            self.qc.s(6+7*pos)
+            self.qc.sdg(2+7*pos)
+            self.qc.sdg(4+7*pos)
+            self.qc.sdg(5+7*pos)
 
     def cz(self, control: int, target: int):
         self.h(pos=control)
@@ -950,9 +949,7 @@ class Steane7q:
         result = job.result()
         counts = result.get_counts()
 
-        #print(counts)
-
-        #print(counts)
+        print(counts)
 
         bitstring = list(counts.keys())
         bitstring = [i.replace(" ","") for i in bitstring]
@@ -966,7 +963,7 @@ class Steane7q:
         postprocess = [i[7:allcbits-10] for i in bitstring]                                 #Flags during qec to make it fault tolerant, if at least one strikes, need to discard shot
 
         #print(bits)
-        #print(postprocess)
+        # print(postprocess)
 
         for i in range(len(pre)):
             if pre[i].count("1") != 0:
@@ -991,6 +988,7 @@ class Steane7q:
                         bits[i] = 1
                         break
             if bits[i] != 1 and bits[i] != 0 and bits[i] != "pre":
+                print("Wrong bitstring: ", bits[i])
                 if self.postselection:
                     bits[i] = "post"
                 else:
@@ -999,10 +997,10 @@ class Steane7q:
                     else:
                         bits[i] = 1
 
-        for i in range(len(postprocess)):
-            if postprocess[i].count("1") != 0:
-                if bits[i] != "pre" and bits[i] != "post":
-                    bits[i] = "post"
+        # for i in range(len(postprocess)):
+        #     if postprocess[i].count("1") != 0:
+        #         if bits[i] != "pre" and bits[i] != "post":
+        #             bits[i] = "post"
 
         #print(bits)
         ones = 0
@@ -1285,41 +1283,6 @@ class RotSurf9q:
                     self.qc.z(4+9*pos)
                     self.qc.z(7+9*pos)
     
-    def s_ghz(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc), self.qc.reset(anc-1), self.qc.reset(anc-2), self.qc.reset(anc-3)
-
-        self.qc.h(anc)
-        self.qc.cx(anc, anc-1), self.qc.cx(anc, anc-2)
-        self.qc.s(anc-2)
-        
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(3+9*pos, anc)
-            self.qc.cx(4+9*pos, anc-1)
-            self.qc.cx(5+9*pos, anc-2)        
-        else:
-            self.qc.cx(1+9*pos, anc)
-            self.qc.cx(4+9*pos, anc-1)
-            self.qc.cx(7+9*pos, anc-2)  
-        
-        self.qc.cx(anc, anc-3)
-        self.qc.cx(anc-1, anc-3)
-        self.qc.cx(anc-2, anc-3)
-
-        self.qc.measure(anc-3, 0)
-
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                self.qc.z(3+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(5+9*pos)
-        else:
-            with self.qc.if_test((0,1)):
-                self.qc.z(1+9*pos)
-                self.qc.z(4+9*pos)
-                self.qc.z(7+9*pos)
-        #self.hadamards[pos] += 1
-
     def t_cheat(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         #threshold = 1e-10
@@ -1698,7 +1661,7 @@ class RotSurf9q:
                     with self.qc.if_test((3,0)):
                         self.qc.x(7+9*pos)
 
-    def qec_ft(self, pos: int):
+    def qec_flags(self, pos: int):
         flags = ClassicalRegister(8)
         self.qc.add_register(flags)
         anc = self.qc.num_qubits - 1
@@ -2341,161 +2304,6 @@ class RotSurf16q:
             self.qc.append(S_timo, [0+16*pos, 1+16*pos, 2+16*pos, 3+16*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
             self.qc.append(S_timo, [0+16*pos, 4+16*pos, 8+16*pos, 12+16*pos])
-
-    def s_rep(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        self.qc.reset(anc), self.qc.reset(anc-1), self.qc.reset(anc-2), self.qc.reset(anc-3)
-
-        self.qc.h(anc)
-        self.qc.cx(anc, anc-1), self.qc.cx(anc, anc-2), self.qc.cx(anc, anc-3)
-        self.qc.s(anc-3)
-
-        if self.hadamards[pos]%2 == 0:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(1+16*pos, anc)
-            self.qc.cx(2+16*pos, anc)
-            self.qc.cx(3+16*pos, anc)        
-        else:
-            self.qc.cx(0+16*pos, anc)
-            self.qc.cx(4+16*pos, anc)
-            self.qc.cx(8+16*pos, anc)
-            self.qc.cx(12+16*pos, anc)    
-
-        self.qc.measure(anc, 0)
-        self.qc.measure(anc-1, 1)
-        self.qc.measure(anc-2, 2)
-        self.qc.measure(anc-3, 3)
-
-        if self.hadamards[pos]%2 == 0:
-            with self.qc.if_test((0,1)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(1+16*pos)
-                            self.qc.z(2+16*pos)
-                            self.qc.z(3+16*pos)        
-        else:
-            with self.qc.if_test((0,1)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,0)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((0,0)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,1)):
-                    with self.qc.if_test((2,0)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((1,0)):
-                    with self.qc.if_test((2,1)):
-                        with self.qc.if_test((3,1)):
-                            self.qc.z(0+16*pos)
-                            self.qc.z(4+16*pos)
-                            self.qc.z(8+16*pos)
-                            self.qc.z(12+16*pos) 
 
     # def sdg(self, pos: int):
     #     anc = self.qc.num_qubits - 1
