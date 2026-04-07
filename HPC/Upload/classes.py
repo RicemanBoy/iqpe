@@ -110,8 +110,8 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                 # gates(self.qc)
                 self.qc = transpile(self.qc, optimization_level=1)
                 # print("Optimized: ")
-                # gates(new_qc)
-
+                # gates(self.qc)
+                # print(self.qec_counter)
                 self.readout(pos=0, shots=1, p=noise)
         
                 if self.zeros == 1:
