@@ -1060,8 +1060,8 @@ class RotSurf9q:
 
         self.hadamards = [0,0]
 
-        qr = QuantumRegister(9*n+4, "q")
-        cbit = ClassicalRegister(1,"c")
+        qr = QuantumRegister(9*n+2, "q")
+        cbit = ClassicalRegister(4,"c")
         self.qc = QuantumCircuit(qr,cbit)
         for i in range(9*n):
             self.qc.id(i)
@@ -1194,7 +1194,7 @@ class RotSurf9q:
                 self.qc.z(4+9*pos)
                 self.qc.z(7+9*pos)
     
-    def s_cheat(self, pos: int):
+    def s_timo(self, pos: int):
         S_alt = np.diag([1, 1j, 1j, 1, 1j, 1, 1, 1j])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1204,6 +1204,20 @@ class RotSurf9q:
             self.qc.append(s_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
         else:
             self.qc.append(s_timo, [1+9*pos, 4+9*pos, 7+9*pos])
+
+    def s_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.s(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.s(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
 
     def sdg(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -1235,6 +1249,20 @@ class RotSurf9q:
                 self.qc.z(7+9*pos)
     
     def sdg_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.sdg(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.sdg(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def sdg_timo(self, pos: int):
         Sdg_alt = np.diag([1, -1j, -1j, 1, -1j, 1, 1, -1j])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1294,6 +1322,20 @@ class RotSurf9q:
                     self.qc.z(7+9*pos)
     
     def t_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.t(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.t(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def t_timo(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         #threshold = 1e-10
         #T_alt[np.abs(T_alt) < threshold] = np.nan
@@ -1353,6 +1395,20 @@ class RotSurf9q:
                     self.qc.z(7+9*pos)
 
     def tdg_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.tdg(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.tdg(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def tdg_timo(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         Tdg_alt = np.conjugate(T_alt)
         #threshold = 1e-10
@@ -2055,13 +2111,13 @@ class RotSurf9q:
 
 
         bitstring = list(counts.keys())
-        print(bitstring)
+        # print(bitstring)
         bitstring = [i.replace(" ","") for i in bitstring]
         hmm = list(counts.values())
 
         bits = [i[:9] for i in bitstring]
-        print(bits)
-        flags = [i[9:len(bitstring[0])-9] for i in bitstring]
+        # print(bits)
+        flags = [i[9:len(bitstring[0])-4] for i in bitstring]
 
         if self.classical_ec:
             bits = self.__classical_error_correction__(bits)
@@ -2078,7 +2134,7 @@ class RotSurf9q:
                             bits[i] = 1
                             break
                 if bits[i] != 1 and bits[i] != 0:
-                    print("AHA")
+                    # print("AHA")
                     bits[i] = "post"
         else:
             for i in range(len(bits)):
@@ -2099,7 +2155,7 @@ class RotSurf9q:
 
         for i in range(len(flags)):
             if flags[i].count("1") != 0:
-                print("AHAAA")
+                # print("AHAAA")
                 bits[i] = "post"
 
         ones = 0
