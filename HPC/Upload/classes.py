@@ -575,11 +575,11 @@ class Steane7q:
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%8==0:
                     self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%8==0:
                     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
