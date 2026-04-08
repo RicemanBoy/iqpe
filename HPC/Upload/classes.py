@@ -1057,6 +1057,7 @@ class RotSurf9q:
         self.err = False
         self.postselection = False
         self.classical_ec = False
+        self.qec_counter = 0
 
         self.hadamards = [0,0]
 
@@ -1430,13 +1431,21 @@ class RotSurf9q:
     def u2(self, pos: int, gate: list):
         for i in gate:
             if i == "s":
-                self.s(pos=pos)
+                self.s_cheat(pos=pos)
+                # if self.err == True and self.qec_counter%10==0:
+                #     self.qec(pos=pos)
             if i == "sdg":
-                 self.sdg(pos=pos)
+                 self.sdg_cheat(pos=pos)
+                #  if self.err == True and self.qec_counter%10==0:
+                #     self.qec(pos=pos)
             if i == "t":
-                 self.t(pos=pos)
+                 self.t_cheat(pos=pos)
+                #  if self.err == True and self.qec_counter%10==0:
+                #     self.qec(pos=pos)
             if i == "tdg":
-                 self.tdg(pos=pos)
+                 self.tdg_cheat(pos=pos)
+                #  if self.err == True and self.qec_counter%10==0:
+                #     self.qec(pos=pos)
             if i == "h":
                  self.h(pos=pos)
             if i == "z":
@@ -1456,6 +1465,7 @@ class RotSurf9q:
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
+        self.qec_counter += 1
         anc = self.qc.num_qubits - 1
         if self.hadamards[pos]%2==1:
             #X3 X6 Stabilizer:
