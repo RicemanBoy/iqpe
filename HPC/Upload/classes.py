@@ -288,7 +288,7 @@ class Steane7q:
         self.classical_ec = False
         self.postselection = False
 
-        qr = QuantumRegister(7*(n+magic)+4,"q")
+        qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
         
         self.qc = QuantumCircuit(qr, cbits)
@@ -369,12 +369,12 @@ class Steane7q:
         self.qc.add_register(flags)
         self.qc.measure(anc-3, flags[0])
 
-        hmm = ClassicalRegister(3)
-        self.qc.add_register(hmm)
+        # hmm = ClassicalRegister(3)
+        # self.qc.add_register(hmm)
 
-        self.qc.measure(anc-2, hmm[0])
-        self.qc.measure(anc-1, hmm[1])
-        self.qc.measure(anc-0, hmm[2])
+        # self.qc.measure(anc-2, hmm[0])
+        # self.qc.measure(anc-1, hmm[1])
+        # self.qc.measure(anc-0, hmm[2])
 
         with self.qc.if_test((flags[0],1)):
             self.qc.s(0+7*pos)
@@ -384,6 +384,16 @@ class Steane7q:
             self.qc.sdg(2+7*pos)
             self.qc.sdg(4+7*pos)
             self.qc.sdg(5+7*pos)
+        
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(1+7*pos, anc-1)
+        self.qc.cx(2+7*pos, anc-2) 
+
+        self.qc.cx(anc-1, anc)
+        self.qc.cx(anc-1, anc-2)
+        self.qc.cx(0+7*pos, anc-1)
+        self.qc.cx(1+7*pos, anc-1)
+        self.qc.cx(2+7*pos, anc-1) 
 
     def cz(self, control: int, target: int):
         self.h(pos=control)
