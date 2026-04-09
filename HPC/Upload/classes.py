@@ -954,7 +954,7 @@ class Steane7q:
         result = job.result()
         counts = result.get_counts()
 
-        print(counts)
+        #print(counts)
 
         bitstring = list(counts.keys())
         bitstring = [i.replace(" ","") for i in bitstring]

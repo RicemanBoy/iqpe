@@ -1,7 +1,7 @@
 from classes import *
 
 def gen_data(name):
-    p = [np.linspace(0,0.001,10)[5]]
+    p = np.linspace(0,0.001,10)[6:10]
     y, y_qec = [],[]
     err, err_qec = [], []
 
@@ -14,4 +14,4 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("Steane_noPS_qec8_noflags_5{}.txt".format(name), data, delimiter=",")
+    np.savetxt("Steane_noPS_qec8_noflags_6_9{}.txt".format(name), data, delimiter=",")
