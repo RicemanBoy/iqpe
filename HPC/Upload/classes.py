@@ -50,6 +50,19 @@ def convert(bin: str):                  #konvertiert den bitstring in decimal, e
             n += 1/2**(i+1)
     return n
 
+def inv_covert(num: int, precision: int):
+    max = sum(2**i for i in range(precision))
+    assert num <= max, "Precision is not sufficient for this integer!"
+    bitstring = ""
+    for i in range(precision):
+        if num >= 2**(precision-i-1):
+            num = num - 2**(precision-i-1)
+            bitstring += "1"
+        else:
+            bitstring += "0"
+    
+    return bitstring
+
 def closest_bitstring(num: float, depth: int):
     bitstring = ""
     
