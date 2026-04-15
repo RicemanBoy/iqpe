@@ -243,7 +243,7 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
             b.append(list(map(str, line.strip().split(","))))
     
     bitstring = ""
-    self = RotSurf9q(2)
+    self = RotSurf16q(2)
     self.err = qec
     rots = [k*0.5 for k in rots]
 
@@ -283,6 +283,74 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
 
     # print(dict(new_qc.count_ops()))
     # gates(new_qc)
+
+def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):       #each iteration own circuit
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                while True:
+                    if code == "steane":
+                        self = Steane7q(2, magic=0)
+                    elif code == "rotsurf9":
+                        self = RotSurf9q(2)
+                    else:
+                        self = RotSurf16q(2)
+                    self.err = qec
+                    self.x(pos=1)
+                    self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu(a[o], b[o])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.nFTtdg(pos=0)
+                    self.h(pos=0)
+                    if self.err:
+                        self.qec(pos = 0)
+                    self.qc = transpile(self.qc, optimization_level=1)
+                    self.readout(pos=0, shots=1, p=noise)
+
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+            bitstring = bitstring[::-1]
+            print(bitstring)
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
 
 # def decoding(counts: dict):
 
@@ -485,6 +553,32 @@ class Steane7q:
         if self.err:
             self.qec(pos=pos)
 
+    def nFTt(self,pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.t(anc)
+
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(1+7*pos, anc)
+        self.qc.cx(2+7*pos, anc)        
+
+        self.qc.measure(anc, 0)
+
+        with self.qc.if_test((0,1)):
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.s(anc)
+            self.qc.cx(0+7*pos, anc)
+            self.qc.cx(1+7*pos, anc)
+            self.qc.cx(2+7*pos, anc) 
+            self.qc.measure(anc, 0)
+            with self.qc.if_test((0,1)):
+                self.qc.z(0+7*pos)
+                self.qc.z(1+7*pos)
+                self.qc.z(2+7*pos)
+
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
         self.qc.cx(1+7*pos, 2+7*pos)
@@ -568,6 +662,32 @@ class Steane7q:
         if self.err:
             self.qec(pos=pos)
 
+    def nFTtdg(self,pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.tdg(anc)
+
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(1+7*pos, anc)
+        self.qc.cx(2+7*pos, anc)        
+
+        self.qc.measure(anc, 0)
+
+        with self.qc.if_test((0,1)):
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.sdg(anc)
+            self.qc.cx(0+7*pos, anc)
+            self.qc.cx(1+7*pos, anc)
+            self.qc.cx(2+7*pos, anc) 
+            self.qc.measure(anc, 0)
+            with self.qc.if_test((0,1)):
+                self.qc.z(0+7*pos)
+                self.qc.z(1+7*pos)
+                self.qc.z(2+7*pos)
+
     def cs(self, control: int, target: int):
         self.t(pos=control)
         self.t(pos=target)
@@ -582,13 +702,13 @@ class Steane7q:
             if i == "sdg":
                 self.sdg(pos=pos)
             if i == "t":
-                self.t(pos=pos)
-                if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                self.nFTt(pos=pos)
+                # if self.err and self.qec_counter%8==0:
+                #     self.qec(pos = pos)
             if i == "tdg":
-                self.tdg(pos=pos)
-                if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                self.nFTtdg(pos=pos)
+                # if self.err and self.qec_counter%8==0:
+                #     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -596,11 +716,11 @@ class Steane7q:
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
-        # if self.err:
-        #     self.qec(pos = 0)
+        if self.err:
+            self.qec(pos = 0)
         self.u2(1, gate=gate)
-        # if self.err:
-        #     self.qec(pos = 1)
+        if self.err:
+            self.qec(pos = 1)
         self.cnot(control=0, target=1)
         self.u2(1, gate=adjgate)
         # if self.err:
@@ -1006,7 +1126,7 @@ class Steane7q:
                         bits[i] = 1
                         break
             if bits[i] != 1 and bits[i] != 0 and bits[i] != "pre":
-                print("Wrong bitstring: ", bits[i])
+                # print("Wrong bitstring: ", bits[i])
                 if self.postselection:
                     bits[i] = "post"
                 else:
@@ -1331,16 +1451,30 @@ class RotSurf9q:
                     self.qc.z(7+9*pos)
     
     def t_cheat(self, pos: int):
+            if self.hadamards[pos]%2==0:
+                self.qc.cx(9*pos+3, 9*pos+5)
+                self.qc.cx(9*pos+4, 9*pos+5)
+                self.qc.t(9*pos+5)
+                self.qc.cx(9*pos+3, 9*pos+5)
+                self.qc.cx(9*pos+4, 9*pos+5)
+            else:
+                self.qc.cx(9*pos+1, 9*pos+7)
+                self.qc.cx(9*pos+4, 9*pos+7)
+                self.qc.t(9*pos+7)
+                self.qc.cx(9*pos+1, 9*pos+7)
+                self.qc.cx(9*pos+4, 9*pos+7)
+
+    def rz_cheat(self, angle: float, pos: int):
         if self.hadamards[pos]%2==0:
             self.qc.cx(9*pos+3, 9*pos+5)
             self.qc.cx(9*pos+4, 9*pos+5)
-            self.qc.t(9*pos+5)
+            self.qc.rz(angle, 9*pos+5)
             self.qc.cx(9*pos+3, 9*pos+5)
             self.qc.cx(9*pos+4, 9*pos+5)
         else:
             self.qc.cx(9*pos+1, 9*pos+7)
             self.qc.cx(9*pos+4, 9*pos+7)
-            self.qc.t(9*pos+7)
+            self.qc.rz(angle, 9*pos+7)
             self.qc.cx(9*pos+1, 9*pos+7)
             self.qc.cx(9*pos+4, 9*pos+7)
 
@@ -2212,8 +2346,8 @@ class RotSurf16q:
 
         self.hadamards = [0,0]
 
-        qr = QuantumRegister(16*n+4, "q")
-        cbit = ClassicalRegister(16,"c")
+        qr = QuantumRegister(16*n, "q")
+        cbit = ClassicalRegister(0,"c")
         self.qc = QuantumCircuit(qr, cbit)
         # for i in range(16*n):
         #     self.qc.id(i)
