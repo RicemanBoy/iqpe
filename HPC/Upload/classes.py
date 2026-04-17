@@ -1573,21 +1573,21 @@ class RotSurf9q:
     def u2(self, pos: int, gate: list):
         for i in gate:
             if i == "s":
+                # if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
                 self.s_cheat(pos=pos)
-                # if self.err == True and self.qec_counter%10==0:
-                #     self.qec(pos=pos)
             if i == "sdg":
+                #  if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
                  self.sdg_cheat(pos=pos)
-                #  if self.err == True and self.qec_counter%10==0:
-                #     self.qec(pos=pos)
             if i == "t":
+                #  if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
                  self.t_cheat(pos=pos)
-                #  if self.err == True and self.qec_counter%10==0:
-                #     self.qec(pos=pos)
             if i == "tdg":
+                #  if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
                  self.tdg_cheat(pos=pos)
-                #  if self.err == True and self.qec_counter%10==0:
-                #     self.qec(pos=pos)
             if i == "h":
                  self.h(pos=pos)
             if i == "z":
@@ -1817,6 +1817,135 @@ class RotSurf9q:
 
         ###########################################################################################################
 
+            #Z3 Z6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z0 Z1 Z3 Z4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z4 Z5 Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z2 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.x(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.x(3+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((2,0)):             #2
+                with self.qc.if_test((3,1)):
+                    self.qc.x(2+9*pos)
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    self.qc.x(5+9*pos)
+            
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(7+9*pos)
+
+    def qec_zstab(self, pos: int):
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        if self.hadamards[pos]%2==1:
+            #Z0 Z1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z1 Z2 Z4 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z3 Z4 Z6 Z7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):
+                    self.qc.x(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.x(1+9*pos)
+            
+            with self.qc.if_test((3,1)):             #8
+                with self.qc.if_test((2,0)):
+                    self.qc.x(8+9*pos)
+            
+            with self.qc.if_test((3,1)):             #7
+                with self.qc.if_test((2,1)):
+                    self.qc.x(7+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(2+9*pos)
+            
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(3+9*pos)
+
+        else:
             #Z3 Z6 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(3+9*pos, anc)
