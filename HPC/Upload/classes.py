@@ -1492,6 +1492,28 @@ class RotSurf9q:
             self.qc.cx(9*pos+5, 9*pos+3)
             self.qc.cx(9*pos+5, 9*pos+4)
 
+    def ry_cheat(self, angle: float, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.sdg(9*pos+3), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+5)
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.ry(angle, 9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.qc.s(9*pos+3), self.qc.s(9*pos+4), self.qc.s(9*pos+5)
+        else:
+            self.qc.sdg(9*pos+1), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+7)
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.ry(angle, 9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.qc.s(9*pos+1), self.qc.s(9*pos+4), self.qc.s(9*pos+7)
+
     def t_timo(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
         #threshold = 1e-10
