@@ -76,6 +76,8 @@ def closest_bitstring(num: float, depth: int):
     return bitstring
 
 def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
+    assert code in ["steane", "rotsurf9", "rotsurf16"], "Code not supported! Choose between 'steane', 'rotsurf9' and 'rotsurf16'."
+    
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
@@ -100,7 +102,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     self = Steane7q(2)
                 elif code == "rotsurf9":
                     self = RotSurf9q(2)
-                else:
+                elif code == "rotsurf16":
                     self = RotSurf16q(2)
                 self.err = qec
                 rots = [k*0.5 for k in rots]
@@ -133,6 +135,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     bitstring += "1"
                     rots.append(0.5)
                 else:
+                    print("Error")
                     if np.random.rand() < 0.5:
                         bitstring += "0"
                     else:
@@ -579,6 +582,27 @@ class Steane7q:
                 self.qc.z(1+7*pos)
                 self.qc.z(2+7*pos)
 
+    def rz_cheat(self, angle: float, pos: int):
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+        self.qc.rz(angle, 2+7*pos)
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+    
+    def rx_cheat(self, angle: float, pos: int):
+        self.qc.cx(2+7*pos, 1+7*pos)
+        self.qc.cx(2+7*pos, 0+7*pos)
+        self.qc.rx(angle, 2+7*pos)
+        self.qc.cx(2+7*pos, 0+7*pos)
+        self.qc.cx(2+7*pos, 1+7*pos)
+
+    def ry_cheat(self, angle: float, pos: int):
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+        self.qc.ry(angle, 2+7*pos)
+        self.qc.cx(0+7*pos, 2+7*pos)
+        self.qc.cx(1+7*pos, 2+7*pos)
+
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
         self.qc.cx(1+7*pos, 2+7*pos)
@@ -702,11 +726,13 @@ class Steane7q:
             if i == "sdg":
                 self.sdg(pos=pos)
             if i == "t":
-                self.nFTt(pos=pos)
+                #self.nFTt(pos=pos)
+                self.t_cheat(pos=pos)
                 # if self.err and self.qec_counter%8==0:
                 #     self.qec(pos = pos)
             if i == "tdg":
-                self.nFTtdg(pos=pos)
+                #self.nFTtdg(pos=pos)
+                self.tdg_cheat(pos=pos)
                 # if self.err and self.qec_counter%8==0:
                 #     self.qec(pos = pos)
             if i == "h":
@@ -1494,25 +1520,33 @@ class RotSurf9q:
 
     def ry_cheat(self, angle: float, pos: int):
         if self.hadamards[pos]%2==0:
-            self.qc.sdg(9*pos+3), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+5)
-            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.sdg(pos=pos)
+            self.h(pos=pos)
             self.qc.cx(9*pos+3, 9*pos+5)
             self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.h(9*pos+5)
+            self.qc.s(9*pos+5)
             self.qc.ry(angle, 9*pos+5)
+            self.qc.sdg(9*pos+5)
+            self.qc.h(9*pos+5)
             self.qc.cx(9*pos+3, 9*pos+5)
             self.qc.cx(9*pos+4, 9*pos+5)
-            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
-            self.qc.s(9*pos+3), self.qc.s(9*pos+4), self.qc.s(9*pos+5)
+            self.h(pos=pos)
+            self.s(pos=pos)
         else:
-            self.qc.sdg(9*pos+1), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+7)
-            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.sdg(pos=pos)
+            self.h(pos=pos)
             self.qc.cx(9*pos+1, 9*pos+7)
             self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.h(9*pos+7)
+            self.qc.s(9*pos+7)
             self.qc.ry(angle, 9*pos+7)
+            self.qc.sdg(9*pos+7)
+            self.qc.h(9*pos+7)
             self.qc.cx(9*pos+1, 9*pos+7)
             self.qc.cx(9*pos+4, 9*pos+7)
-            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
-            self.qc.s(9*pos+1), self.qc.s(9*pos+4), self.qc.s(9*pos+7)
+            self.h(pos=pos)
+            self.s(pos=pos)
 
     def t_timo(self, pos: int):
         T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
