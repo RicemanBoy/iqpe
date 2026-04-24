@@ -1206,7 +1206,7 @@ class Steane7q:
         #return zeros, ones, preselected, post
 
 class RotSurf9q:
-    def __init__(self, n: int):
+    def __init__(self, n: int, magic = 0):
         self.n = n
 
         self.zeros = 0
@@ -1219,9 +1219,9 @@ class RotSurf9q:
         self.classical_ec = False
         self.qec_counter = 0
 
-        self.hadamards = [0,0]
+        self.hadamards = [0 for i in range(n+magic)]
 
-        qr = QuantumRegister(9*n+2, "q")
+        qr = QuantumRegister(9*(n+magic)+2, "q")
         cbit = ClassicalRegister(4,"c")
         self.qc = QuantumCircuit(qr,cbit)
         for i in range(9*n):
@@ -1379,6 +1379,94 @@ class RotSurf9q:
             self.qc.s(9*pos+7)
             self.qc.cx(9*pos+1, 9*pos+7)
             self.qc.cx(9*pos+4, 9*pos+7)
+
+    def ft_s(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        self.qc.reset(anc), self.qc.reset(ancc)
+        magic = int((self.qc.num_qubits - 2)/9)-1
+        #################Magic state initialization#################
+        for j in range(9):
+            self.qc.reset(9*magic+j)
+        self.qc.h(9*magic+1)
+        self.qc.h(9*magic+3)
+        self.qc.h(9*magic+5)
+        self.qc.h(9*magic+7)
+
+        self.qc.cx(9*magic+1,9*magic)
+        self.qc.cx(9*magic+5,9*magic+4)
+        self.qc.cx(9*magic+7,9*magic+8)
+
+        self.qc.cx(9*magic+5,9*magic+2)
+
+        self.qc.cx(9*magic+3,9*magic+4)
+        self.qc.cx(9*magic+2,9*magic+1)
+
+        self.qc.cx(9*magic+3,9*magic+6)
+
+        self.qc.cx(9*magic+6,9*magic+7)
+        
+        self.h(magic)
+        self.s_cheat(magic)
+        ################# Entanglement with Ancilla, check +-1 eigenstate of pauli y #################
+        self.qc.h(anc)
+
+        self.qc.cz(anc, 9*magic+1)
+        #self.qc.cx(anc, ancc)
+        self.qc.cz(anc, 9*magic+4)
+        self.qc.cz(anc, 9*magic+7)
+
+        self.qc.cx(anc, 9*magic+3)
+        self.qc.cx(anc, 9*magic+4)
+        #self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 9*magic+5)
+
+        self.qc.h(anc)
+
+        self.qc.measure(anc, 0)             #für noisefree case
+        # self.qc.measure(ancc, 0)
+        ################# Entanglement with target logical qubit #################
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(0+9*pos,9*magic+2)
+            self.qc.cx(1+9*pos,9*magic+5)
+            self.qc.cx(2+9*pos,9*magic+8)
+            self.qc.cx(3+9*pos,9*magic+1)
+            self.qc.cx(4+9*pos,9*magic+4)
+            self.qc.cx(5+9*pos,9*magic+7)
+            self.qc.cx(6+9*pos,9*magic+0)
+            self.qc.cx(7+9*pos,9*magic+3)
+            self.qc.cx(8+9*pos,9*magic+6)
+        else:    
+            self.qc.cx(0+9*pos,9*magic+0)
+            self.qc.cx(1+9*pos,9*magic+1)
+            self.qc.cx(2+9*pos,9*magic+2)
+            self.qc.cx(3+9*pos,9*magic+3)
+            self.qc.cx(4+9*pos,9*magic+4)
+            self.qc.cx(5+9*pos,9*magic+5)
+            self.qc.cx(6+9*pos,9*magic+6)
+            self.qc.cx(7+9*pos,9*magic+7)
+            self.qc.cx(8+9*pos,9*magic+8)
+
+        ################ Readout of Magic State #################
+        self.qc.reset(anc)
+
+        for j in range(9):
+            self.qc.cx(9*magic+j, ancc)
+        ################# Z-rotation based on readout of magic state #################
+        self.qc.measure(ancc, 0)
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(9*pos+3)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+5)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(9*pos+1)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+7)
+        self.qc.reset(anc), self.qc.reset(ancc)
+
+
 
     def sdg(self, pos: int):
         anc = self.qc.num_qubits - 1
