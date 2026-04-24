@@ -1448,8 +1448,6 @@ class RotSurf9q:
             self.qc.cx(8+9*pos,9*magic+8)
 
         ################ Readout of Magic State #################
-        self.qc.reset(anc)
-
         for j in range(9):
             self.qc.cx(9*magic+j, ancc)
         ################# Z-rotation based on readout of magic state #################
@@ -1465,7 +1463,6 @@ class RotSurf9q:
                 self.qc.z(9*pos+4)
                 self.qc.z(9*pos+7)
         self.qc.reset(anc), self.qc.reset(ancc)
-
 
 
     def sdg(self, pos: int):
