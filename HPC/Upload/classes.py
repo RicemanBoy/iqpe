@@ -1448,10 +1448,11 @@ class RotSurf9q:
             self.qc.cx(8+9*pos,9*magic+8)
 
         ################ Readout of Magic State #################
+        self.qc.reset(anc)
         for j in range(9):
-            self.qc.cx(9*magic+j, ancc)
+            self.qc.cx(9*magic+j, anc)
         ################# Z-rotation based on readout of magic state #################
-        self.qc.measure(ancc, 0)
+        self.qc.measure(anc, 0)
         if self.hadamards[pos]%2 == 0:
             with self.qc.if_test((0,1)):
                 self.qc.z(9*pos+3)
