@@ -732,13 +732,13 @@ class Steane7q:
             if i == "sdg":
                 self.sdg(pos=pos)
             if i == "t":
-                #self.nFTt(pos=pos)
-                self.t_cheat(pos=pos)
+                self.nFTt(pos=pos)
+                #self.t_cheat(pos=pos)
                 # if self.err and self.qec_counter%8==0:
                 #     self.qec(pos = pos)
             if i == "tdg":
-                #self.nFTtdg(pos=pos)
-                self.tdg_cheat(pos=pos)
+                self.nFTtdg(pos=pos)
+                #self.tdg_cheat(pos=pos)
                 # if self.err and self.qec_counter%8==0:
                 #     self.qec(pos = pos)
             if i == "h":
@@ -1245,6 +1245,39 @@ class RotSurf9q:
 
             self.qc.cx(9*i+6,9*i+7)
 
+    def testing_magic(self, pos: int):
+        for i in range(9):
+            self.qc.reset(9*pos+i)
+        
+        self.qc.h(9*pos+1)
+        self.qc.h(9*pos+3)
+
+        # self.qc.h(9*pos+4)
+        # self.qc.t(9*pos+4)
+
+        self.qc.ry(np.pi/4,9*pos+4)
+
+        self.qc.h(9*pos+5)
+        self.qc.h(9*pos+7)
+
+        self.qc.cx(9*pos+4,9*pos+0)
+        # self.qc.cx(9*pos+4,9*pos+2)
+        # self.qc.cx(9*pos+4,9*pos+6)
+        self.qc.cx(9*pos+4,9*pos+8)
+
+        self.qc.cx(9*pos+1,9*pos+0)
+        self.qc.cx(9*pos+7,9*pos+8)
+
+        self.qc.cx(9*pos+5,9*pos+2)
+        self.qc.cx(9*pos+5,9*pos+4)
+
+        self.qc.cx(9*pos+3,9*pos+4)
+        self.qc.cx(9*pos+3,9*pos+6)
+
+        self.qc.cx(9*pos+5,9*pos+1)
+        self.qc.cx(9*pos+3,9*pos+7)
+  
+
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
             self.qc.x(9*pos+1)
@@ -1464,7 +1497,6 @@ class RotSurf9q:
                 self.qc.z(9*pos+4)
                 self.qc.z(9*pos+7)
         self.qc.reset(anc), self.qc.reset(ancc)
-
 
     def sdg(self, pos: int):
         anc = self.qc.num_qubits - 1
