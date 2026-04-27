@@ -332,7 +332,6 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         self.qec(pos = 0)
                     self.qc = transpile(self.qc, optimization_level=1)
                     self.readout(pos=0, shots=1, p=noise)
-
                     if self.zeros == 1:
                         bitstring += "0"
                         break
@@ -341,7 +340,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         rots.append(0.5)
                         break
             bitstring = bitstring[::-1]
-            print(bitstring)
+            # print(bitstring)
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
             y += diff
@@ -1252,10 +1251,10 @@ class RotSurf9q:
         self.qc.h(9*pos+1)
         self.qc.h(9*pos+3)
 
-        # self.qc.h(9*pos+4)
-        # self.qc.t(9*pos+4)
+        self.qc.h(9*pos+4)
+        self.qc.t(9*pos+4)
 
-        self.qc.ry(np.pi/4,9*pos+4)
+        # self.qc.ry(np.pi/4,9*pos+4)
 
         self.qc.h(9*pos+5)
         self.qc.h(9*pos+7)
