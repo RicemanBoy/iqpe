@@ -288,6 +288,8 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
     # gates(new_qc)
 
 def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):       #each iteration own circuit
+    assert code in ["steane", "rotsurf9", "rotsurf16"], "Code not supported! Choose between 'steane', 'rotsurf9' and 'rotsurf16'."
+    
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
@@ -313,7 +315,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         self = Steane7q(2, magic=0)
                     elif code == "rotsurf9":
                         self = RotSurf9q(2)
-                    else:
+                    elif code == "rotsurf16":
                         self = RotSurf16q(2)
                     self.err = qec
                     self.x(pos=1)
@@ -1764,19 +1766,19 @@ class RotSurf9q:
             if i == "s":
                 # if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                self.s_cheat(pos=pos)
+                self.s(pos=pos)
             if i == "sdg":
                 #  if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                 self.sdg_cheat(pos=pos)
+                 self.sdg(pos=pos)
             if i == "t":
                 #  if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                 self.t_cheat(pos=pos)
+                 self.t(pos=pos)
             if i == "tdg":
                 #  if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                 self.tdg_cheat(pos=pos)
+                 self.tdg(pos=pos)
             if i == "h":
                  self.h(pos=pos)
             if i == "z":
