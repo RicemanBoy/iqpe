@@ -1278,16 +1278,55 @@ class RotSurf9q:
         self.qc.cx(9*pos+5,9*pos+1)
         self.qc.cx(9*pos+3,9*pos+7)
 
+        ################ Controlled Hadamard doesnt work due to the rotation of the stabilizers (50% of the shots must be discarded, i.e. code is in a superposition of both orientations then) #################################
+        # anc = self.qc.num_qubits - 1
+        # self.qc.reset(anc)
+        # self.qc.h(anc)
+        # for i in range(9):
+        #     # self.qc.ry(-np.pi/4, i+9*pos)
+        #     # self.qc.cz(anc, i+9*pos)
+        #     # self.qc.ry(np.pi/4, i+9*pos)
+        #     self.qc.ch(anc, i+9*pos)
+        #     #self.qc.ch(anc, i+9*pos)
+        # self.qc.h(anc)
+        # self.qc.measure(anc, 0)
+        #########################################################################################################################
         anc = self.qc.num_qubits - 1
-        self.qc.reset(anc)
+        ancc = anc - 1
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.x(ancc)
+
+        self.qc.ry(-np.pi/4, anc)
+        self.qc.cz(ancc, anc)
+        self.qc.ry(np.pi/4, anc)
+        #self.qc.ch(ancc, anc)
+
+        self.z(pos=pos)
+        
+        self.qc.cx(3+9*pos, anc)
+        self.qc.cx(4+9*pos, anc)
+        self.qc.cx(5+9*pos, anc)
+
         self.qc.h(anc)
-        for i in range(9):
-            # self.qc.ry(-np.pi/4, i+9*pos)
-            # self.qc.cz(anc, i+9*pos)
-            # self.qc.ry(np.pi/4, i+9*pos)
-            self.qc.ch(anc, i+9*pos)
+
+        self.qc.cx(anc, 1+9*pos)
+        self.qc.cx(anc, 4+9*pos)
+        self.qc.cx(anc, 7+9*pos)
+
         self.qc.h(anc)
+        #self.qc.h(ancc)
+        #self.qc.measure(ancc, 0)
         self.qc.measure(anc, 0)
+
+        with self.qc.if_test((0,1)):
+            self.qc.z(3+9*pos)
+            self.qc.z(4+9*pos)
+            self.qc.z(5+9*pos)
+
+            # self.qc.x(1+9*pos)
+            # self.qc.x(4+9*pos)
+            # self.qc.x(7+9*pos)
+        self.qc.measure(ancc, 0)
   
 
     def x(self, pos: int):
@@ -2592,7 +2631,6 @@ class RotSurf9q:
         result = job.result()
         counts = result.get_counts()
 
-
         bitstring = list(counts.keys())
         # print(bitstring)
         bitstring = [i.replace(" ","") for i in bitstring]
@@ -2668,14 +2706,14 @@ class RotSurf9q:
 
         mapping = {0: 2, 1: 5, 2: 8, 3: 1, 4: 4, 5: 7, 6: 0, 7: 3, 8: 6}
 
-        def apply_mapping(s, mapping):
-            result = [''] * len(s)
-            for i, new_pos in mapping.items():
-                result[new_pos] = s[i]
-            return ''.join(result)
+        # def apply_mapping(s, mapping):
+        #     result = [''] * len(s)
+        #     for i, new_pos in mapping.items():
+        #         result[new_pos] = s[i]
+        #     return ''.join(result)
 
-        code0_h = [apply_mapping(s, mapping) for s in code0]
-        code1_h = [apply_mapping(s, mapping) for s in code1]
+        # code0_h = [apply_mapping(s, mapping) for s in code0]
+        # code1_h = [apply_mapping(s, mapping) for s in code1]
         
         read = ClassicalRegister(9)
         self.qc.add_register(read)
@@ -2703,8 +2741,9 @@ class RotSurf9q:
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
 
         sim = AerSimulator()
-        qc_transpiled = transpile(self.qc, sim)
-        result = sim.run(qc_transpiled).result()
+        new_qc = transpile(self.qc, optimization_level=2)
+        job = sim.run(new_qc, noise_model = noise_model, shots=shots)
+        result = job.result()
         counts = result.get_counts()
 
 
