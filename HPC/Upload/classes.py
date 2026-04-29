@@ -1253,10 +1253,10 @@ class RotSurf9q:
         self.qc.h(9*pos+1)
         self.qc.h(9*pos+3)
 
-        self.qc.h(9*pos+4)
-        self.qc.t(9*pos+4)
+        # self.qc.h(9*pos+4)
+        # self.qc.t(9*pos+4)
 
-        # self.qc.ry(np.pi/4,9*pos+4)
+        self.qc.ry(np.pi/4,9*pos+4)
 
         self.qc.h(9*pos+5)
         self.qc.h(9*pos+7)
@@ -1277,6 +1277,17 @@ class RotSurf9q:
 
         self.qc.cx(9*pos+5,9*pos+1)
         self.qc.cx(9*pos+3,9*pos+7)
+
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        for i in range(9):
+            # self.qc.ry(-np.pi/4, i+9*pos)
+            # self.qc.cz(anc, i+9*pos)
+            # self.qc.ry(np.pi/4, i+9*pos)
+            self.qc.ch(anc, i+9*pos)
+        self.qc.h(anc)
+        self.qc.measure(anc, 0)
   
 
     def x(self, pos: int):
@@ -2650,6 +2661,123 @@ class RotSurf9q:
         self.zeros = zeros
         self.post = err
         #return zeros, ones, err
+
+    def magic_readout(self, pos: int, shots: int, p = 0):
+        code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
+        code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
+
+        mapping = {0: 2, 1: 5, 2: 8, 3: 1, 4: 4, 5: 7, 6: 0, 7: 3, 8: 6}
+
+        def apply_mapping(s, mapping):
+            result = [''] * len(s)
+            for i, new_pos in mapping.items():
+                result[new_pos] = s[i]
+            return ''.join(result)
+
+        code0_h = [apply_mapping(s, mapping) for s in code0]
+        code1_h = [apply_mapping(s, mapping) for s in code1]
+        
+        read = ClassicalRegister(9)
+        self.qc.add_register(read)
+        # for i in range(9):
+        #     self.qc.id(i+9*pos)
+        if self.hadamards[pos]%2 == 0:
+            for i in range(9):
+                self.qc.measure(i+9*pos, read[8-i])
+        else:
+            self.qc.measure(0+9*pos, read[8-6])
+            self.qc.measure(1+9*pos, read[8-3])
+            self.qc.measure(2+9*pos, read[8-0])
+            self.qc.measure(3+9*pos, read[8-7])
+            self.qc.measure(4+9*pos, read[8-4])
+            self.qc.measure(5+9*pos, read[8-1])
+            self.qc.measure(6+9*pos, read[8-8])
+            self.qc.measure(7+9*pos, read[8-5])
+            self.qc.measure(8+9*pos, read[8-2])
+
+        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+
+        noise_model = NoiseModel()
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "id", "s", "sdg", "t", "tdg"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        sim = AerSimulator()
+        qc_transpiled = transpile(self.qc, sim)
+        result = sim.run(qc_transpiled).result()
+        counts = result.get_counts()
+
+
+        bitstring = list(counts.keys())
+        print(bitstring)
+        bitstring = [i.replace(" ","") for i in bitstring]
+        hmm = list(counts.values())
+
+        bits = [i[:9] for i in bitstring]
+        # print(bits)
+        flags = [i[9:len(bitstring[0])-4] for i in bitstring]
+
+        magic = [i[len(bitstring[0])-1] for i in bitstring]
+
+        print(magic)
+
+        if self.classical_ec:
+            bits = self.__classical_error_correction__(bits)
+ 
+        if self.postselection:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    print(magic[i])
+                    bits[i] = "post"
+        else:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
+
+        for i in range(len(flags)):
+            if flags[i].count("1") != 0:
+                bits[i] = "post"
+
+        ones = 0
+        zeros = 0
+        err = 0
+
+        for i in range(len(bits)):
+            if bits[i] == 0:
+                zeros += hmm[i]
+            if bits[i] == 1:
+                ones += hmm[i]
+            if bits[i] == "post":
+                err += hmm[i]
+        
+        ones = (ones/shots)
+        zeros = (zeros/shots)
+        err = (err/shots)
+
+        self.ones = ones
+        self.zeros = zeros
+        self.post = err
 
 class RotSurf16q:
     def __init__(self, n: int):
