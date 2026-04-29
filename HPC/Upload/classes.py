@@ -1772,12 +1772,12 @@ class RotSurf9q:
                 #     self.qec_zstab(pos=pos)
                  self.sdg(pos=pos)
             if i == "t":
-                #  if self.err == True and self.qec_counter%5==0:
-                #     self.qec_zstab(pos=pos)
+                 if self.err == True and self.qec_counter%8==0:
+                    self.qec(pos=pos)
                  self.t(pos=pos)
             if i == "tdg":
-                #  if self.err == True and self.qec_counter%5==0:
-                #     self.qec_zstab(pos=pos)
+                 if self.err == True and self.qec_counter%8==0:
+                    self.qec(pos=pos)
                  self.tdg(pos=pos)
             if i == "h":
                  self.h(pos=pos)
