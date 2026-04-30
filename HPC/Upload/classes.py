@@ -3930,8 +3930,11 @@ class RotSurf16q:
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id"])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
 
+        read = ClassicalRegister(16)
+        self.qc.add_register(read)
+
         for i in range(16):
-            self.qc.measure(i+16*pos, i)
+            self.qc.measure(i+16*pos, read[15-i])
 
         sim = AerSimulator()
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
