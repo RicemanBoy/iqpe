@@ -117,7 +117,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     if l == 0.25:
                         self.sdg(pos=0)
                     if l == 0.125:
-                        self.tdg(pos=0)
+                        self.nFTtdg(pos=0)
                 self.h(pos=0)
                 if self.err:
                     self.qec(pos = 0)
@@ -246,7 +246,7 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
             b.append(list(map(str, line.strip().split(","))))
     
     bitstring = ""
-    self = RotSurf16q(2)
+    self = RotSurf9q(2)
     self.err = qec
     rots = [k*0.5 for k in rots]
 
@@ -258,9 +258,9 @@ def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = 
     ###############################
     for l in rots:
         if l == 0.25:
-            self.sdg(pos=0)
+            self.sdg_timo(pos=0)
         if l == 0.125:
-            self.tdg(pos=0)
+            self.tdg_timo(pos=0)
     self.h(pos=0)
     # if self.err:
     #     self.qec(pos = 0)
@@ -1821,19 +1821,19 @@ class RotSurf9q:
             if i == "s":
                 # if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                self.s(pos=pos)
+                self.s_timo(pos=pos)
             if i == "sdg":
                 #  if self.err == True and self.qec_counter%5==0:
                 #     self.qec_zstab(pos=pos)
-                 self.sdg(pos=pos)
+                 self.sdg_timo(pos=pos)
             if i == "t":
                  if self.err == True and self.qec_counter%8==0:
                     self.qec(pos=pos)
-                 self.t(pos=pos)
+                 self.t_timo(pos=pos)
             if i == "tdg":
                  if self.err == True and self.qec_counter%8==0:
                     self.qec(pos=pos)
-                 self.tdg(pos=pos)
+                 self.tdg_timo(pos=pos)
             if i == "h":
                  self.h(pos=pos)
             if i == "z":
@@ -3968,6 +3968,7 @@ class RotSurf16q:
                             break
                 if bits[i] != 1 and bits[i] != 0:
                     bits[i] = "post"
+                    print("Error during postselection")
         else:
             for i in range(len(bits)):
                 for j in code0:
