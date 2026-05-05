@@ -736,13 +736,13 @@ class Steane7q:
             if i == "t":
                 self.nFTt(pos=pos)
                 #self.t_cheat(pos=pos)
-                # if self.err and self.qec_counter%8==0:
-                #     self.qec(pos = pos)
+                if self.err and self.qec_counter%8==0:
+                    self.qec(pos = pos)
             if i == "tdg":
                 self.nFTtdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                # if self.err and self.qec_counter%8==0:
-                #     self.qec(pos = pos)
+                if self.err and self.qec_counter%8==0:
+                    self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -750,11 +750,11 @@ class Steane7q:
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
-        if self.err:
-            self.qec(pos = 0)
+        # if self.err:
+        #     self.qec(pos = 0)
         self.u2(1, gate=gate)
-        if self.err:
-            self.qec(pos = 1)
+        # if self.err:
+        #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
         self.u2(1, gate=adjgate)
         # if self.err:
@@ -1281,19 +1281,59 @@ class RotSurf9q:
 
         ################ Controlled Hadamard doesnt work due to the rotation of the stabilizers (50% of the shots must be discarded, i.e. code is in a superposition of both orientations then) #################################
         # anc = self.qc.num_qubits - 1
-        # self.qc.reset(anc)
+        # ancc = anc - 1
+        # self.qc.reset(anc), self.qc.reset(ancc)
+
+        # self.qc.x(ancc)
+        # self.qc.ry(-np.pi/4, anc)
+        # self.qc.cz(2, anc)
+        # self.qc.ry(np.pi/4, anc)
+        # self.qc.x(ancc)
+
+        # if self.hadamards[pos]%2==0:
+        #     self.qc.cx(3+9*pos, anc)
+        #     self.qc.cx(4+9*pos, anc)
+        #     self.qc.cx(5+9*pos, anc)
+        # else:
+        #     self.qc.cx(1+9*pos, anc)
+        #     self.qc.cx(4+9*pos, anc)
+        #     self.qc.cx(7+9*pos, anc)
+
         # self.qc.h(anc)
-        # for i in range(9):
-        #     # self.qc.ry(-np.pi/4, i+9*pos)
-        #     # self.qc.cz(anc, i+9*pos)
-        #     # self.qc.ry(np.pi/4, i+9*pos)
-        #     self.qc.ch(anc, i+9*pos)
-        #     #self.qc.ch(anc, i+9*pos)
+
+        # if self.hadamards[pos]%2==0:
+        #     self.qc.cx(anc, 1+9*pos)
+        #     self.qc.cx(anc, 4+9*pos)
+        #     self.qc.cx(anc, 7+9*pos)
+        # else:
+        #     self.qc.cx(anc, 3+9*pos)
+        #     self.qc.cx(anc, 4+9*pos)
+        #     self.qc.cx(anc, 5+9*pos)
+
         # self.qc.h(anc)
-        # self.qc.measure(anc, 0)
+
+        # self.qc.x(ancc)
+        # self.qc.ry(-np.pi/4, anc)
+        # self.qc.cz(ancc)
+        # self.qc.ry(np.pi/4, anc)
+        # self.qc.x(ancc)
+
+        # self.qc.measure(anc,0)         #anc
+
+        # with self.qc.if_test((0,1)): #anc
+        #     self.z(pos)
+
+        # with self.qc.if_test((0,0)): #anc
+        #     self.qc.measure(2,0)
+
+        # with self.qc.if_test((0,1)): #anc
+        #     self.x(pos)
+
+        # with self.qc.if_test((0,0)): #anc
+        #     self.h(pos)
+
+
         #########################################################################################################################
-        anc = self.qc.num_qubits - 1
-        ancc = anc - 1
         self.qc.reset(anc), self.qc.reset(ancc)
         self.qc.h(ancc)
 
@@ -2942,12 +2982,16 @@ class RotSurf16q:
             if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
                 for i in range(16):
                     self.qc.h(i+16)
+                for i in range(16):
                     self.qc.cz(i, i+16)
+                for i in range(16):
                     self.qc.h(i+16)
             elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
                 for i in range(16):
                     self.qc.h(i+16*target)
+                for i in range(16):
                     self.qc.cz(i, i+16)
+                for i in range(16):
                     self.qc.h(i+16)
             else:
                 for i in range(16):
@@ -2956,12 +3000,16 @@ class RotSurf16q:
             if self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
                 for i in range(16):
                     self.qc.h(i)
+                for i in range(16):
                     self.qc.cz(i, i+16)
+                for i in range(16):
                     self.qc.h(i)
             elif self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
                 for i in range(16):
                     self.qc.h(i)
+                for i in range(16):
                     self.qc.cz(i, i+16)
+                for i in range(16):
                     self.qc.h(i)
             else: 
                 for i in range(16):
