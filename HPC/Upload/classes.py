@@ -329,7 +329,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         if l == 0.25:
                             self.sdg(pos=0)
                         if l == 0.125:
-                            self.tdg(pos=0)
+                            self.nFTtdg(pos=0)
                     self.h(pos=0)
                     if self.err:
                         self.qec(pos = 0)
