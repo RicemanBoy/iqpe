@@ -31,4 +31,4 @@ def gen_data(name):
 
     # #data = np.array((p, y, y_qec, err, err_qec))
     # data = np.array((dustin.zeros, dustin.ones))
-    # np.savetxt("rotsurf16_testt.txt".format(name), data, delimiter=",")
+    # np.savetxt("rotsurf16_testtt.txt".format(name), data, delimiter=",")

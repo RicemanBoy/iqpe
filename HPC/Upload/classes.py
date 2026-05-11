@@ -3000,43 +3000,47 @@ class RotSurf16q:
             self.qc.h(i+16*pos)
         self.hadamards[pos] += 1
 
-    def cnot(self, control: int, target: int):
-        if control == 0:
-            if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
-                for i in range(16):
-                    self.qc.h(i+16)
-                for i in range(16):
-                    self.qc.cz(i, i+16)
-                for i in range(16):
-                    self.qc.h(i+16)
-            elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
-                for i in range(16):
-                    self.qc.h(i+16)
-                for i in range(16):
-                    self.qc.cz(i, i+16)
-                for i in range(16):
-                    self.qc.h(i+16)
-            else:
-                for i in range(16):
-                    self.qc.cx(i,16+i)
-        elif control == 1:
-            if self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
-                for i in range(16):
-                    self.qc.h(i)
-                for i in range(16):
-                    self.qc.cz(i, i+16)
-                for i in range(16):
-                    self.qc.h(i)
-            elif self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
-                for i in range(16):
-                    self.qc.h(i)
-                for i in range(16):
-                    self.qc.cz(i, i+16)
-                for i in range(16):
-                    self.qc.h(i)
-            else: 
-                for i in range(16):
-                    self.qc.cx(16+i,i)
+    def cnot(self, control: int, target: int): 
+        for i in range(16):
+            self.qc.cx(16+i,i)
+
+
+        # if control == 0:
+        #     if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+        #         for i in range(16):
+        #             self.qc.h(i+16)
+        #         for i in range(16):
+        #             self.qc.cz(i, i+16)
+        #         for i in range(16):
+        #             self.qc.h(i+16)
+        #     elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+        #         for i in range(16):
+        #             self.qc.h(i+16)
+        #         for i in range(16):
+        #             self.qc.cz(i, i+16)
+        #         for i in range(16):
+        #             self.qc.h(i+16)
+        #     else:
+        #         for i in range(16):
+        #             self.qc.cx(i,16+i)
+        # elif control == 1:
+        #     if self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+        #         for i in range(16):
+        #             self.qc.h(i)
+        #         for i in range(16):
+        #             self.qc.cz(i, i+16)
+        #         for i in range(16):
+        #             self.qc.h(i)
+        #     elif self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+        #         for i in range(16):
+        #             self.qc.h(i)
+        #         for i in range(16):
+        #             self.qc.cz(i, i+16)
+        #         for i in range(16):
+        #             self.qc.h(i)
+        #     else: 
+        #         for i in range(16):
+        #             self.qc.cx(16+i,i)
 
     # def s(self, pos: int):
     #     anc = self.qc.num_qubits - 1
