@@ -372,7 +372,7 @@ class Steane7q:
         self.qec_counter = 0
 
         self.classical_ec = False
-        self.postselection = False
+        self.postselection = True
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
@@ -1217,7 +1217,7 @@ class RotSurf9q:
         self.post = 0
 
         self.err = False
-        self.postselection = False
+        self.postselection = True
         self.classical_ec = False
         self.qec_counter = 0
 
@@ -1372,8 +1372,6 @@ class RotSurf9q:
                     self.qc.x(4+9*pos)
                     self.qc.x(7+9*pos)
 
-  
-
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
             self.qc.x(9*pos+1)
@@ -1449,10 +1447,49 @@ class RotSurf9q:
                 for i in range(9):
                     self.qc.cx(9+i,i)
     
+    def cnot_test(self, control: int, target: int):
+        if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+            self.qc.h(target)
+            self.cz_test()
+            self.qc.h(target)
+        elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+            self.qc.h(target)
+            self.cz_test()
+            self.qc.h(target)
+        else:
+            for i in range(9):
+                self.qc.cx(9*control+i,9*target+i)
+
     def cz(self):
         self.h(pos=1)
         self.cnot(control = 0, target=1)
         self.h(pos=1)
+
+    def cz_test(self):
+        if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+            self.qc.cz(0,9+6)
+            self.qc.cz(1,9+3)
+            self.qc.cz(2,9+0)
+            self.qc.cz(3,9+7)
+            self.qc.cz(4,9+4)
+            self.qc.cz(5,9+1)
+            self.qc.cz(6,9+8)
+            self.qc.cz(7,9+5)
+            self.qc.cz(8,9+2)
+        elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+            self.qc.cz(0,9+2)
+            self.qc.cz(1,9+5)
+            self.qc.cz(2,9+8)
+            self.qc.cz(3,9+1)
+            self.qc.cz(4,9+4)
+            self.qc.cz(5,9+7)
+            self.qc.cz(6,9+0)
+            self.qc.cz(7,9+3)
+            self.qc.cz(8,9+6)
+        else:
+            print("Same orientation!")
+            for i in range(9):
+                self.qc.cz(i,9+i)
 
     def s(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -2988,7 +3025,7 @@ class RotSurf16q:
                     self.qc.h(i+16)
             elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
                 for i in range(16):
-                    self.qc.h(i+16*target)
+                    self.qc.h(i+16)
                 for i in range(16):
                     self.qc.cz(i, i+16)
                 for i in range(16):
