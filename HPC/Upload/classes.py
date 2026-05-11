@@ -1279,98 +1279,84 @@ class RotSurf9q:
         self.qc.cx(9*pos+5,9*pos+1)
         self.qc.cx(9*pos+3,9*pos+7)
 
-        ################ Controlled Hadamard doesnt work due to the rotation of the stabilizers (50% of the shots must be discarded, i.e. code is in a superposition of both orientations then) #################################
-        # anc = self.qc.num_qubits - 1
-        # ancc = anc - 1
-        # self.qc.reset(anc), self.qc.reset(ancc)
-
-        # self.qc.x(ancc)
-        # self.qc.ry(-np.pi/4, anc)
-        # self.qc.cz(2, anc)
-        # self.qc.ry(np.pi/4, anc)
-        # self.qc.x(ancc)
-
-        # if self.hadamards[pos]%2==0:
-        #     self.qc.cx(3+9*pos, anc)
-        #     self.qc.cx(4+9*pos, anc)
-        #     self.qc.cx(5+9*pos, anc)
-        # else:
-        #     self.qc.cx(1+9*pos, anc)
-        #     self.qc.cx(4+9*pos, anc)
-        #     self.qc.cx(7+9*pos, anc)
-
-        # self.qc.h(anc)
-
-        # if self.hadamards[pos]%2==0:
-        #     self.qc.cx(anc, 1+9*pos)
-        #     self.qc.cx(anc, 4+9*pos)
-        #     self.qc.cx(anc, 7+9*pos)
-        # else:
-        #     self.qc.cx(anc, 3+9*pos)
-        #     self.qc.cx(anc, 4+9*pos)
-        #     self.qc.cx(anc, 5+9*pos)
-
-        # self.qc.h(anc)
-
-        # self.qc.x(ancc)
-        # self.qc.ry(-np.pi/4, anc)
-        # self.qc.cz(ancc)
-        # self.qc.ry(np.pi/4, anc)
-        # self.qc.x(ancc)
-
-        # self.qc.measure(anc,0)         #anc
-
-        # with self.qc.if_test((0,1)): #anc
-        #     self.z(pos)
-
-        # with self.qc.if_test((0,0)): #anc
-        #     self.qc.measure(2,0)
-
-        # with self.qc.if_test((0,1)): #anc
-        #     self.x(pos)
-
-        # with self.qc.if_test((0,0)): #anc
-        #     self.h(pos)
-
-
-        #########################################################################################################################
+        ################ Controlled Hadamard injection#################################
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
         self.qc.reset(anc), self.qc.reset(ancc)
+
         self.qc.h(ancc)
 
-        self.qc.ry(-np.pi/4, anc)
-        self.qc.cz(ancc, anc)
-        self.qc.ry(np.pi/4, anc)
-        #self.qc.ch(ancc, anc)
-
-        self.qc.cx(3+9*pos, anc)
-        self.qc.cx(4+9*pos, anc)
-        self.qc.cx(5+9*pos, anc)
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
 
         self.qc.h(anc)
 
-        self.qc.cx(anc, 1+9*pos)
-        self.qc.cx(anc, 4+9*pos)
-        self.qc.cx(anc, 7+9*pos)
-    
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 7+9*pos)
+        else:
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+
         self.qc.h(anc)
 
+        self.qc.x(ancc)
         self.qc.ry(-np.pi/4, anc)
         self.qc.cz(ancc, anc)
         self.qc.ry(np.pi/4, anc)
-        self.qc.h(ancc)
-        self.qc.measure(anc, 0)
-        self.qc.measure(ancc, 1)
+        self.qc.x(ancc)
 
-        with self.qc.if_test((0,1)):
-                with self.qc.if_test((1,1)):
-                    self.qc.z(3+9*pos)
-                    self.qc.z(4+9*pos)
-                    self.qc.z(5+9*pos)
-        with self.qc.if_test((0,1)):
-                with self.qc.if_test((1,0)):
-                    self.qc.x(1+9*pos)
-                    self.qc.x(4+9*pos)
-                    self.qc.x(7+9*pos)
+        self.qc.measure(anc,0)         #anc
+        if self.hadamards[pos]%2==0:
+            with self.qc.if_test((0,0)): #anc
+                self.qc.cx(ancc, 9*pos+1)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+7)
+        else:
+            with self.qc.if_test((0,0)):
+                self.qc.cx(ancc, 9*pos+3)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+5)
+
+        if self.hadamards[pos]%2==0:
+            with self.qc.if_test((0,1)): #anc
+                self.qc.x(9*pos+1)
+                self.qc.x(9*pos+4)
+                self.qc.x(9*pos+7)
+
+                self.qc.z(9*pos+3)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+5)
+
+                self.qc.cx(ancc, 9*pos+1)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+7)
+
+                self.qc.z(ancc)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.x(9*pos+3)
+                self.qc.x(9*pos+4)
+                self.qc.x(9*pos+5)
+
+                self.qc.z(9*pos+1)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+7)
+
+                self.qc.cx(ancc, 9*pos+3)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+5)
+
+                self.qc.z(ancc)
+
 
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
