@@ -1207,7 +1207,8 @@ class Steane7q:
         # print("Postselection discarded: ", (post/shots)*100, "%")
         #return zeros, ones, preselected, post
 
-class RotSurf9q:
+
+class RotSurf9q_test:
     def __init__(self, n: int, magic = 0):
         self.n = n
 
@@ -1221,9 +1222,9 @@ class RotSurf9q:
         self.classical_ec = False
         self.qec_counter = 0
 
-        self.hadamards = [0 for i in range(n+magic)]
+        self.hads_counter = self.qc.num_qubits - 3
 
-        qr = QuantumRegister(9*(n+magic)+2, "q")
+        qr = QuantumRegister(9*(n+magic)+4, "q")
         cbit = ClassicalRegister(4,"c")
         self.qc = QuantumCircuit(qr,cbit)
         for i in range(9*n):
@@ -1247,7 +1248,12 @@ class RotSurf9q:
 
             self.qc.cx(9*i+6,9*i+7)
 
-    def testing_magic(self, pos: int):
+    def testing_magic(self, target: int):
+        self.h(pos=target)
+        self.sdg_cheat(pos=target)
+        self.h(pos=target)
+
+        pos = target + 1        #pos = welcher qubit als magic state verwendet wird, target = qubit auf den das gate teleportiert werden soll
         for i in range(9):
             self.qc.reset(9*pos+i)
         
@@ -1282,6 +1288,7 @@ class RotSurf9q:
         ################ Controlled Hadamard injection#################################
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
+        flag = ancc - 1
         self.qc.reset(anc), self.qc.reset(ancc)
 
         self.qc.h(ancc)
@@ -1356,7 +1363,1791 @@ class RotSurf9q:
                 self.qc.cx(ancc, 9*pos+5)
 
                 self.qc.z(ancc)
+        
+        self.qc.h(ancc)
+        self.qc.measure(ancc, 0)
+        ################ qec cylce #################################
+        #empty for now
+        ############### Controlled Y-gate###########################
+        self.sdg_cheat(pos=target)
+        for i in range(9):
+            self.qc.cx(i+9*pos,i+9*target)
+        self.s_cheat(pos=target)
+        ###### Measure logical state of the magic state for state injection##########
+        self.qc.reset(anc)
+        self.sdg_cheat(pos=pos)
+        self.h(pos=pos)
+        for i in range(9):
+            self.qc.cx(i+pos*9, anc)
+        self.qc.measure(anc,0)
+        ###############Apply conditioned Ry(pi/2) onto the Target####################
+        for i in range(9):
+            with self.qc.if_test((0,1)):
+                self.qc.h(i+9*target)             
 
+        self.qc.reset(ancc)                      #Need this to track hadamard rots on ancilla because of conditional hadamard above
+        if self.hadamards[target]%2 != 0:
+            self.qc.x(ancc)
+        with self.qc.if_test((0,1)):
+            self.qc.x(ancc)
+        self.qc.measure(ancc, 1)
+
+        with self.qc.if_test((1,0)):
+            with self.qc.if_test((0,1)):
+                self.qc.x(1+9*target)
+                self.qc.x(4+9*target)
+                self.qc.x(7+9*target)
+
+        with self.qc.if_test((1,1)):
+            with self.qc.if_test((0,1)):
+                self.qc.x(3+9*target)
+                self.qc.x(4+9*target)
+                self.qc.x(5+9*target)
+        self.h(pos=target)
+        self.s_cheat(pos=target)
+        self.h(pos=target)
+        if self.err:
+            self.qec(pos=target)
+
+    def x(self, pos: int):
+        self.qc.measure(self.hads_counter, 0)
+
+        with self.qc.if_test((0,0)) as else_:
+            self.qc.x(9*pos+1)
+            self.qc.x(9*pos+4)
+            self.qc.x(9*pos+7)
+        with else_:
+            self.qc.x(9*pos+3)
+            self.qc.x(9*pos+4)
+            self.qc.x(9*pos+5)
+    
+    def z(self, pos: int):
+        self.qc.measure(self.hads_counter, 0)
+
+        with self.qc.if_test((0,0)) as else_:
+            self.qc.z(9*pos+3)
+            self.qc.z(9*pos+4)
+            self.qc.z(9*pos+5)
+        with else_:
+            self.qc.z(9*pos+1)
+            self.qc.z(9*pos+4)
+            self.qc.z(9*pos+7)
+
+    def h(self, pos: int):
+        had_counter = self.qc.num_qubits -3
+        for i in range(9):
+            self.qc.h(9*pos+i)
+        self.qc.x(had_counter)
+
+    def cnot(self, control: int, target: int):
+        if control == 0:
+            if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+                self.qc.cx(0,9+6)
+                self.qc.cx(1,9+3)
+                self.qc.cx(2,9+0)
+                self.qc.cx(3,9+7)
+                self.qc.cx(4,9+4)
+                self.qc.cx(5,9+1)
+                self.qc.cx(6,9+8)
+                self.qc.cx(7,9+5)
+                self.qc.cx(8,9+2)
+            elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+                self.qc.cx(0,9+2)
+                self.qc.cx(1,9+5)
+                self.qc.cx(2,9+8)
+                self.qc.cx(3,9+1)
+                self.qc.cx(4,9+4)
+                self.qc.cx(5,9+7)
+                self.qc.cx(6,9+0)
+                self.qc.cx(7,9+3)
+                self.qc.cx(8,9+6)
+            else:
+                for i in range(9):
+                    self.qc.cx(i,9+i)
+        elif control == 1:
+            if self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+                self.qc.cx(9+0,6)
+                self.qc.cx(9+1,3)
+                self.qc.cx(9+2,0)
+                self.qc.cx(9+3,7)
+                self.qc.cx(9+4,4)
+                self.qc.cx(9+5,1)
+                self.qc.cx(9+6,8)
+                self.qc.cx(9+7,5)
+                self.qc.cx(9+8,2)
+            elif self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+                self.qc.cx(9+0,2)
+                self.qc.cx(9+1,5)
+                self.qc.cx(9+2,8)
+                self.qc.cx(9+3,1)
+                self.qc.cx(9+4,4)
+                self.qc.cx(9+5,7)
+                self.qc.cx(9+6,0)
+                self.qc.cx(9+7,3)
+                self.qc.cx(9+8,6)
+            else: 
+                for i in range(9):
+                    self.qc.cx(9+i,i)
+    
+    def cnot_test(self, control: int, target: int):
+        if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+            self.qc.h(target)
+            self.cz_test()
+            self.qc.h(target)
+        elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+            self.qc.h(target)
+            self.cz_test()
+            self.qc.h(target)
+        else:
+            for i in range(9):
+                self.qc.cx(9*control+i,9*target+i)
+
+    def cz(self):
+        self.h(pos=1)
+        self.cnot(control = 0, target=1)
+        self.h(pos=1)
+
+    def cz_test(self):
+        if self.hadamards[0]%2==1 and self.hadamards[1]%2==0:
+            self.qc.cz(0,9+6)
+            self.qc.cz(1,9+3)
+            self.qc.cz(2,9+0)
+            self.qc.cz(3,9+7)
+            self.qc.cz(4,9+4)
+            self.qc.cz(5,9+1)
+            self.qc.cz(6,9+8)
+            self.qc.cz(7,9+5)
+            self.qc.cz(8,9+2)
+        elif self.hadamards[0]%2==0 and self.hadamards[1]%2==1:
+            self.qc.cz(0,9+2)
+            self.qc.cz(1,9+5)
+            self.qc.cz(2,9+8)
+            self.qc.cz(3,9+1)
+            self.qc.cz(4,9+4)
+            self.qc.cz(5,9+7)
+            self.qc.cz(6,9+0)
+            self.qc.cz(7,9+3)
+            self.qc.cz(8,9+6)
+        else:
+            print("Same orientation!")
+            for i in range(9):
+                self.qc.cz(i,9+i)
+
+    def s(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.s(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(3+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(1+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(7+9*pos)
+    
+    def s_timo(self, pos: int):
+        S_alt = np.diag([1, 1j, 1j, 1, 1j, 1, 1, 1j])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        s_timo = UnitaryGate(S_alt, label="s_timo")
+
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(s_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
+        else:
+            self.qc.append(s_timo, [1+9*pos, 4+9*pos, 7+9*pos])
+
+    def s_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.s(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.s(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def ft_s(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        self.qc.reset(anc), self.qc.reset(ancc)
+        magic = int((self.qc.num_qubits - 2)/9)-1
+        #################Magic state initialization#################
+        for j in range(9):
+            self.qc.reset(9*magic+j)
+        self.qc.h(9*magic+1)
+        self.qc.h(9*magic+3)
+        self.qc.h(9*magic+5)
+        self.qc.h(9*magic+7)
+
+        self.qc.cx(9*magic+1,9*magic)
+        self.qc.cx(9*magic+5,9*magic+4)
+        self.qc.cx(9*magic+7,9*magic+8)
+
+        self.qc.cx(9*magic+5,9*magic+2)
+
+        self.qc.cx(9*magic+3,9*magic+4)
+        self.qc.cx(9*magic+2,9*magic+1)
+
+        self.qc.cx(9*magic+3,9*magic+6)
+
+        self.qc.cx(9*magic+6,9*magic+7)
+        
+        self.h(magic)
+        self.s_cheat(magic)
+        ################# Entanglement with Ancilla, check +-1 eigenstate of pauli y #################
+        self.qc.h(anc)
+
+        self.qc.cz(anc, 9*magic+1)
+        #self.qc.cx(anc, ancc)
+        self.qc.cz(anc, 9*magic+4)
+        self.qc.cz(anc, 9*magic+7)
+
+        self.qc.cx(anc, 9*magic+3)
+        self.qc.cx(anc, 9*magic+4)
+        #self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 9*magic+5)
+
+        self.qc.h(anc)
+
+        self.qc.measure(anc, 0)             #für noisefree case
+        # self.qc.measure(ancc, 0)
+        ################# Entanglement with target logical qubit #################
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(0+9*pos,9*magic+2)
+            self.qc.cx(1+9*pos,9*magic+5)
+            self.qc.cx(2+9*pos,9*magic+8)
+            self.qc.cx(3+9*pos,9*magic+1)
+            self.qc.cx(4+9*pos,9*magic+4)
+            self.qc.cx(5+9*pos,9*magic+7)
+            self.qc.cx(6+9*pos,9*magic+0)
+            self.qc.cx(7+9*pos,9*magic+3)
+            self.qc.cx(8+9*pos,9*magic+6)
+        else:    
+            self.qc.cx(0+9*pos,9*magic+0)
+            self.qc.cx(1+9*pos,9*magic+1)
+            self.qc.cx(2+9*pos,9*magic+2)
+            self.qc.cx(3+9*pos,9*magic+3)
+            self.qc.cx(4+9*pos,9*magic+4)
+            self.qc.cx(5+9*pos,9*magic+5)
+            self.qc.cx(6+9*pos,9*magic+6)
+            self.qc.cx(7+9*pos,9*magic+7)
+            self.qc.cx(8+9*pos,9*magic+8)
+
+        ################ Readout of Magic State #################
+        self.qc.reset(anc)
+        for j in range(9):
+            self.qc.cx(9*magic+j, anc)
+        ################# Z-rotation based on readout of magic state #################
+        self.qc.measure(anc, 0)
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(9*pos+3)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+5)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(9*pos+1)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+7)
+        self.qc.reset(anc), self.qc.reset(ancc)
+
+    def sdg(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.sdg(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.z(3+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.z(1+9*pos)
+                self.qc.z(4+9*pos)
+                self.qc.z(7+9*pos)
+    
+    def sdg_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.sdg(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.sdg(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def sdg_timo(self, pos: int):
+        Sdg_alt = np.diag([1, -1j, -1j, 1, -1j, 1, 1, -1j])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        sdg_timo = UnitaryGate(Sdg_alt, label="s_timo")
+
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(sdg_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
+        else:
+            self.qc.append(sdg_timo, [1+9*pos, 4+9*pos, 7+9*pos])
+
+    def t(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.t(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+        # if z_stab:
+        #     z_qec_ideal(qc, had=had, pos=pos)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.s(anc)
+                self.qc.cx(3+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(5+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(3+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.s(anc)
+                self.qc.cx(1+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(7+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(1+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(7+9*pos)
+    
+    def t_cheat(self, pos: int):
+            if self.hadamards[pos]%2==0:
+                self.qc.cx(9*pos+3, 9*pos+5)
+                self.qc.cx(9*pos+4, 9*pos+5)
+                self.qc.t(9*pos+5)
+                self.qc.cx(9*pos+3, 9*pos+5)
+                self.qc.cx(9*pos+4, 9*pos+5)
+            else:
+                self.qc.cx(9*pos+1, 9*pos+7)
+                self.qc.cx(9*pos+4, 9*pos+7)
+                self.qc.t(9*pos+7)
+                self.qc.cx(9*pos+1, 9*pos+7)
+                self.qc.cx(9*pos+4, 9*pos+7)
+
+    def rz_cheat(self, angle: float, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.rz(angle, 9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.rz(angle, 9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def rx_cheat(self, angle: float, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+7, 9*pos+1)
+            self.qc.cx(9*pos+7, 9*pos+4)
+            self.qc.rx(angle, 9*pos+7)
+            self.qc.cx(9*pos+7, 9*pos+1)
+            self.qc.cx(9*pos+7, 9*pos+4)
+        else:
+            self.qc.cx(9*pos+5, 9*pos+3)
+            self.qc.cx(9*pos+5, 9*pos+4)
+            self.qc.rx(angle, 9*pos+5)
+            self.qc.cx(9*pos+5, 9*pos+3)
+            self.qc.cx(9*pos+5, 9*pos+4)
+
+    def ry_cheat(self, angle: float, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.qc.s(9*pos+3), self.qc.s(9*pos+4), self.qc.s(9*pos+5)
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.rz(angle, 9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+            self.qc.sdg(9*pos+3), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+5)
+            self.qc.h(9*pos+3), self.qc.h(9*pos+4), self.qc.h(9*pos+5)
+        else:
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.qc.s(9*pos+1), self.qc.s(9*pos+4), self.qc.s(9*pos+7)
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.rz(angle, 9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+            self.qc.sdg(9*pos+1), self.qc.sdg(9*pos+4), self.qc.sdg(9*pos+7)
+            self.qc.h(9*pos+1), self.qc.h(9*pos+4), self.qc.h(9*pos+7)
+
+    def t_timo(self, pos: int):
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        t_timo = UnitaryGate(T_alt, label="t_timo")
+
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(t_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
+        else:
+            self.qc.append(t_timo, [1+9*pos, 4+9*pos, 7+9*pos])
+
+    def tdg(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        #self.qc.append(h_ideal,[anc])
+        self.qc.tdg(anc)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)        
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)  
+
+        self.qc.measure(anc, 0)
+        # if z_stab:
+        #     z_qec_ideal(qc, had=had, pos=pos)
+
+        if self.hadamards[pos]%2 == 0:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.sdg(anc)
+                self.qc.cx(3+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(5+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(3+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(5+9*pos)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.sdg(anc)
+                self.qc.cx(1+9*pos, anc)
+                self.qc.cx(4+9*pos, anc)
+                self.qc.cx(7+9*pos, anc) 
+                self.qc.measure(anc, 0)
+                with self.qc.if_test((0,1)):
+                    self.qc.z(1+9*pos)
+                    self.qc.z(4+9*pos)
+                    self.qc.z(7+9*pos)
+
+    def tdg_cheat(self, pos: int):
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+            self.qc.tdg(9*pos+5)
+            self.qc.cx(9*pos+3, 9*pos+5)
+            self.qc.cx(9*pos+4, 9*pos+5)
+        else:
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+            self.qc.tdg(9*pos+7)
+            self.qc.cx(9*pos+1, 9*pos+7)
+            self.qc.cx(9*pos+4, 9*pos+7)
+
+    def tdg_timo(self, pos: int):
+        T_alt = np.diag([1, (1+1j)/np.sqrt(2), (1+1j)/np.sqrt(2), 1, (1+1j)/np.sqrt(2), 1, 1, (1+1j)/np.sqrt(2)])
+        Tdg_alt = np.conjugate(T_alt)
+        #threshold = 1e-10
+        #T_alt[np.abs(T_alt) < threshold] = np.nan
+        tdg_timo = UnitaryGate(Tdg_alt, label="tdg_timo")
+
+        if self.hadamards[pos]%2 == 0:  
+            self.qc.append(tdg_timo, [3+9*pos, 4+9*pos, 5+9*pos])            #ich glaube man muss hier die reihenfolge reversen, ist ein 50/50
+        else:
+            self.qc.append(tdg_timo, [1+9*pos, 4+9*pos, 7+9*pos])
+
+    def cs(self):
+        self.t(pos=0)
+        self.t(pos=1)
+        self.cnot(control=0, target=1)
+        self.tdg(pos=1)
+        self.cnot(control=0, target=1)
+
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                # if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
+                self.s_timo(pos=pos)
+            if i == "sdg":
+                #  if self.err == True and self.qec_counter%5==0:
+                #     self.qec_zstab(pos=pos)
+                 self.sdg_timo(pos=pos)
+            if i == "t":
+                 if self.err == True and self.qec_counter%8==0:
+                    self.qec(pos=pos)
+                 self.t_timo(pos=pos)
+            if i == "tdg":
+                 if self.err == True and self.qec_counter%8==0:
+                    self.qec(pos=pos)
+                 self.tdg_timo(pos=pos)
+            if i == "h":
+                 self.h(pos=pos)
+            if i == "z":
+                 self.z(pos=pos)
+
+    def cu(self, Ugates: list, adjUgates: list):
+        self.u2(0, Ugates)
+        # if self.err:
+        #     self.qec(pos=0)
+        self.u2(1, Ugates)
+        # if self.err:
+        #     self.qec(pos=1)
+        self.cnot(control=0, target=1)
+        self.u2(1, adjUgates)
+        # if self.err:
+        #     self.qec(pos=1)
+        self.cnot(control=0, target=1)
+
+    def qec(self, pos: int):
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        if self.hadamards[pos]%2==1:
+            #X3 X6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 6+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #X0 X1 X3 X4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 0+9*pos)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+
+            #X4 X5 X7 X8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.cx(anc, 8+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #X2 X5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 2+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.z(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.z(3+9*pos)
+
+            with self.qc.if_test((3,1)):             #2
+                with self.qc.if_test((2,0)):
+                    self.qc.z(2+9*pos)
+            
+            with self.qc.if_test((3,1)):             #5
+                with self.qc.if_test((2,1)):
+                    self.qc.z(5+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.z(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.z(7+9*pos)
+
+        ###########################################################################################################
+
+            #Z0 Z1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z1 Z2 Z4 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z3 Z4 Z6 Z7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):
+                    self.qc.x(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.x(1+9*pos)
+            
+            with self.qc.if_test((3,1)):             #8
+                with self.qc.if_test((2,0)):
+                    self.qc.x(8+9*pos)
+            
+            with self.qc.if_test((3,1)):             #7
+                with self.qc.if_test((2,1)):
+                    self.qc.x(7+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(2+9*pos)
+            
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(3+9*pos)
+
+        else:
+            #X0 X1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 0+9*pos)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+            
+            #X1 X2 X4 X5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 2+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+
+            #X3 X4 X6 X7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 6+9*pos)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #X7 X8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.cx(anc, 8+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):    
+                    self.qc.z(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.z(1+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.z(4+9*pos)
+
+            with self.qc.if_test((2,1)):             #7
+                with self.qc.if_test((3,1)):
+                    self.qc.z(7+9*pos)
+
+            with self.qc.if_test((2,0)):             #8
+                with self.qc.if_test((3,1)):
+                    self.qc.z(8+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):        
+                    with self.qc.if_test((2,0)):    
+                        self.qc.z(2+9*pos)
+
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.z(3+9*pos)
+
+        ###########################################################################################################
+
+            #Z3 Z6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z0 Z1 Z3 Z4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z4 Z5 Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z2 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.x(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.x(3+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((2,0)):             #2
+                with self.qc.if_test((3,1)):
+                    self.qc.x(2+9*pos)
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    self.qc.x(5+9*pos)
+            
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(7+9*pos)
+
+    def qec_zstab(self, pos: int):
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        if self.hadamards[pos]%2==1:
+            #Z0 Z1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z1 Z2 Z4 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z3 Z4 Z6 Z7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):
+                    self.qc.x(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.x(1+9*pos)
+            
+            with self.qc.if_test((3,1)):             #8
+                with self.qc.if_test((2,0)):
+                    self.qc.x(8+9*pos)
+            
+            with self.qc.if_test((3,1)):             #7
+                with self.qc.if_test((2,1)):
+                    self.qc.x(7+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(2+9*pos)
+            
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(3+9*pos)
+
+        else:
+            #Z3 Z6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z0 Z1 Z3 Z4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z4 Z5 Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z2 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.x(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.x(3+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((2,0)):             #2
+                with self.qc.if_test((3,1)):
+                    self.qc.x(2+9*pos)
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    self.qc.x(5+9*pos)
+            
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(7+9*pos)
+
+    def qec_flags(self, pos: int):
+        flags = ClassicalRegister(8)
+        self.qc.add_register(flags)
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        if self.hadamards[pos]%2==1:
+            #X3 X6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 6+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #X0 X1 X3 X4 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(anc)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 0+9*pos)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,1), self.qc.measure(ancc, flags[1])
+
+            #X4 X5 X7 X8 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(anc)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 8+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,2), self.qc.measure(ancc, flags[2])
+
+            #X2 X5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 2+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.z(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.z(3+9*pos)
+
+            with self.qc.if_test((3,1)):             #2
+                with self.qc.if_test((2,0)):
+                    self.qc.z(2+9*pos)
+            
+            with self.qc.if_test((3,1)):             #5
+                with self.qc.if_test((2,1)):
+                    self.qc.z(5+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.z(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.z(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.z(7+9*pos)
+
+        ###########################################################################################################
+
+            #Z0 Z1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z1 Z2 Z4 Z5 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(ancc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.h(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,1), self.qc.measure(ancc, flags[5])
+        
+            #Z3 Z4 Z6 Z7 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(ancc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.h(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,2), self.qc.measure(ancc, flags[6])
+
+            #Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):
+                    self.qc.x(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.x(1+9*pos)
+            
+            with self.qc.if_test((3,1)):             #8
+                with self.qc.if_test((2,0)):
+                    self.qc.x(8+9*pos)
+            
+            with self.qc.if_test((3,1)):             #7
+                with self.qc.if_test((2,1)):
+                    self.qc.x(7+9*pos)
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(2+9*pos)
+            
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(3+9*pos)
+
+        else:
+            #X0 X1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 0+9*pos)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+            
+            #X1 X2 X4 X5 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(anc)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 2+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 5+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,1), self.qc.measure(ancc, flags[1])
+
+            #X3 X4 X6 X7 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(anc)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 6+9*pos)
+            self.qc.cx(anc, ancc)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,2), self.qc.measure(ancc, flags[2])
+
+            #X7 X8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, 7+9*pos)
+            self.qc.cx(anc, 8+9*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):    
+                    self.qc.z(0+9*pos)
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.z(1+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.z(4+9*pos)
+
+            with self.qc.if_test((2,1)):             #7
+                with self.qc.if_test((3,1)):
+                    self.qc.z(7+9*pos)
+
+            with self.qc.if_test((2,0)):             #8
+                with self.qc.if_test((3,1)):
+                    self.qc.z(8+9*pos)
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):        
+                    with self.qc.if_test((2,0)):    
+                        self.qc.z(2+9*pos)
+
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.z(3+9*pos)
+
+        ###########################################################################################################
+
+            #Z3 Z6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(6+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z0 Z1 Z3 Z4 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(ancc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(0+9*pos, anc)
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.h(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,1), self.qc.measure(ancc, flags[5])
+        
+            #Z4 Z5 Z7 Z8 Stabilizer:
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.h(ancc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+            self.qc.cx(ancc, anc)
+            self.qc.cx(8+9*pos, anc)
+            self.qc.h(ancc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc,2), self.qc.measure(ancc, flags[6])
+
+            #Z2 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.id(anc)
+            self.qc.cx(2+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.x(6+9*pos)
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.x(3+9*pos)
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.x(4+9*pos)
+
+            with self.qc.if_test((2,0)):             #2
+                with self.qc.if_test((3,1)):
+                    self.qc.x(2+9*pos)
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    self.qc.x(5+9*pos)
+            
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.x(0+9*pos)
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.x(7+9*pos)
+
+    def err_mitigation(self, setting: bool):
+        self.postselection = setting
+
+    def __classical_error_correction__(self, bits: list):
+        code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
+        code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
+        hmm = 0
+        for i,val in enumerate(bits):
+            for j in code0:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+            for j in code1:
+                diff = 0
+                for a,b in zip(val, j):
+                    if a!=b:
+                        diff += 1
+                if diff == 0:
+                    hmm += 1
+                    break
+                if diff == 1:
+                    bits[i] = j
+                    break
+        return bits
+
+    def readout(self, pos: int, shots: int, p = 0):
+        code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
+        code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
+
+        hads = ClassicalRegister(1)
+        self.qc.add_register(hads)
+        self.qc.measure(self.hads_counter, hads[0])
+        
+        read = ClassicalRegister(9)
+        self.qc.add_register(read)
+        # for i in range(9):
+        #     self.qc.id(i+9*pos)
+        for i in range(9):
+            with self.qc.if_test((hads[0],0)):
+                self.qc.measure(i+9*pos, read[8-i])
+
+        with self.qc.if_test((hads[0],1)):
+            self.qc.measure(0+9*pos, read[8-6])
+            self.qc.measure(1+9*pos, read[8-3])
+            self.qc.measure(2+9*pos, read[8-0])
+            self.qc.measure(3+9*pos, read[8-7])
+            self.qc.measure(4+9*pos, read[8-4])
+            self.qc.measure(5+9*pos, read[8-1])
+            self.qc.measure(6+9*pos, read[8-8])
+            self.qc.measure(7+9*pos, read[8-5])
+            self.qc.measure(8+9*pos, read[8-2])
+
+        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+
+        noise_model = NoiseModel()
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "id", "s", "sdg", "t", "tdg"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        sim = AerSimulator()
+        job = sim.run(self.qc, noise_model = noise_model, shots=shots)
+        result = job.result()
+        counts = result.get_counts()
+
+        bitstring = list(counts.keys())
+        # print(bitstring)
+        bitstring = [i.replace(" ","") for i in bitstring]
+        hmm = list(counts.values())
+
+        bits = [i[:9] for i in bitstring]
+        # had = [i[9] for i in bitstring]
+        # print(bits)
+        flags = [i[10:len(bitstring[0])-4] for i in bitstring]
+
+        if self.classical_ec:
+            bits = self.__classical_error_correction__(bits)
+
+        if self.postselection:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    # print("AHA")
+                    bits[i] = "post"
+        else:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
+
+        for i in range(len(flags)):
+            if flags[i].count("1") != 0:
+                # print("AHAAA")
+                bits[i] = "post"
+
+        ones = 0
+        zeros = 0
+        err = 0
+
+        for i in range(len(bits)):
+            if bits[i] == 0:
+                zeros += hmm[i]
+            if bits[i] == 1:
+                ones += hmm[i]
+            if bits[i] == "post":
+                err += hmm[i]
+        
+        ones = (ones/shots)
+        zeros = (zeros/shots)
+        err = (err/shots)
+
+        self.ones = ones
+        self.zeros = zeros
+        self.post = err
+        #return zeros, ones, err
+
+    def magic_readout(self, pos: int, shots: int, p = 0):
+        code0 = ['000110101', '110110110', '110110101', '110000000', '000110110', '101101101', '011101101', '011011000', '011011011', '110000011', '000000000', '011101110', '101011011', '101101110', '000000011', '101011000']
+        code1 = ['010100111', '010010001', '111111111', '001001010', '111001010', '001111111', '100010010', '111111100', '100100100', '100010001', '001001001', '010010010', '100100111', '111001001', '001111100', '010100100']
+
+        mapping = {0: 2, 1: 5, 2: 8, 3: 1, 4: 4, 5: 7, 6: 0, 7: 3, 8: 6}
+
+        # def apply_mapping(s, mapping):
+        #     result = [''] * len(s)
+        #     for i, new_pos in mapping.items():
+        #         result[new_pos] = s[i]
+        #     return ''.join(result)
+
+        # code0_h = [apply_mapping(s, mapping) for s in code0]
+        # code1_h = [apply_mapping(s, mapping) for s in code1]
+        
+        read = ClassicalRegister(9)
+        self.qc.add_register(read)
+        # for i in range(9):
+        #     self.qc.id(i+9*pos)
+        if self.hadamards[pos]%2 == 0:
+            for i in range(9):
+                self.qc.measure(i+9*pos, read[8-i])
+        else:
+            self.qc.measure(0+9*pos, read[8-6])
+            self.qc.measure(1+9*pos, read[8-3])
+            self.qc.measure(2+9*pos, read[8-0])
+            self.qc.measure(3+9*pos, read[8-7])
+            self.qc.measure(4+9*pos, read[8-4])
+            self.qc.measure(5+9*pos, read[8-1])
+            self.qc.measure(6+9*pos, read[8-8])
+            self.qc.measure(7+9*pos, read[8-5])
+            self.qc.measure(8+9*pos, read[8-2])
+
+        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+
+        noise_model = NoiseModel()
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "id", "s", "sdg", "t", "tdg"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        sim = AerSimulator()
+        new_qc = transpile(self.qc, optimization_level=2)
+        job = sim.run(new_qc, noise_model = noise_model, shots=shots)
+        result = job.result()
+        counts = result.get_counts()
+
+
+        bitstring = list(counts.keys())
+        print(bitstring)
+        bitstring = [i.replace(" ","") for i in bitstring]
+        hmm = list(counts.values())
+
+        bits = [i[:9] for i in bitstring]
+        # print(bits)
+        flags = [i[9:len(bitstring[0])-4] for i in bitstring]
+
+        magic = [i[len(bitstring[0])-1] for i in bitstring]
+
+        print(magic)
+
+        if self.classical_ec:
+            bits = self.__classical_error_correction__(bits)
+ 
+        if self.postselection:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    print(magic[i])
+                    bits[i] = "post"
+        else:
+            for i in range(len(bits)):
+                for j in code0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        break
+                if bits[i] != 0:
+                    for j in code1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
+
+        for i in range(len(flags)):
+            if flags[i].count("1") != 0:
+                bits[i] = "post"
+
+        ones = 0
+        zeros = 0
+        err = 0
+
+        for i in range(len(bits)):
+            if bits[i] == 0:
+                zeros += hmm[i]
+            if bits[i] == 1:
+                ones += hmm[i]
+            if bits[i] == "post":
+                err += hmm[i]
+        
+        ones = (ones/shots)
+        zeros = (zeros/shots)
+        err = (err/shots)
+
+        self.ones = ones
+        self.zeros = zeros
+        self.post = err
+
+
+class RotSurf9q:
+    def __init__(self, n: int, magic = 0):
+        self.n = n
+
+        self.zeros = 0
+        self.ones = 0
+        self.preselected = 0
+        self.post = 0
+
+        self.err = False
+        self.postselection = True
+        self.classical_ec = False
+        self.qec_counter = 0
+
+        self.hadamards = [0 for i in range(n+magic)]
+
+        qr = QuantumRegister(9*(n+magic)+4, "q")
+        cbit = ClassicalRegister(4,"c")
+        self.qc = QuantumCircuit(qr,cbit)
+        for i in range(9*n):
+            self.qc.id(i)
+        for i in range(n):
+            self.qc.h(9*i+1)
+            self.qc.h(9*i+3)
+            self.qc.h(9*i+5)
+            self.qc.h(9*i+7)
+
+            self.qc.cx(9*i+1,9*i)
+            self.qc.cx(9*i+5,9*i+4)
+            self.qc.cx(9*i+7,9*i+8)
+
+            self.qc.cx(9*i+5,9*i+2)
+
+            self.qc.cx(9*i+3,9*i+4)
+            self.qc.cx(9*i+2,9*i+1)
+
+            self.qc.cx(9*i+3,9*i+6)
+
+            self.qc.cx(9*i+6,9*i+7)
+
+    def testing_magic(self, target: int):
+        self.h(pos=target)
+        self.sdg_cheat(pos=target)
+        self.h(pos=target)
+
+        pos = target + 1        #pos = welcher qubit als magic state verwendet wird, target = qubit auf den das gate teleportiert werden soll
+        for i in range(9):
+            self.qc.reset(9*pos+i)
+        
+        self.qc.h(9*pos+1)
+        self.qc.h(9*pos+3)
+
+        # self.qc.h(9*pos+4)
+        # self.qc.t(9*pos+4)
+
+        self.qc.ry(np.pi/4,9*pos+4)
+
+        self.qc.h(9*pos+5)
+        self.qc.h(9*pos+7)
+
+        self.qc.cx(9*pos+4,9*pos+0)
+        # self.qc.cx(9*pos+4,9*pos+2)
+        # self.qc.cx(9*pos+4,9*pos+6)
+        self.qc.cx(9*pos+4,9*pos+8)
+
+        self.qc.cx(9*pos+1,9*pos+0)
+        self.qc.cx(9*pos+7,9*pos+8)
+
+        self.qc.cx(9*pos+5,9*pos+2)
+        self.qc.cx(9*pos+5,9*pos+4)
+
+        self.qc.cx(9*pos+3,9*pos+4)
+        self.qc.cx(9*pos+3,9*pos+6)
+
+        self.qc.cx(9*pos+5,9*pos+1)
+        self.qc.cx(9*pos+3,9*pos+7)
+
+        ################ Controlled Hadamard injection#################################
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        flag = ancc - 1
+        self.qc.reset(anc), self.qc.reset(ancc)
+
+        self.qc.h(ancc)
+
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(3+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(5+9*pos, anc)
+        else:
+            self.qc.cx(1+9*pos, anc)
+            self.qc.cx(4+9*pos, anc)
+            self.qc.cx(7+9*pos, anc)
+
+        self.qc.h(anc)
+
+        if self.hadamards[pos]%2==0:
+            self.qc.cx(anc, 1+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 7+9*pos)
+        else:
+            self.qc.cx(anc, 3+9*pos)
+            self.qc.cx(anc, 4+9*pos)
+            self.qc.cx(anc, 5+9*pos)
+
+        self.qc.h(anc)
+
+        self.qc.x(ancc)
+        self.qc.ry(-np.pi/4, anc)
+        self.qc.cz(ancc, anc)
+        self.qc.ry(np.pi/4, anc)
+        self.qc.x(ancc)
+
+        self.qc.measure(anc,0)         #anc
+        if self.hadamards[pos]%2==0:
+            with self.qc.if_test((0,0)): #anc
+                self.qc.cx(ancc, 9*pos+1)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+7)
+        else:
+            with self.qc.if_test((0,0)):
+                self.qc.cx(ancc, 9*pos+3)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+5)
+
+        if self.hadamards[pos]%2==0:
+            with self.qc.if_test((0,1)): #anc
+                self.qc.x(9*pos+1)
+                self.qc.x(9*pos+4)
+                self.qc.x(9*pos+7)
+
+                self.qc.z(9*pos+3)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+5)
+
+                self.qc.cx(ancc, 9*pos+1)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+7)
+
+                self.qc.z(ancc)
+        else:
+            with self.qc.if_test((0,1)):
+                self.qc.x(9*pos+3)
+                self.qc.x(9*pos+4)
+                self.qc.x(9*pos+5)
+
+                self.qc.z(9*pos+1)
+                self.qc.z(9*pos+4)
+                self.qc.z(9*pos+7)
+
+                self.qc.cx(ancc, 9*pos+3)
+                self.qc.cx(ancc, 9*pos+4)
+                self.qc.cx(ancc, 9*pos+5)
+
+                self.qc.z(ancc)
+        
+        self.qc.h(ancc)
+        self.qc.measure(ancc, 0)
+        ################ qec cylce #################################
+        #empty for now
+        ############### Controlled Y-gate###########################
+        self.sdg_cheat(pos=target)
+        for i in range(9):
+            self.qc.cx(i+9*pos,i+9*target)
+        self.s_cheat(pos=target)
+        ###### Measure logical state of the magic state for state injection##########
+        self.qc.reset(anc)
+        self.sdg_cheat(pos=pos)
+        self.h(pos=pos)
+        for i in range(9):
+            self.qc.cx(i+pos*9, anc)
+        self.qc.measure(anc,0)
+        ###############Apply conditioned Ry(pi/2) onto the Target####################
+        for i in range(9):
+            with self.qc.if_test((0,1)):
+                self.qc.h(i+9*target)             
+
+        self.qc.reset(ancc)                      #Need this to track hadamard rots on ancilla because of conditional hadamard above
+        if self.hadamards[target]%2 != 0:
+            self.qc.x(ancc)
+        with self.qc.if_test((0,1)):
+            self.qc.x(ancc)
+        self.qc.measure(ancc, 1)
+
+        with self.qc.if_test((1,0)):
+            with self.qc.if_test((0,1)):
+                self.qc.x(1+9*target)
+                self.qc.x(4+9*target)
+                self.qc.x(7+9*target)
+
+        with self.qc.if_test((1,1)):
+            with self.qc.if_test((0,1)):
+                self.qc.x(3+9*target)
+                self.qc.x(4+9*target)
+                self.qc.x(5+9*target)
+        self.h(pos=target)
+        self.s_cheat(pos=target)
+        self.h(pos=target)
+        if self.err:
+            self.qec(pos=target)
 
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
