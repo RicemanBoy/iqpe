@@ -428,8 +428,11 @@ class Steane7q:
             self.qc.h(i+7*pos)
 
     def s(self, pos: int):
-        self.qc.s(0+7*pos), self.qc.s(1+7*pos), self.qc.s(3+7*pos), self.qc.s(6+7*pos)
-        self.qc.sdg(2+7*pos), self.qc.sdg(4+7*pos), self.qc.sdg(5+7*pos)
+        for i in range(7):
+            self.qc.sdg(i+7*pos)
+
+        # self.qc.s(0+7*pos), self.qc.s(1+7*pos), self.qc.s(3+7*pos), self.qc.s(6+7*pos)
+        # self.qc.sdg(2+7*pos), self.qc.sdg(4+7*pos), self.qc.sdg(5+7*pos)
 
     def t_ghz(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -737,12 +740,12 @@ class Steane7q:
                 self.t(pos=pos)
                 #self.t_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                    self.qec_ft(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                    self.qec_ft(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":

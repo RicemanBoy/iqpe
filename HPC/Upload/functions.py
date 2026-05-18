@@ -1,12 +1,12 @@
 from classes import *
 
 def gen_data(name):
-    p = np.linspace(0,0.001,10)[6:]
+    p = np.linspace(0,0.001,10)[:3]
     y, y_qec = [],[]
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin("steane", 3, noise=r, qec=False,k=1)
+        ok, errr = avg15_coin("steane", 3, noise=r, qec=True,k=1)
         y.append(ok), err.append(errr)
         # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
@@ -14,7 +14,7 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("FT_steane_6_9{}.txt".format(name), data, delimiter=",")
+    np.savetxt("FT_steane_qec_0_2{}.txt".format(name), data, delimiter=",")
     # dustin = RotSurf16q(2)
     # dustin.h(0)
     # dustin.x(1)
