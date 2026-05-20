@@ -691,38 +691,38 @@ class Steane7q:
         ancc = anc - 1
 
         self.qc.reset(anc), self.qc.reset(ancc)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 0+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 2+7*pos)
         self.qc.cx(anc, 4+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[0]), self.qc.measure(ancc, flags[0])
         self.qc.reset(anc), self.qc.reset(ancc)
 
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 1+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 2+7*pos)
         self.qc.cx(anc, 5+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[2]), self.qc.measure(ancc, flags[1])
         self.qc.reset(anc), self.qc.reset(ancc)
 
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 3+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 4+7*pos)
         self.qc.cx(anc, 5+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[1]), self.qc.measure(ancc, flags[2])
 
@@ -888,38 +888,38 @@ class Steane7q:
         ancc = anc - 1
 
         self.qc.reset(anc), self.qc.reset(ancc)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 0+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 2+7*pos)
         self.qc.cx(anc, 4+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[0]), self.qc.measure(ancc, flags[0])
         self.qc.reset(anc), self.qc.reset(ancc)
 
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 1+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 2+7*pos)
         self.qc.cx(anc, 5+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[2]), self.qc.measure(ancc, flags[1])
         self.qc.reset(anc), self.qc.reset(ancc)
 
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
         self.qc.cx(anc, 3+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 4+7*pos)
         self.qc.cx(anc, 5+7*pos)
         self.qc.cx(anc, ancc)
         self.qc.cx(anc, 6+7*pos)
-        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.h(anc)
 
         self.qc.measure(anc, self.qecc[1]), self.qc.measure(ancc, flags[2])
 

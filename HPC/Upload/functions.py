@@ -6,7 +6,7 @@ def gen_data(name):
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin("steane", 3, noise=r, qec=True,k=1)
+        ok, errr = avg15_coin("steane", 3, noise=r, qec=True,k=1)                   #Vergiss nicht zu qec_ft überall zu ändern, bei u2 und readout und avg15!
         y.append(ok), err.append(errr)
         # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
         # y_qec.append(ok1), err_qec.append(errr1)
