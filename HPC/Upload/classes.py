@@ -602,85 +602,85 @@ class Steane7q:
         self.qc.cx(6+7*pos, anc)
         self.qc.cx(0+7*n, anc)
 
-        self.qc.measure(anc, 0)
+        self.qc.measure(anc, self.qecc[0])
         self.qc.reset(anc)
 
         self.qc.cx(4+7*pos, anc)
         self.qc.cx(6+7*pos, anc)
         self.qc.cx(1+7*n, anc)
 
-        self.qc.measure(anc, 2)
+        self.qc.measure(anc, self.qecc[2])
         self.qc.reset(anc)
 
         self.qc.cx(2+7*pos, anc)
         self.qc.cx(6+7*pos, anc)
         self.qc.cx(2+7*n, anc)
 
-        self.qc.measure(anc, 1)
+        self.qc.measure(anc, self.qecc[1])
 
         #B_Z^4 = 0, B_Z^5 = 1, B_Z^6 = 2
 
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.x(0+7*pos)
                     self.qc.x(2+7*pos)
                     self.qc.x(4+7*pos)
                     self.qc.x(6+7*pos)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.x(3+7*pos)
                     self.qc.x(4+7*pos)
                     self.qc.x(5+7*pos)
                     self.qc.x(6+7*pos)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.x(1+7*pos)
                     self.qc.x(2+7*pos)
                     self.qc.x(5+7*pos)
                     self.qc.x(6+7*pos)
         
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.x(0+7*pos)
                     self.qc.x(2+7*pos)
                     self.qc.x(3+7*pos)
                     self.qc.x(5+7*pos)
 
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.x(0+7*pos)
                     self.qc.x(1+7*pos)
                     self.qc.x(4+7*pos)
                     self.qc.x(5+7*pos)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.x(1+7*pos)
                     self.qc.x(2+7*pos)
                     self.qc.x(3+7*pos)
                     self.qc.x(4+7*pos)
         
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.x(0+7*pos)
                     self.qc.x(1+7*pos)
                     self.qc.x(3+7*pos)
                     self.qc.x(6+7*pos)
         
-        self.qc.t(0+7*pos)
+        self.qc.t(0+7*pos)              #The three edge qubits and the central one has T, the three qubits on the side have tdg, so in total 4 T, 3 Tdg, and one ccz on the bulk qubits
         self.qc.t(3+7*pos)
-        self.qc.t(4+7*pos)
+        self.qc.tdg(4+7*pos)
         self.qc.t(6+7*pos)
-        self.qc.tdg(1+7*pos)
+        self.qc.t(1+7*pos)
         self.qc.tdg(2+7*pos)
         self.qc.tdg(5+7*pos)
 
@@ -694,7 +694,7 @@ class Steane7q:
         self.qc.cx(anc, 6+7*pos)
         self.qc.h(anc)
 
-        self.qc.measure(anc, 0)
+        self.qc.measure(anc, self.qecc[0])
         self.qc.reset(anc)
 
         self.qc.h(anc)
@@ -704,7 +704,7 @@ class Steane7q:
         self.qc.cx(anc, 6+7*pos)
         self.qc.h(anc)
 
-        self.qc.measure(anc, 1)
+        self.qc.measure(anc, self.qecc[2])
         self.qc.reset(anc)
 
         self.qc.h(anc)
@@ -714,58 +714,58 @@ class Steane7q:
         self.qc.cx(anc, 6+7*pos)
         self.qc.h(anc)
 
-        self.qc.measure(anc, 2)
+        self.qc.measure(anc, self.qecc[1])
 
         #A_X^1 = 0 , A_X^2 = 1 , A_X^3 = 2
 
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.z(5+7*pos)
                     self.qc.z(6+7*pos)
                     self.qc.z(0+7*n)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.z(2+7*pos)
                     self.qc.z(6+7*pos)
                     self.qc.z(2+7*n)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.z(4+7*pos)
                     self.qc.z(6+7*pos)
                     self.qc.z(1+7*n)
         
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,0)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
                     self.qc.z(2+7*pos)
                     self.qc.z(5+7*pos)
                     self.qc.z(0+7*n)
                     self.qc.z(1+7*n)
         
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,0)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.z(4+7*pos)
                     self.qc.z(5+7*pos)
                     self.qc.z(0+7*n)
                     self.qc.z(1+7*n)
         
-        with self.qc.if_test((0,0)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.z(2+7*pos)
                     self.qc.z(4+7*pos)
                     self.qc.z(1+7*n)
                     self.qc.z(2+7*n)
         
-        with self.qc.if_test((0,1)):
-            with self.qc.if_test((1,1)):
-                with self.qc.if_test((2,1)):
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
                     self.qc.z(2+7*pos)
                     self.qc.z(4+7*pos)
                     self.qc.z(5+7*pos)
@@ -773,12 +773,194 @@ class Steane7q:
                     self.qc.z(0+7*n)
                     self.qc.z(1+7*n)
                     self.qc.z(2+7*n)
-        
-        self.qc.reset(anc)
-        self.qc.measure(anc, 0)
-        self.qc.measure(anc, 1)
-        self.qc.measure(anc, 2)
     
+    def tdg_switch(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        n = int((self.qc.num_qubits-2)/7) - 1
+        self.qc.reset(anc)
+
+        for i in range(3):
+            self.qc.reset(i+7*n)
+        
+        for i in range(3):
+            self.qc.h(i+7*n)
+
+        self.qc.cx(5+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+        self.qc.cx(0+7*n, anc)
+
+        self.qc.measure(anc, self.qecc[0])
+        self.qc.reset(anc)
+
+        self.qc.cx(4+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+        self.qc.cx(1+7*n, anc)
+
+        self.qc.measure(anc, self.qecc[2])
+        self.qc.reset(anc)
+
+        self.qc.cx(2+7*pos, anc)
+        self.qc.cx(6+7*pos, anc)
+        self.qc.cx(2+7*n, anc)
+
+        self.qc.measure(anc, self.qecc[1])
+
+        #B_Z^4 = 0, B_Z^5 = 1, B_Z^6 = 2
+
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(0+7*pos)
+                    self.qc.x(2+7*pos)
+                    self.qc.x(4+7*pos)
+                    self.qc.x(6+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(3+7*pos)
+                    self.qc.x(4+7*pos)
+                    self.qc.x(5+7*pos)
+                    self.qc.x(6+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(1+7*pos)
+                    self.qc.x(2+7*pos)
+                    self.qc.x(5+7*pos)
+                    self.qc.x(6+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.x(0+7*pos)
+                    self.qc.x(2+7*pos)
+                    self.qc.x(3+7*pos)
+                    self.qc.x(5+7*pos)
+
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(0+7*pos)
+                    self.qc.x(1+7*pos)
+                    self.qc.x(4+7*pos)
+                    self.qc.x(5+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(1+7*pos)
+                    self.qc.x(2+7*pos)
+                    self.qc.x(3+7*pos)
+                    self.qc.x(4+7*pos)
+        
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.x(0+7*pos)
+                    self.qc.x(1+7*pos)
+                    self.qc.x(3+7*pos)
+                    self.qc.x(6+7*pos)
+        
+        self.qc.tdg(0+7*pos)              #The three edge qubits and the central one has T, the three qubits on the side have tdg, so in total 4 T, 3 Tdg, and one ccz on the bulk qubits
+        self.qc.tdg(3+7*pos)
+        self.qc.t(4+7*pos)
+        self.qc.tdg(6+7*pos)
+        self.qc.tdg(1+7*pos)
+        self.qc.t(2+7*pos)
+        self.qc.t(5+7*pos)
+
+        self.qc.ccz(0+7*n, 1+7*n, 2+7*n)
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 0+7*pos)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.measure(anc, self.qecc[0])
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 1+7*pos)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.measure(anc, self.qecc[2])
+        self.qc.reset(anc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 3+7*pos)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.measure(anc, self.qecc[1])
+
+        #A_X^1 = 0 , A_X^2 = 1 , A_X^3 = 2
+
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.z(5+7*pos)
+                    self.qc.z(6+7*pos)
+                    self.qc.z(0+7*n)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.z(2+7*pos)
+                    self.qc.z(6+7*pos)
+                    self.qc.z(2+7*n)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.z(4+7*pos)
+                    self.qc.z(6+7*pos)
+                    self.qc.z(1+7*n)
+        
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],0)):
+                    self.qc.z(2+7*pos)
+                    self.qc.z(5+7*pos)
+                    self.qc.z(0+7*n)
+                    self.qc.z(1+7*n)
+        
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],0)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.z(4+7*pos)
+                    self.qc.z(5+7*pos)
+                    self.qc.z(0+7*n)
+                    self.qc.z(1+7*n)
+        
+        with self.qc.if_test((self.qecc[0],0)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.z(2+7*pos)
+                    self.qc.z(4+7*pos)
+                    self.qc.z(1+7*n)
+                    self.qc.z(2+7*n)
+        
+        with self.qc.if_test((self.qecc[0],1)):
+            with self.qc.if_test((self.qecc[1],1)):
+                with self.qc.if_test((self.qecc[2],1)):
+                    self.qc.z(2+7*pos)
+                    self.qc.z(4+7*pos)
+                    self.qc.z(5+7*pos)
+                    self.qc.z(6+7*pos)
+                    self.qc.z(0+7*n)
+                    self.qc.z(1+7*n)
+                    self.qc.z(2+7*n)
+
     def rz_cheat(self, angle: float, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
         self.qc.cx(1+7*pos, 2+7*pos)
