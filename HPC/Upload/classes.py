@@ -329,10 +329,10 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         if l == 0.25:
                             self.sdg(pos=0)
                         if l == 0.125:
-                            self.nFTtdg(pos=0)
+                            self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec(pos = 0)
+                        self.qec_ft(pos = 0)
                     self.qc = transpile(self.qc, optimization_level=1)
                     self.readout(pos=0, shots=1, p=noise)
                     if self.zeros == 1:
@@ -1134,12 +1134,12 @@ class Steane7q:
                 self.t(pos=pos)
                 #self.t_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                    self.qec_ft(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
-                    self.qec(pos = pos)
+                    self.qec_ft(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -1560,6 +1560,7 @@ class Steane7q:
                 # print("Wrong bitstring: ", bits[i])
                 if self.postselection:
                     bits[i] = "post"
+                    print("Postselected!")
                 else:
                     if np.random.rand() < 0.5:
                         bits[i] = 0
