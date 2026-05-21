@@ -312,7 +312,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                 rots = [k*0.5 for k in rots]
                 while True:
                     if code == "steane":
-                        self = Steane7q(2, magic=0)
+                        self = Steane7q(2, magic=1)
                     elif code == "rotsurf9":
                         self = RotSurf9q(2)
                     elif code == "rotsurf16":
@@ -6445,3 +6445,121 @@ class Color17q:
         self.ones = ones
         self.zeros = zeros
         self.post = err
+
+class RepCode:
+    def __init__(self, n: int, logical_q: int):
+        self.ones = 0
+        self.zeros = 0
+        self.n = n
+
+
+        qr = QuantumRegister(n*logical_q+1, "q")
+        cbit = ClassicalRegister(1, "c")
+        self.qc = QuantumCircuit(qr, cbit)
+
+        self.qecc = ClassicalRegister(n-1)
+        self.qc.add_register(self.qecc)
+
+    def x(self, pos: int):
+        for i in range(self.n):
+            self.qc.x(self.n*pos + i)
+
+    def z(self, pos: int):
+        for i in range(self.n):
+            self.qc.z(self.n*pos + i)
+    
+    def h(self, pos: int):
+        for i in range(self.n):
+            self.qc.h(self.n*pos + i)
+    
+    def s(self, pos: int):
+        for i in range(self.n):
+            self.qc.s(self.n*pos + i)
+    
+    def sdg(self, pos: int):
+        for i in range(self.n):
+            self.qc.sdg(self.n*pos + i)
+    
+    def t(self, pos: int):
+        for i in range(self.n):
+            self.qc.t(self.n*pos + i)
+    
+    def tdg(self, pos: int):
+        for i in range(self.n):
+            self.qc.tdg(self.n*pos + i)
+
+    def cnot(self, ctrl: int, targ: int):
+        for i in range(self.n):
+            self.qc.cx(self.n*ctrl + i, self.n*targ + i)
+    
+    def qec_zstab(self, pos: int):
+        anc = self.qc.num_qubits - 1
+
+        for i in range(self.n-1):
+            self.qc.reset(anc)
+            if i == self.n - 1 - 1:
+                self.qc.cx(self.n*pos, anc)
+                self.qc.cx(self.n*pos + i, anc)
+                self.qc.measure(anc, self.qecc[i])
+
+            self.qc.cx(self.n*pos + i, anc)
+            self.qc.cx(self.n*pos + i + 1, anc)
+            self.qc.measure(anc, self.qecc[i])
+
+    def readout(self, pos: int, shots: int, noise: float, bias: float):
+        p  = noise
+
+        p_x, p_z = p + bias, p - bias
+        noise_model = NoiseModel()
+        p_error = pauli_error([["X",p_x/2],["I",1-p],["Z",p_z/2]])
+        p_error_2 = pauli_error([["XI",p_x/4],["IX",p_x/4],["II",1-p],["ZI",p_z/4],["IZ",p_z/4]])
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        read = ClassicalRegister(self.n)
+        self.qc.add_register(read)
+
+        for i in range(self.n):
+            self.qc.measure(self.n*pos + i, read[self.n-1-i])
+
+        sim = AerSimulator()
+        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
+        result = job.result()
+        counts = result.get_counts()
+
+        print(counts)
+
+        bitstring = list(counts.keys())
+        bits = [i.replace(" ","") for i in bitstring]
+        counter = list(counts.values())
+
+        allcbits = len(bitstring[0])
+
+        bits = [i[:self.n] for i in bits]
+
+        print(bits)
+
+        zero, one = 0, 0
+
+        for i, val in enumerate(bits):
+            print(counter[i])
+            count0, count1 = 0, 0
+            for j in val:
+                if j == "0":
+                    count0 += 1
+                else:
+                    count1 += 1
+            if count0 > count1:
+                zero += counter[i]
+            elif count1 > count0:
+                one += counter[i]
+            else:
+                for k in range(counter[i]):
+                    if np.random.rand() < 0.5:
+                        zero += 1
+                    else:
+                        one += 1
+        
+        self.ones += one
+        self.zeros += zero
+
