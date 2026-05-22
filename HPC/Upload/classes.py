@@ -310,6 +310,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
             rots = []
             for t in range(iter):
                 rots = [k*0.5 for k in rots]
+                counter = 0                     #counter wie oft was wiederholt werden muss
                 while True:
                     if code == "steane":
                         self = Steane7q(2, magic=1)
@@ -342,6 +343,8 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         bitstring += "1"
                         rots.append(0.5)
                         break
+                    counter += 1
+                    print("Iteration {}: {} Repetition".format(t, counter))
             bitstring = bitstring[::-1]
             # print(bitstring)
             hmm = convert(bitstring)

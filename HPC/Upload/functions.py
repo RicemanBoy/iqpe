@@ -1,7 +1,7 @@
 from classes import *
 
 def gen_data(name):
-    p = np.linspace(0,0.001,10)[:4]
+    p = np.linspace(0,0.001,10)[4:7]
     y, y_qec = [],[]
     err, err_qec = [], []
 
@@ -14,7 +14,7 @@ def gen_data(name):
 
     #data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("FT_steane_PS_0_3{}.txt".format(name), data, delimiter=",")
+    np.savetxt("FT_steane_PS_4_6{}.txt".format(name), data, delimiter=",")
     # dustin = RotSurf16q(2)
     # dustin.h(0)
     # dustin.x(1)
