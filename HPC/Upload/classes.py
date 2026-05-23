@@ -344,7 +344,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                         rots.append(0.5)
                         break
                     counter += 1
-                    print("Iteration {}: {} Repetition".format(t, counter))
+                    print("Angle {}, Iteration {}: {} Repetition".format(o, t, counter))
             bitstring = bitstring[::-1]
             # print(bitstring)
             hmm = convert(bitstring)
