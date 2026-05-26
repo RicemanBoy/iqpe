@@ -76,7 +76,7 @@ def closest_bitstring(num: float, depth: int):
     return bitstring
 
 def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
-    assert code in ["steane", "rotsurf9", "rotsurf16"], "Code not supported! Choose between 'steane', 'rotsurf9' and 'rotsurf16'."
+    assert code in ["steane", "rotsurf9", "rotsurf16", "repcode"], "Code not supported! Choose between 'steane', 'rotsurf9', 'rotsurf16' and 'repcode'."
     
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -104,6 +104,8 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     self = RotSurf9q(2)
                 elif code == "rotsurf16":
                     self = RotSurf16q(2)
+                elif code == "repcode":
+                    self = RepCode(3, 2)
                 self.err = qec
                 rots = [k*0.5 for k in rots]
 
@@ -347,6 +349,71 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
                     print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(o, noise*100, t, counter))
             bitstring = bitstring[::-1]
             # print(bitstring)
+            hmm = convert(bitstring)
+            diff = np.abs(hmm-angle[o])
+            y += diff
+            bruh1.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma
+
+def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    bruh1 = []
+    for m in range(k):
+        for o in range(n):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                self = RepCode(distance, 2)
+                self.err = qec
+                rots = [k*0.5 for k in rots]
+
+                self.x(pos=1)
+                self.h(pos=0)
+                #############################
+                for j in range(2**(iter-t-1)):
+                    self.cu(a[o], b[o])
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        self.sdg(pos=0)
+                    if l == 0.125:
+                        self.tdg(pos=0)
+                self.h(pos=0)
+                # print("Unoptimized: ")
+                # gates(self.qc)
+                self.qc = transpile(self.qc, optimization_level=1)
+                # print("Optimized: ")
+                # gates(self.qc)
+                # print(self.qec_counter)
+                self.readout(pos=0, shots=1, p=noise, bias=noise*bias)
+        
+                if self.zeros == 1:
+                    bitstring += "0"
+                elif self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                del self
+            bitstring = bitstring[::-1]
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
             y += diff
@@ -6454,6 +6521,8 @@ class RepCode:      #Bitflip protected repetition code
         self.ones = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
+        self.qec_counter = 0
+        self.err = False
 
         qr = QuantumRegister(n*logical_q+1, "q")
         cbit = ClassicalRegister(0, "c")
@@ -6461,6 +6530,9 @@ class RepCode:      #Bitflip protected repetition code
 
         self.qecc = ClassicalRegister(n-1)
         self.qc.add_register(self.qecc)
+
+        for i in range(n*logical_q):
+            self.qc.id(i)
 
     def x(self, pos: int):
         for i in range(self.n):
@@ -6488,17 +6560,51 @@ class RepCode:      #Bitflip protected repetition code
     def tdg(self, pos: int):
         self.qc.tdg(self.n*pos)
 
-    def cnot(self, ctrl: int, targ: int):
+    def cnot(self, control: int, target: int):
         for i in range(self.n):
-            self.qc.cx(self.n*ctrl + i, self.n*targ + i)
+            self.qc.cx(self.n*control + i, self.n*target + i)
     
-    def qec_zstab(self, pos: int):
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                self.s(pos=pos)
+            if i == "sdg":
+                self.sdg(pos=pos)
+            if i == "t":
+                self.t(pos=pos)
+                if self.err and self.qec_counter%4==0:
+                    self.qec(pos = pos)
+            if i == "tdg":
+                self.tdg(pos=pos)
+                #self.tdg_cheat(pos=pos)
+                if self.err and self.qec_counter%4==0:
+                    self.qec(pos = pos)
+            if i == "h":
+                self.h(pos=pos)
+            if i == "z":
+                self.z(pos=pos)
+
+    def cu(self, gate: list, adjgate: list):
+        self.u2(0, gate=gate)
+        # if self.err:
+        #     self.qec(pos = 0)
+        self.u2(1, gate=gate)
+        # if self.err:
+        #     self.qec(pos = 1)
+        self.cnot(control=0, target=1)
+        self.u2(1, gate=adjgate)
+        # if self.err:
+        #     self.qec(pos = 1)
+        self.cnot(control=0, target=1)
+
+    def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
 
         for i in range(self.n-1):
             self.qc.reset(anc)
             self.qc.cx(self.n*pos + i, anc)
             self.qc.cx(self.n*pos + i + 1, anc)
+            self.qc.id(anc)
             self.qc.measure(anc, self.qecc[i])
 
         with self.qc.if_test((self.qecc[0], 1)):
@@ -6513,10 +6619,11 @@ class RepCode:      #Bitflip protected repetition code
             with self.qc.if_test((self.qecc[i], 1)):
                 with self.qc.if_test((self.qecc[i+1], 1)):
                     self.qc.x(self.n*pos + i + 1)
+        
+        self.qec_counter += 1
 
-    def readout(self, pos: int, shots: int, noise: float, bias: float):
-        p  = noise
-
+    def readout(self, pos: int, shots: int, p: float, bias = 0):
+        assert bias <= p, "Bias must be less or equal to the total error probability!"
         p_x, p_z = p + bias, p - bias
         noise_model = NoiseModel()
         p_error = pauli_error([["X",p_x/2],["I",1-p],["Z",p_z/2]])
@@ -6528,14 +6635,13 @@ class RepCode:      #Bitflip protected repetition code
         self.qc.add_register(read)
 
         for i in range(self.n):
+            self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, read[self.n-1-i])
 
         sim = AerSimulator()
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
         result = job.result()
         counts = result.get_counts()
-
-        print(counts)
 
         bitstring = list(counts.keys())
         bits = [i.replace(" ","") for i in bitstring]
@@ -6545,12 +6651,9 @@ class RepCode:      #Bitflip protected repetition code
 
         bits = [i[:self.n] for i in bits]
 
-        print(bits)
-
         zero, one = 0, 0
 
         for i, val in enumerate(bits):
-            print(counter[i])
             count0, count1 = 0, 0
             for j in val:
                 if j == "0":
