@@ -6449,15 +6449,14 @@ class Color17q:
         self.zeros = zeros
         self.post = err
 
-class RepCode:
+class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
         self.zeros = 0
-        self.n = n
-
+        self.n = n          # number of physical qubits per logical qubit
 
         qr = QuantumRegister(n*logical_q+1, "q")
-        cbit = ClassicalRegister(1, "c")
+        cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
         self.qecc = ClassicalRegister(n-1)
@@ -6468,28 +6467,26 @@ class RepCode:
             self.qc.x(self.n*pos + i)
 
     def z(self, pos: int):
-        for i in range(self.n):
-            self.qc.z(self.n*pos + i)
+        self.qc.z(self.n*pos)
     
     def h(self, pos: int):
-        for i in range(self.n):
-            self.qc.h(self.n*pos + i)
+        for i in range(self.n - 1):
+            self.qc.cx(self.n*pos, self.n*pos + i + 1)
+        self.qc.h(self.n*pos)
+        for i in range(self.n - 1):
+            self.qc.cx(self.n*pos, self.n*pos + i + 1)
     
     def s(self, pos: int):
-        for i in range(self.n):
-            self.qc.s(self.n*pos + i)
+        self.qc.s(self.n*pos)
     
     def sdg(self, pos: int):
-        for i in range(self.n):
-            self.qc.sdg(self.n*pos + i)
+        self.qc.sdg(self.n*pos)
     
     def t(self, pos: int):
-        for i in range(self.n):
-            self.qc.t(self.n*pos + i)
+        self.qc.t(self.n*pos)
     
     def tdg(self, pos: int):
-        for i in range(self.n):
-            self.qc.tdg(self.n*pos + i)
+        self.qc.tdg(self.n*pos)
 
     def cnot(self, ctrl: int, targ: int):
         for i in range(self.n):
@@ -6500,14 +6497,22 @@ class RepCode:
 
         for i in range(self.n-1):
             self.qc.reset(anc)
-            if i == self.n - 1 - 1:
-                self.qc.cx(self.n*pos, anc)
-                self.qc.cx(self.n*pos + i, anc)
-                self.qc.measure(anc, self.qecc[i])
-
             self.qc.cx(self.n*pos + i, anc)
             self.qc.cx(self.n*pos + i + 1, anc)
             self.qc.measure(anc, self.qecc[i])
+
+        with self.qc.if_test((self.qecc[0], 1)):
+            with self.qc.if_test((self.qecc[1], 0)):
+                self.qc.x(self.n*pos)
+        
+        with self.qc.if_test((self.qecc[self.n-2], 1)):
+            with self.qc.if_test((self.qecc[self.n-3], 0)):
+                self.qc.x(self.n*pos+self.n-1)
+
+        for i in range(self.n-1-1):       
+            with self.qc.if_test((self.qecc[i], 1)):
+                with self.qc.if_test((self.qecc[i+1], 1)):
+                    self.qc.x(self.n*pos + i + 1)
 
     def readout(self, pos: int, shots: int, noise: float, bias: float):
         p  = noise
