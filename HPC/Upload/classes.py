@@ -377,7 +377,7 @@ def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bi
             b.append(list(map(str, line.strip().split(","))))
     
     y = 0
-    bruh1 = []
+    y_list, bruh1 = [], []
     for m in range(k):
         for o in range(n):
             bitstring = ""
@@ -417,7 +417,7 @@ def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bi
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
             y += diff
-            bruh1.append(diff)
+            bruh1.append(diff), y_list.append(diff)
     y = y/(n*k)
     arg = 0
     for i in range(len(bruh1)):
@@ -425,7 +425,7 @@ def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bi
     sigma = ((1/(k*n))*arg)**0.5
     sigma = sigma/((k*n)**0.5)
 
-    return y, sigma
+    return y, sigma, y_list
 
 # def decoding(counts: dict):
 
@@ -6623,7 +6623,8 @@ class RepCode:      #Bitflip protected repetition code
         self.qec_counter += 1
 
     def readout(self, pos: int, shots: int, p: float, bias = 0):
-        assert bias <= p, "Bias must be less or equal to the total error probability!"
+        assert np.abs(bias) <= 1, "The absolute value of the Bias must be less or equal to 1!"
+        bias = p*bias
         p_x, p_z = p + bias, p - bias
         noise_model = NoiseModel()
         p_error = pauli_error([["X",p_x/2],["I",1-p],["Z",p_z/2]])
