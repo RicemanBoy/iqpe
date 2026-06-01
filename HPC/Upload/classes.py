@@ -405,7 +405,7 @@ def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bi
                 # print("Optimized: ")
                 # gates(self.qc)
                 # print(self.qec_counter)
-                self.readout(pos=0, shots=1, p=noise, bias=noise*bias)
+                self.readout(pos=0, shots=1, p=noise, bias=bias)
         
                 if self.zeros == 1:
                     bitstring += "0"
@@ -6623,12 +6623,19 @@ class RepCode:      #Bitflip protected repetition code
         self.qec_counter += 1
 
     def readout(self, pos: int, shots: int, p: float, bias = 0):
-        assert np.abs(bias) <= 1, "The absolute value of the Bias must be less or equal to 1!"
-        bias = p*bias
-        p_x, p_z = p + bias, p - bias
+        p_x, p_z = 0, 0
+        if bias > 0:
+            p_x += (bias/(1+bias))*p
+            p_z += p - p_x
+        elif bias < 0:
+            p_z += (np.abs(bias)/(1+np.abs(bias)))*p
+            p_x += p - p_z
+        else:
+            p_x += p/2
+            p_z += p/2
         noise_model = NoiseModel()
-        p_error = pauli_error([["X",p_x/2],["I",1-p],["Z",p_z/2]])
-        p_error_2 = pauli_error([["XI",p_x/4],["IX",p_x/4],["II",1-p],["ZI",p_z/4],["IZ",p_z/4]])
+        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
+        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
 
