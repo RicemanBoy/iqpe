@@ -10,14 +10,14 @@ def gen_data(name):
 
     for i, b in enumerate(bias):
         for j, r in enumerate(p):
-            _, _, y_list = avg15_repcode(5, 3, r, qec = False, k = 1, bias = b)
-            _, _, y_qec_list = avg15_repcode(5, 3, r, qec = True, k = 1, bias = b)
+            _, _, y_list = avg15_repcode(7, 3, r, qec = False, k = 1, bias = b)
+            _, _, y_qec_list = avg15_repcode(7, 3, r, qec = True, k = 1, bias = b)
 
             y[i, j, :] = y_list
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Repcode_d5{name}.npz",
+    f"Repcode_d7{name}.npz",
     p=p,
     bias=bias,
     y=y,
@@ -26,7 +26,7 @@ def gen_data(name):
     #data = np.array((p, y, err))
 
 
-# def gen_data(name):
+# def gen_data(name):                       #code1
 #     p = np.linspace(0,0.007,10)
 #     bias = np.linspace(-10, 10, 10)
 #     y, y_qec = [], []
@@ -62,7 +62,7 @@ def gen_data(name):
 
 #     np.savetxt("Repcode_d5{}.txt".format(name), final_data, delimiter=",")
 
-# def gen_data(name):
+# def gen_data(name):                           #code 0 
 #     p = np.linspace(0,0.007,10)
 #     y, y_qec, ys = [], [], []
 #     err, err_qec, y1s = [], [], []
@@ -104,7 +104,7 @@ def gen_data(name):
 
 
 
-# def gen_data(name):
+# def gen_data(name):                           #code OG
 #     p = np.linspace(0,0.007,10)
 #     y, y_qec = [],[]
 #     err, err_qec = [], []
