@@ -10,14 +10,14 @@ def gen_data(name):
 
     for i, b in enumerate(bias):
         for j, r in enumerate(p):
-            _, _, y_list = avg15_repcode(7, 3, r, qec = False, k = 1, bias = b)
-            _, _, y_qec_list = avg15_repcode(7, 3, r, qec = True, k = 1, bias = b)
+            _, _, y_list = avg15_repcode(9, 3, r, qec = False, k = 1, bias = b)
+            _, _, y_qec_list = avg15_repcode(9, 3, r, qec = True, k = 1, bias = b)
 
             y[i, j, :] = y_list
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Repcode_d7{name}.npz",
+    f"Repcode_d9{name}.npz",
     p=p,
     bias=bias,
     y=y,
