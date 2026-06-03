@@ -119,7 +119,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                     if l == 0.25:
                         self.sdg(pos=0)
                     if l == 0.125:
-                        self.tdg(pos=0)
+                        self.tdg_switch(pos=0)
                 self.h(pos=0)
                 if self.err:
                     self.qec(pos = 0)
@@ -1201,12 +1201,12 @@ class Steane7q:
             if i == "sdg":
                 self.sdg(pos=pos)
             if i == "t":
-                self.t(pos=pos)
+                self.t_switch(pos=pos)
                 #self.t_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
                     self.qec_ft(pos = pos)
             if i == "tdg":
-                self.tdg(pos=pos)
+                self.tdg_switch(pos=pos)
                 #self.tdg_cheat(pos=pos)
                 if self.err and self.qec_counter%8==0:
                     self.qec_ft(pos = pos)
