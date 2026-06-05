@@ -122,7 +122,7 @@ def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""
                         self.tdg_switch(pos=0)
                 self.h(pos=0)
                 if self.err:
-                    self.qec(pos = 0)
+                    self.qec_ft(pos = 0)
                 # print("Unoptimized: ")
                 # gates(self.qc)
                 self.qc = transpile(self.qc, optimization_level=1)
@@ -6682,3 +6682,170 @@ class RepCode:      #Bitflip protected repetition code
         self.ones += one
         self.zeros += zero
 
+
+class RepCode_z:      #Phaseflip protected repetition code
+    def __init__(self, n: int, logical_q: int):
+        self.ones = 0
+        self.zeros = 0
+        self.n = n          # number of physical qubits per logical qubit
+        self.qec_counter = 0
+        self.err = False
+
+        qr = QuantumRegister(n*logical_q+1, "q")
+        cbit = ClassicalRegister(0, "c")
+        self.qc = QuantumCircuit(qr, cbit)
+
+        self.qecc = ClassicalRegister(n-1)
+        self.qc.add_register(self.qecc)
+
+        for i in range(n*logical_q):
+            self.qc.id(i)
+            self.qc.h(i)
+
+    def z(self, pos: int):
+        for i in range(self.n):
+            self.qc.z(self.n*pos + i)
+
+    def x(self, pos: int):
+        self.qc.x(self.n*pos)
+    
+    # def h(self, pos: int):
+    #     for i in range(self.n - 1):
+    #         self.qc.cx(self.n*pos, self.n*pos + i + 1)
+    #     self.qc.h(self.n*pos)
+    #     for i in range(self.n - 1):
+    #         self.qc.cx(self.n*pos, self.n*pos + i + 1)
+    
+    def s(self, pos: int):
+        self.qc.s(self.n*pos)
+    
+    def sdg(self, pos: int):
+        self.qc.sdg(self.n*pos)
+    
+    def t(self, pos: int):
+        self.qc.t(self.n*pos)
+    
+    def tdg(self, pos: int):
+        self.qc.tdg(self.n*pos)
+
+    def cnot(self, control: int, target: int):
+        for i in range(self.n):
+            self.qc.cx(self.n*control + i, self.n*target + i)
+    
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                self.s(pos=pos)
+            if i == "sdg":
+                self.sdg(pos=pos)
+            if i == "t":
+                self.t(pos=pos)
+                if self.err and self.qec_counter%4==0:
+                    self.qec(pos = pos)
+            if i == "tdg":
+                self.tdg(pos=pos)
+                #self.tdg_cheat(pos=pos)
+                if self.err and self.qec_counter%4==0:
+                    self.qec(pos = pos)
+            if i == "h":
+                self.h(pos=pos)
+            if i == "z":
+                self.z(pos=pos)
+
+    def cu(self, gate: list, adjgate: list):
+        self.u2(0, gate=gate)
+        # if self.err:
+        #     self.qec(pos = 0)
+        self.u2(1, gate=gate)
+        # if self.err:
+        #     self.qec(pos = 1)
+        self.cnot(control=0, target=1)
+        self.u2(1, gate=adjgate)
+        # if self.err:
+        #     self.qec(pos = 1)
+        self.cnot(control=0, target=1)
+
+    def qec(self, pos: int):
+        anc = self.qc.num_qubits - 1
+
+        for i in range(self.n-1):
+            self.qc.reset(anc)
+            self.qc.cx(self.n*pos + i, anc)
+            self.qc.cx(self.n*pos + i + 1, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[i])
+
+        with self.qc.if_test((self.qecc[0], 1)):
+            with self.qc.if_test((self.qecc[1], 0)):
+                self.qc.x(self.n*pos)
+        
+        with self.qc.if_test((self.qecc[self.n-2], 1)):
+            with self.qc.if_test((self.qecc[self.n-3], 0)):
+                self.qc.x(self.n*pos+self.n-1)
+
+        for i in range(self.n-1-1):       
+            with self.qc.if_test((self.qecc[i], 1)):
+                with self.qc.if_test((self.qecc[i+1], 1)):
+                    self.qc.x(self.n*pos + i + 1)
+        
+        self.qec_counter += 1
+
+    def readout(self, pos: int, shots: int, p: float, bias = 0):
+        p_x, p_z = 0, 0
+        if bias > 0:
+            p_x += (bias/(1+bias))*p
+            p_z += p - p_x
+        elif bias < 0:
+            p_z += (np.abs(bias)/(1+np.abs(bias)))*p
+            p_x += p - p_z
+        else:
+            p_x += p/2
+            p_z += p/2
+        noise_model = NoiseModel()
+        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
+        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        read = ClassicalRegister(self.n)
+        self.qc.add_register(read)
+
+        for i in range(self.n):
+            self.qc.id(self.n*pos + i)
+            self.qc.measure(self.n*pos + i, read[self.n-1-i])
+
+        sim = AerSimulator()
+        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
+        result = job.result()
+        counts = result.get_counts()
+
+        bitstring = list(counts.keys())
+        bits = [i.replace(" ","") for i in bitstring]
+        counter = list(counts.values())
+
+        allcbits = len(bitstring[0])
+
+        bits = [i[:self.n] for i in bits]
+
+        zero, one = 0, 0
+
+        for i, val in enumerate(bits):
+            count0, count1 = 0, 0
+            for j in val:
+                if j == "0":
+                    count0 += 1
+                else:
+                    count1 += 1
+            if count0 > count1:
+                zero += counter[i]
+            elif count1 > count0:
+                one += counter[i]
+            else:
+                for k in range(counter[i]):
+                    if np.random.rand() < 0.5:
+                        zero += 1
+                    else:
+                        one += 1
+        
+        self.ones += one
+        self.zeros += zero
