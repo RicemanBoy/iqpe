@@ -108,7 +108,7 @@ def gen_data(name):                           #code OG
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg15_coin("steane", 3, r, qec = True, k = 1)
+        ok, errr = avg15("steane", 3, r, qec = False, k = 1)
         # ok, errr = avg15("steane", 3, noise=r, qec=True,k=1)
         y.append(ok), err.append(errr)
         # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
@@ -116,4 +116,4 @@ def gen_data(name):                           #code OG
 
     data = np.array((p, y, err))
     #data = np.array((p, y, err))
-    np.savetxt("Steane_switch_qec{}.txt".format(name), data, delimiter=",")
+    np.savetxt("Steane_switch_PS{}.txt".format(name), data, delimiter=",")
