@@ -1,4 +1,5 @@
 from pdb import pm
+from turtle import pos
 
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3, qasm2, qpy
 from qiskit.visualization import plot_histogram
@@ -6709,24 +6710,52 @@ class RepCode_z:      #Phaseflip protected repetition code
     def x(self, pos: int):
         self.qc.x(self.n*pos)
     
-    # def h(self, pos: int):
-    #     for i in range(self.n - 1):
-    #         self.qc.cx(self.n*pos, self.n*pos + i + 1)
-    #     self.qc.h(self.n*pos)
-    #     for i in range(self.n - 1):
-    #         self.qc.cx(self.n*pos, self.n*pos + i + 1)
+    def h(self, pos: int):
+        for i in range(self.n - 1):
+            self.qc.cx(self.n*pos + i + 1, self.n*pos)
+        self.qc.h(self.n*pos)
+        for i in range(self.n - 1):
+            self.qc.cx(self.n*pos + i + 1, self.n*pos)
     
-    def s(self, pos: int):
+    def sqrt_x(self, pos: int):
+        self.qc.h(self.n*pos)
         self.qc.s(self.n*pos)
+        self.qc.h(self.n*pos)
     
-    def sdg(self, pos: int):
+    def sqrt_xdg(self, pos: int):
+        self.qc.h(self.n*pos)
         self.qc.sdg(self.n*pos)
+        self.qc.h(self.n*pos)
+    
+    def sqrt2_x(self, pos: int):
+        self.qc.h(self.n*pos)
+        self.qc.t(self.n*pos)
+        self.qc.h(self.n*pos)
+    
+    def sqrt2_xdg(self, pos: int):
+        self.qc.h(self.n*pos)
+        self.qc.tdg(self.n*pos)
+        self.qc.h(self.n*pos)
+
+    def s(self, pos: int):
+        self.h(pos=pos)
+        self.sqrt_x(pos=pos)
+        self.h(pos=pos)
+
+    def sdg(self, pos: int):
+        self.h(pos=pos)
+        self.sqrt_xdg(pos=pos)
+        self.h(pos=pos)
     
     def t(self, pos: int):
-        self.qc.t(self.n*pos)
-    
+        self.h(pos=pos)
+        self.sqrt2_x(pos=pos)
+        self.h(pos=pos)
+
     def tdg(self, pos: int):
-        self.qc.tdg(self.n*pos)
+        self.h(pos=pos)
+        self.sqrt2_xdg(pos=pos)
+        self.h(pos=pos)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
