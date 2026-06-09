@@ -6685,18 +6685,19 @@ class RepCode:      #Bitflip protected repetition code
 
 
 class RepCode_z:      #Phaseflip protected repetition code
-    def __init__(self, n: int, logical_q: int):
+    def __init__(self, n: int, logical_q: int):                 #number of physical qubits per logical qubit
         self.ones = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
+        self.logicalq = logical_q
         self.err = False
 
-        qr = QuantumRegister(n*logical_q+1, "q")
+        qr = QuantumRegister(n*(logical_q+2)+1, "q")
         cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
-        self.qecc = ClassicalRegister(n-1)
+        self.qecc = ClassicalRegister(n)
         self.qc.add_register(self.qecc)
 
         for i in range(n*logical_q):
@@ -6710,13 +6711,33 @@ class RepCode_z:      #Phaseflip protected repetition code
     def x(self, pos: int):
         self.qc.x(self.n*pos)
     
-    def h(self, pos: int):
+    def h_nft(self, pos: int):
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
         self.qc.h(self.n*pos)
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
     
+    def h(self, pos: int):
+        for i in range(2):
+            for j in range(self.n):
+                self.qc.reset(self.n*(i+self.logicalq)+j)
+        for i in range(self.n):
+            self.qc.h(self.n*(self.logicalq)+i)
+            self.qc.h(self.n*(self.logicalq+1)+i)
+            self.qc.z(self.n*(self.logicalq+1)+i)
+        
+        self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)
+        # for i in range(self.n):
+        #     self.qc.measure(self.n*pos+i, self.qecc[i])
+        self.qc.x(self.n*pos)
+        self.qc.measure(self.n*pos, self.qecc[0])
+        with self.qc.if_test((0,1)):
+            self.qc.x(self.n*self.logicalq)
+
+        for i in range(self.n):
+            self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
+        
     def sqrt_x(self, pos: int):
         self.qc.h(self.n*pos)
         self.qc.s(self.n*pos)
@@ -6756,6 +6777,12 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.h(pos=pos)
         self.sqrt2_xdg(pos=pos)
         self.h(pos=pos)
+
+    def toff(self, control1: int, control2: int, targ: int):
+        for i in range(self.n):
+            for j in range(self.n):
+                self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
+                self.qec(pos=targ)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -6819,7 +6846,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         
         self.qec_counter += 1
 
-    def readout(self, pos: int, shots: int, p: float, bias = 0):
+    def readout(self, pos: int, shots: int, p: float, bias = 0):            #ICH MUSS READOUT MACHEN
         p_x, p_z = 0, 0
         if bias > 0:
             p_x += (bias/(1+bias))*p
