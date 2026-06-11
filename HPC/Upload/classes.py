@@ -6687,11 +6687,13 @@ class RepCode:      #Bitflip protected repetition code
 class RepCode_z:      #Phaseflip protected repetition code
     def __init__(self, n: int, logical_q: int):                 #number of physical qubits per logical qubit
         self.ones = 0
+        self.post = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
         self.logicalq = logical_q
         self.err = False
+        self.postselection = False
 
         qr = QuantumRegister(n*(logical_q+2)+1, "q")
         cbit = ClassicalRegister(0, "c")
@@ -6730,10 +6732,13 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)
         # for i in range(self.n):
         #     self.qc.measure(self.n*pos+i, self.qecc[i])
-        self.qc.x(self.n*pos)
-        self.qc.measure(self.n*pos, self.qecc[0])
-        with self.qc.if_test((0,1)):
-            self.qc.x(self.n*self.logicalq)
+        for i in range(self.n):
+            self.qc.h(self.n*pos + i)
+            self.qc.measure(self.n*pos, self.qecc[i])
+
+        for i in range(self.n):                     #implement a majority vote for the corrective X_L gate?
+            with self.qc.if_test((0,1)):        
+                self.qc.x(self.n*self.logicalq+i)
 
         for i in range(self.n):
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
@@ -6826,23 +6831,25 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         for i in range(self.n-1):
             self.qc.reset(anc)
-            self.qc.cx(self.n*pos + i, anc)
-            self.qc.cx(self.n*pos + i + 1, anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, self.n*pos + i)
+            self.qc.cx(anc, self.n*pos + i + 1)
+            self.qc.h(anc)
             self.qc.id(anc)
             self.qc.measure(anc, self.qecc[i])
 
         with self.qc.if_test((self.qecc[0], 1)):
             with self.qc.if_test((self.qecc[1], 0)):
-                self.qc.x(self.n*pos)
+                self.qc.z(self.n*pos)
         
         with self.qc.if_test((self.qecc[self.n-2], 1)):
             with self.qc.if_test((self.qecc[self.n-3], 0)):
-                self.qc.x(self.n*pos+self.n-1)
+                self.qc.z(self.n*pos+self.n-1)
 
         for i in range(self.n-1-1):       
             with self.qc.if_test((self.qecc[i], 1)):
                 with self.qc.if_test((self.qecc[i+1], 1)):
-                    self.qc.x(self.n*pos + i + 1)
+                    self.qc.z(self.n*pos + i + 1)
         
         self.qec_counter += 1
 
@@ -6862,6 +6869,14 @@ class RepCode_z:      #Phaseflip protected repetition code
         p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+
+        count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
+        for i in range(2**self.n):
+            bit = inv_covert(i,self.n)
+            if bit.count("1")%2 == 0:
+                count0.append(bit)
+            else:
+                count1.append(bit)
 
         read = ClassicalRegister(self.n)
         self.qc.add_register(read)
@@ -6883,25 +6898,39 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         bits = [i[:self.n] for i in bits]
 
-        zero, one = 0, 0
+        print(bits)
+
+        for i in range(len(bits)):
+            for j in count0:
+                if j == bits[i]:
+                    bits[i] = 0
+                    break
+            if bits[i] != 0:
+                for j in count1:
+                    if j == bits[i]:
+                        bits[i] = 1
+                        break
+            if bits[i] != 1 and bits[i] != 0:
+                # print("Wrong bitstring: ", bits[i])
+                if self.postselection:
+                    bits[i] = "post"
+                    print("Postselected!")
+                else:
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
+
+        zero, one, err = 0, 0, 0
 
         for i, val in enumerate(bits):
-            count0, count1 = 0, 0
-            for j in val:
-                if j == "0":
-                    count0 += 1
-                else:
-                    count1 += 1
-            if count0 > count1:
+            if val == 0:
                 zero += counter[i]
-            elif count1 > count0:
+            elif val == 1:
                 one += counter[i]
             else:
-                for k in range(counter[i]):
-                    if np.random.rand() < 0.5:
-                        zero += 1
-                    else:
-                        one += 1
-        
-        self.ones += one
-        self.zeros += zero
+                err += counter[i]
+
+        self.ones += one/shots
+        self.zeros += zero/shots
+        self.post += err/shots
