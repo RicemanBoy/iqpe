@@ -21,6 +21,9 @@ from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
     pauli_error, depolarizing_error, thermal_relaxation_error)
 
 from qiskit.circuit.library import UnitaryGate
+from qiskit.circuit.classical import expr
+
+from itertools import product
 
 matrix_h = ([[2**(-0.5),2**(-0.5)],[2**(-0.5),-2**(-0.5)]])
 h_ideal = UnitaryGate(matrix_h)
@@ -33,6 +36,34 @@ x_ideal = UnitaryGate(matrix_x)
 
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
+
+
+def majority_expr(bits):
+    n = len(bits)
+    half = n // 2
+
+    terms = []
+
+    for pattern in product([0, 1], repeat=n):
+        if sum(pattern) > half:
+
+            term = None
+
+            for bit, val in zip(bits, pattern):
+                b = expr.lift(bit)
+
+                lit = b if val else expr.logic_not(b)
+
+                term = lit if term is None else expr.logic_and(term, lit)
+
+            terms.append(term)
+
+    # OR all valid terms
+    result = terms[0]
+    for t in terms[1:]:
+        result = expr.logic_or(result, t)
+
+    return result
 
 def gates(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
@@ -6736,9 +6767,15 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.h(self.n*pos + i)
             self.qc.measure(self.n*pos, self.qecc[i])
 
-        for i in range(self.n):                     #implement a majority vote for the corrective X_L gate?
-            with self.qc.if_test((0,1)):        
-                self.qc.x(self.n*self.logicalq+i)
+        # for i in range(self.n):                     #implement a majority vote for the corrective X_L gate?
+        #     with self.qc.if_test((self.qecc[0],1)):        
+        #         self.qc.x(self.n*self.logicalq+i)
+
+        vote_bits = self.qecc[:self.n]
+        maj = majority_expr(vote_bits)
+
+        with self.qc.if_test(maj):
+            self.qc.x(self.n * pos)
 
         for i in range(self.n):
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
@@ -6838,15 +6875,15 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.id(anc)
             self.qc.measure(anc, self.qecc[i])
 
-        with self.qc.if_test((self.qecc[0], 1)):
-            with self.qc.if_test((self.qecc[1], 0)):
+        with self.qc.if_test((self.qecc[0], 1)):                #first
+            with self.qc.if_test((self.qecc[1], 0)):               #second
                 self.qc.z(self.n*pos)
         
-        with self.qc.if_test((self.qecc[self.n-2], 1)):
-            with self.qc.if_test((self.qecc[self.n-3], 0)):
+        with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
+            with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
                 self.qc.z(self.n*pos+self.n-1)
 
-        for i in range(self.n-1-1):       
+        for i in range(self.n-3):       
             with self.qc.if_test((self.qecc[i], 1)):
                 with self.qc.if_test((self.qecc[i+1], 1)):
                     self.qc.z(self.n*pos + i + 1)
