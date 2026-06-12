@@ -38,32 +38,13 @@ matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
 
-def majority_expr(bits):
-    n = len(bits)
-    half = n // 2
-
-    terms = []
-
-    for pattern in product([0, 1], repeat=n):
-        if sum(pattern) > half:
-
-            term = None
-
-            for bit, val in zip(bits, pattern):
-                b = expr.lift(bit)
-
-                lit = b if val else expr.logic_not(b)
-
-                term = lit if term is None else expr.logic_and(term, lit)
-
-            terms.append(term)
-
-    # OR all valid terms
-    result = terms[0]
-    for t in terms[1:]:
-        result = expr.logic_or(result, t)
-
-    return result
+def majority_values(n):
+    threshold = n // 2 + 1
+    return [
+        value
+        for value in range(2**n)
+        if value.bit_count() >= threshold
+    ]
 
 def gates(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
@@ -394,7 +375,8 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
 
     return y, sigma
 
-def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
+def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
+    assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
@@ -415,12 +397,18 @@ def avg15_repcode(distance: int, iter: int, noise: float, qec = False, k = 1, bi
             bitstring = ""
             rots = []
             for t in range(iter):
-                self = RepCode(distance, 2)
+                if code == "z":
+                    self = RepCode_z(distance, 2)
+                elif code == "x":
+                    self = RepCode(distance, 2)
                 self.err = qec
                 rots = [k*0.5 for k in rots]
-
+                
+                if code == "z":
+                    self.h(pos=1)
                 self.x(pos=1)
-                self.h(pos=0)
+                if code == "x":
+                    self.h(pos=0)
                 #############################
                 for j in range(2**(iter-t-1)):
                     self.cu(a[o], b[o])
@@ -6756,28 +6744,24 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.reset(self.n*(i+self.logicalq)+j)
         for i in range(self.n):
-            self.qc.h(self.n*(self.logicalq)+i)
+            self.qc.h(self.n*(self.logicalq)+i)             #prep +_L
             self.qc.h(self.n*(self.logicalq+1)+i)
-            self.qc.z(self.n*(self.logicalq+1)+i)
+            self.qc.z(self.n*(self.logicalq+1)+i)           #prep -_L
         
         self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)
-        # for i in range(self.n):
-        #     self.qc.measure(self.n*pos+i, self.qecc[i])
-        for i in range(self.n):
+
+
+        for i in range(self.n):                     #measure X_L
             self.qc.h(self.n*pos + i)
-            self.qc.measure(self.n*pos, self.qecc[i])
+            self.qc.id(self.n*pos + i)
+            self.qc.measure(self.n*pos + i, self.qecc[i])
 
-        # for i in range(self.n):                     #implement a majority vote for the corrective X_L gate?
-        #     with self.qc.if_test((self.qecc[0],1)):        
-        #         self.qc.x(self.n*self.logicalq+i)
+        maj = majority_values(self.n)               #do majority vote to ensure FT
+        for value in maj:
+            with self.qc.if_test((self.qecc, value)):
+                self.qc.x(self.n*self.logicalq)
 
-        vote_bits = self.qecc[:self.n]
-        maj = majority_expr(vote_bits)
-
-        with self.qc.if_test(maj):
-            self.qc.x(self.n * pos)
-
-        for i in range(self.n):
+        for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
         
     def sqrt_x(self, pos: int):
@@ -6838,12 +6822,12 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%8==0:
                     self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%8==0:
                     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
@@ -6934,8 +6918,6 @@ class RepCode_z:      #Phaseflip protected repetition code
         allcbits = len(bitstring[0])
 
         bits = [i[:self.n] for i in bits]
-
-        print(bits)
 
         for i in range(len(bits)):
             for j in count0:

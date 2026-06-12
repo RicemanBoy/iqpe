@@ -1,28 +1,28 @@
 from classes import *
 
 
-# def gen_data(name):                   #code mit npz
-#     p = np.linspace(0,0.007,10)
-#     bias = np.linspace(-10, 10, 10)
+def gen_data(name):                   #code mit npz
+    p = np.linspace(0,0.007,3)
+    bias = np.linspace(-10, 10, 5)
 
-#     y = np.zeros((len(bias), len(p), 15))
-#     y_qec = np.zeros((len(bias), len(p), 15))       
+    y = np.zeros((len(bias), len(p), 15))
+    y_qec = np.zeros((len(bias), len(p), 15))       
 
-#     for i, b in enumerate(bias):
-#         for j, r in enumerate(p):
-#             _, _, y_list = avg15_repcode(9, 3, r, qec = False, k = 1, bias = b)
-#             _, _, y_qec_list = avg15_repcode(9, 3, r, qec = True, k = 1, bias = b)
+    for i, b in enumerate(bias):
+        for j, r in enumerate(p):
+            # _, _, y_list = avg15_repcode("z", 3, 3, r, qec = False, k = 1, bias = b)
+            _, _, y_qec_list = avg15_repcode("z", 3, 3, r, qec = True, k = 1, bias = b)
 
-#             y[i, j, :] = y_list
-#             y_qec[i, j, :] = y_qec_list
+            # y[i, j, :] = y_list
+            y_qec[i, j, :] = y_qec_list
 
-#     np.savez(
-#     f"Repcode_d9{name}.npz",
-#     p=p,
-#     bias=bias,
-#     y=y,
-#     y_qec=y_qec
-#     )
+    np.savez(
+    f"Repcodez_d3_qec{name}.npz",
+    p=p,
+    bias=bias,
+    #y=y
+    y_qec=y_qec
+    )
 
 # def gen_data(name):                       #code1
 #     p = np.linspace(0,0.007,10)
@@ -102,18 +102,18 @@ from classes import *
 
 
 
-def gen_data(name):                           #code OG
-    p = np.linspace(0,0.001,10)
-    y, y_qec = [],[]
-    err, err_qec = [], []
+# def gen_data(name):                           #code OG
+#     p = np.linspace(0,0.001,10)
+#     y, y_qec = [],[]
+#     err, err_qec = [], []
 
-    for r in p:
-        ok, errr = avg15("steane", 3, r, qec = False, k = 1)
-        # ok, errr = avg15("steane", 3, noise=r, qec=True,k=1)
-        y.append(ok), err.append(errr)
-        # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
-        # y = avg14_coin_success("steane", 3, r, True, k=1)
+#     for r in p:
+#         ok, errr = avg15("steane", 3, r, qec = False, k = 1)
+#         # ok, errr = avg15("steane", 3, noise=r, qec=True,k=1)
+#         y.append(ok), err.append(errr)
+#         # ok1, errr1 = avg15_coin("notsteane", 3, noise=r, qec=True, k=1)
+#         # y = avg14_coin_success("steane", 3, r, True, k=1)
 
-    data = np.array((p, y, err))
-    #data = np.array((p, y, err))
-    np.savetxt("Steane_switch_PS{}.txt".format(name), data, delimiter=",")
+#     data = np.array((p, y, err))
+#     #data = np.array((p, y, err))
+#     np.savetxt("Steane_switch_PS{}.txt".format(name), data, delimiter=",")
