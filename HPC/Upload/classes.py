@@ -407,11 +407,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     self.err = qec
                     self.postselection = post
                     
-                    if code == "z":
-                        self.h(pos=1)
                     self.x(pos=1)
-                    if code == "x":
-                        self.h(pos=0)
+                    self.h(pos=0)
                     #############################
                     for j in range(2**(iter-t-1)):
                         self.cu(a[o], b[o])
@@ -6591,6 +6588,9 @@ class RepCode:      #Bitflip protected repetition code
     def tdg(self, pos: int):
         self.qc.tdg(self.n*pos)
 
+    def rz(self, pos: int, angle: float):
+        self.qc.rz(angle, self.n*pos)
+
     def cnot(self, control: int, target: int):
         for i in range(self.n):
             self.qc.cx(self.n*control + i, self.n*target + i)
@@ -6753,6 +6753,9 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(n*logical_q):
             self.qc.id(i)
             self.qc.h(i)
+        
+        for i in range(logical_q):
+            self.h(pos=i)
 
     def z(self, pos: int):
         for i in range(self.n):
@@ -6792,26 +6795,36 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
-        
+
+    def rx(self, pos: int, angle: float):
+        self.qc.rx(angle, self.n*pos)
+    
     def sqrt_x(self, pos: int):
-        self.qc.h(self.n*pos)
-        self.qc.s(self.n*pos)
-        self.qc.h(self.n*pos)
+        # self.qc.h(self.n*pos)
+        # self.qc.s(self.n*pos)
+        # self.qc.h(self.n*pos)
+
+        self.qc.rx(np.pi/2, self.n*pos)
     
     def sqrt_xdg(self, pos: int):
-        self.qc.h(self.n*pos)
-        self.qc.sdg(self.n*pos)
-        self.qc.h(self.n*pos)
+        # self.qc.h(self.n*pos)
+        # self.qc.sdg(self.n*pos)
+        # self.qc.h(self.n*pos)
+        self.qc.rx(-np.pi/2, self.n*pos)
     
     def sqrt2_x(self, pos: int):
-        self.qc.h(self.n*pos)
-        self.qc.t(self.n*pos)
-        self.qc.h(self.n*pos)
+        # self.qc.h(self.n*pos)
+        # self.qc.t(self.n*pos)
+        # self.qc.h(self.n*pos)
+
+        self.qc.rx(np.pi/4, self.n*pos)
     
     def sqrt2_xdg(self, pos: int):
-        self.qc.h(self.n*pos)
-        self.qc.tdg(self.n*pos)
-        self.qc.h(self.n*pos)
+        # self.qc.h(self.n*pos)
+        # self.qc.tdg(self.n*pos)
+        # self.qc.h(self.n*pos)
+
+        self.qc.rx(-np.pi/4, self.n*pos)
 
     def s(self, pos: int):
         self.h(pos=pos)
