@@ -6822,12 +6822,12 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.qec_counter%8==0:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                if self.err and self.qec_counter%8==0:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
