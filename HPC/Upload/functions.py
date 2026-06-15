@@ -2,7 +2,7 @@ from classes import *
 
 
 def gen_data(name):                   #code mit npz
-    p = np.linspace(0,0.005,10)
+    p = np.linspace(0,0.007,10)
     bias = np.linspace(-10, 10, 10)
 
     y = np.zeros((len(bias), len(p), 15))           #15 Winkel
