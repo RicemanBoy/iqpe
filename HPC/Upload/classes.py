@@ -6550,9 +6550,10 @@ class RepCode:      #Bitflip protected repetition code
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
         self.postselection = False
+        self.logicalq = logical_q
         self.err = False
 
-        qr = QuantumRegister(n*logical_q+1, "q")
+        qr = QuantumRegister(n*(logical_q+2)+1, "q")
         cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
@@ -6576,6 +6577,34 @@ class RepCode:      #Bitflip protected repetition code
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos, self.n*pos + i + 1)
     
+    def h_toff(self, pos: int):
+        for i in range(2):
+            for j in range(self.n):
+                self.qc.reset(self.n*(i+self.logicalq)+j)
+        self.qc.h(pos=self.n*(self.logicalq))
+        self.qc.cx(pos=self.n*(self.logicalq), control=self.n*(self.logicalq)+1)
+        self.qc.cx(pos=self.n*(self.logicalq), control=self.n*(self.logicalq)+2)
+
+        self.qc.h(pos=self.n*(self.logicalq+1))
+        self.qc.cx(pos=self.n*(self.logicalq+1), control=self.n*(self.logicalq+1)+1)
+        self.qc.cx(pos=self.n*(self.logicalq+1), control=self.n*(self.logicalq+1)+2)
+        self.z(pos=self.n*(self.logicalq+1))
+        
+        self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)
+
+        for i in range(self.n):                     #measure X_L
+            self.qc.h(self.n*pos + i)
+            self.qc.id(self.n*pos + i)
+            self.qc.measure(self.n*pos + i, self.qecc[i])
+
+        maj = majority_values(self.n)               #do majority vote to ensure FT
+        for value in maj:
+            with self.qc.if_test((self.qecc, value)):
+                self.qc.x(self.n*self.logicalq)
+
+        for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
+            self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
+
     def s(self, pos: int):
         self.qc.s(self.n*pos)
     
@@ -6587,6 +6616,12 @@ class RepCode:      #Bitflip protected repetition code
     
     def tdg(self, pos: int):
         self.qc.tdg(self.n*pos)
+
+    def toff(self, control1: int, control2: int, targ: int):
+        for i in range(self.n):
+            for j in range(self.n):
+                self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
+            self.qec(pos=targ)
 
     def rz(self, pos: int, angle: float):
         self.qc.rz(angle, self.n*pos)
