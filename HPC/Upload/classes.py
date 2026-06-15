@@ -375,7 +375,7 @@ def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):     
 
     return y, sigma
 
-def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
+def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -397,42 +397,51 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
             bitstring = ""
             rots = []
             for t in range(iter):
-                if code == "z":
-                    self = RepCode_z(distance, 2)
-                elif code == "x":
-                    self = RepCode(distance, 2)
-                self.err = qec
                 rots = [k*0.5 for k in rots]
-                
-                if code == "z":
-                    self.h(pos=1)
-                self.x(pos=1)
-                if code == "x":
+                counter = 0
+                while True:
+                    if code == "z":
+                        self = RepCode_z(distance, 2)
+                    elif code == "x":
+                        self = RepCode(distance, 2)
+                    self.err = qec
+                    self.postselection = post
+                    
+                    if code == "z":
+                        self.h(pos=1)
+                    self.x(pos=1)
+                    if code == "x":
+                        self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu(a[o], b[o])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
                     self.h(pos=0)
-                #############################
-                for j in range(2**(iter-t-1)):
-                    self.cu(a[o], b[o])
-                ###############################
-                for l in rots:
-                    if l == 0.25:
-                        self.sdg(pos=0)
-                    if l == 0.125:
-                        self.tdg(pos=0)
-                self.h(pos=0)
-                # print("Unoptimized: ")
-                # gates(self.qc)
-                self.qc = transpile(self.qc, optimization_level=1)
-                # print("Optimized: ")
-                # gates(self.qc)
-                # print(self.qec_counter)
-                self.readout(pos=0, shots=1, p=noise, bias=bias)
-        
-                if self.zeros == 1:
-                    bitstring += "0"
-                elif self.ones == 1:
-                    bitstring += "1"
-                    rots.append(0.5)
-                del self
+                    # print("Unoptimized: ")
+                    # gates(self.qc)
+                    self.qc = transpile(self.qc, optimization_level=1)
+                    # print("Optimized: ")
+                    # gates(self.qc)
+                    # print(self.qec_counter)
+                    # if self.err:
+                    #     self.qec(pos=0)
+                    self.readout(pos=0, shots=1, p=noise, bias=bias)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+                    counter += 1
+                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(o, noise*100, t, counter))
+                    del self
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
@@ -6540,8 +6549,10 @@ class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
         self.zeros = 0
+        self.post = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
+        self.postselection = False
         self.err = False
 
         qr = QuantumRegister(n*logical_q+1, "q")
@@ -6592,12 +6603,12 @@ class RepCode:      #Bitflip protected repetition code
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                if self.err and self.qec_counter%4==0:
+                if self.err and self.qec_counter%2==0:
                     self.qec(pos = pos)
             if i == "h":
                 self.h(pos=pos)
@@ -6666,6 +6677,8 @@ class RepCode:      #Bitflip protected repetition code
             self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, read[self.n-1-i])
 
+        test_0, test_1 = ["0"*self.n], ["1"*self.n]         #logical qubits
+
         sim = AerSimulator()
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
         result = job.result()
@@ -6675,33 +6688,49 @@ class RepCode:      #Bitflip protected repetition code
         bits = [i.replace(" ","") for i in bitstring]
         counter = list(counts.values())
 
-        allcbits = len(bitstring[0])
-
         bits = [i[:self.n] for i in bits]
 
-        zero, one = 0, 0
+        zero, one, post = 0, 0, 0
 
-        for i, val in enumerate(bits):
-            count0, count1 = 0, 0
-            for j in val:
-                if j == "0":
-                    count0 += 1
-                else:
-                    count1 += 1
-            if count0 > count1:
-                zero += counter[i]
-            elif count1 > count0:
-                one += counter[i]
-            else:
-                for k in range(counter[i]):
-                    if np.random.rand() < 0.5:
-                        zero += 1
+        if self.postselection:
+            for i in range(len(bits)):
+                for j in test_0:
+                    if j == bits[i]:
+                        bits[i] = 0
+                        zero += counter[i]
+                        break
+                if bits[i] != 0:
+                    for j in test_1:
+                        if j == bits[i]:
+                            bits[i] = 1
+                            one += counter[i]
+                            break
+                if bits[i] != 1 and bits[i] != 0:
+                    # print("Wrong bitstring: ", bits[i])
+                    bits[i] = "post"
+                    post += counter[i]
+        else:
+            for i, val in enumerate(bits):        #ohne Postselection, aka readout mit majority vote
+                counter0, counter1 = 0, 0
+                for j in val:
+                    if j == "0":
+                        counter0 += 1
                     else:
-                        one += 1
+                        counter1 += 1
+                if counter0 > counter1:
+                    zero += counter[i]
+                elif counter1 > counter0:
+                    one += counter[i]
+                else:
+                    for k in range(counter[i]):
+                        if np.random.rand() < 0.5:
+                            zero += 1
+                        else:
+                            one += 1
         
-        self.ones += one
-        self.zeros += zero
-
+        self.ones += one/shots
+        self.zeros += zero/shots
+        self.post += post/shots
 
 class RepCode_z:      #Phaseflip protected repetition code
     def __init__(self, n: int, logical_q: int):                 #number of physical qubits per logical qubit
@@ -6808,7 +6837,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
-                self.qec(pos=targ)
+            self.qec(pos=targ)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -6888,8 +6917,10 @@ class RepCode_z:      #Phaseflip protected repetition code
         noise_model = NoiseModel()
         p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
         p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
+        p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IZZ",p_z/3]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
 
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):

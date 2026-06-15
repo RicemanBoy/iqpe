@@ -2,22 +2,22 @@ from classes import *
 
 
 def gen_data(name):                   #code mit npz
-    p = np.linspace(0,0.005,6)
-    bias = np.linspace(-10, 10, 5)
+    p = np.linspace(0,0.005,10)
+    bias = np.linspace(-10, 10, 10)
 
-    y = np.zeros((len(bias), len(p), 15))
+    y = np.zeros((len(bias), len(p), 15))           #15 Winkel
     y_qec = np.zeros((len(bias), len(p), 15))       
 
     for i, b in enumerate(bias):
         for j, r in enumerate(p):
-            _, _, y_list = avg15_repcode("z", 3, 3, r, qec = False, k = 1, bias = b)
-            _, _, y_qec_list = avg15_repcode("z", 3, 3, r, qec = True, k = 1, bias = b)
+            _, _, y_list = avg15_repcode("x", 3, 3, r, qec = False, post= True, k = 1, bias = b)
+            _, _, y_qec_list = avg15_repcode("x", 3, 3, r, qec = True, post= True, k = 1, bias = b)
 
             y[i, j, :] = y_list
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Repcodez_d3_all{name}.npz",
+    f"Repcode_d3_post{name}.npz",
     p=p,
     bias=bias,
     y=y,
