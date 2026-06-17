@@ -445,6 +445,7 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
             y += diff
+            print("Performance for angle {}: ".format(o), diff)
             bruh1.append(diff), y_list.append(diff)
     y = y/(n*k)
     arg = 0
@@ -6945,7 +6946,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
                 self.qc.z(self.n*pos+self.n-1)
 
-        for i in range(self.n-3):       
+        for i in range(self.n-2):       
             with self.qc.if_test((self.qecc[i], 1)):
                 with self.qc.if_test((self.qecc[i+1], 1)):
                     self.qc.z(self.n*pos + i + 1)
@@ -6971,7 +6972,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
                 self.qc.append(z_ideal, [self.n*pos+self.n-1])
 
-        for i in range(self.n-3):       
+        for i in range(self.n-2):       
             with self.qc.if_test((self.qecc[i], 1)):
                 with self.qc.if_test((self.qecc[i+1], 1)):
                     self.qc.append(z_ideal, [self.n*pos + i + 1])
