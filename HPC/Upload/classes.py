@@ -427,8 +427,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     # print("Optimized: ")
                     gates(self.qc)
                     print("QEC counter: {}".format(self.qec_counter))
-                    # if self.err:
-                    #     self.qec(pos=0)
+                    if self.err:
+                        self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
             
                     if self.zeros == 1:
@@ -1708,7 +1708,6 @@ class Steane7q:
 
 
 
-
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
@@ -2064,13 +2063,13 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.magiccounter%4==0:
+                if self.err and self.magiccounter%1==0:
                     self.qec_ideal(pos = pos)
                 self.magiccounter += 1
                     # print("QEC applied, counter:  {}".format(self.qec_counter))
             if i == "tdg":
                 self.tdg(pos=pos)
-                if self.err and self.magiccounter%4==0:
+                if self.err and self.magiccounter%1==0:
                     self.qec_ideal(pos = pos)
                 self.magiccounter += 1
                     # print("QEC applied, counter:  {}".format(self.qec_counter))
@@ -2162,7 +2161,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         with self.qc.if_test((self.qecc[0], 1)):                #first
             with self.qc.if_test((self.qecc[1], 0)):               #second
-                self.qc.append(z_ideal, [3*pos])
+                self.qc.append(z_ideal, [3*pos+0])
         
         with self.qc.if_test((self.qecc[0], 1)):                #first
             with self.qc.if_test((self.qecc[1], 1)):               #second
@@ -2189,7 +2188,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
-        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
+        # noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
 
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):
