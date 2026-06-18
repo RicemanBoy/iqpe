@@ -467,6 +467,7 @@ class Steane7q:
         self.post = 0
         self.err = False
         self.qec_counter = 0
+        self.magiccounter = 0
 
         self.classical_ec = False
         self.postselection = True
@@ -1228,15 +1229,17 @@ class Steane7q:
             if i == "sdg":
                 self.sdg(pos=pos)
             if i == "t":
-                self.t_switch(pos=pos)
+                self.t(pos=pos)
                 #self.t_cheat(pos=pos)
-                if self.err and self.qec_counter%8==0:
+                if self.err and self.magiccounter%4==0:
                     self.qec_ft(pos = pos)
+                self.magiccounter += 1
             if i == "tdg":
-                self.tdg_switch(pos=pos)
+                self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                if self.err and self.qec_counter%8==0:
+                if self.err and self.magiccounter%8==0:
                     self.qec_ft(pos = pos)
+                self.magiccounter += 1
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
