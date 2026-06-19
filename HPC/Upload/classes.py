@@ -423,12 +423,12 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     self.h(pos=0)
                     # print("Unoptimized: ")
                     # gates(self.qc)
-                    self.qc = transpile(self.qc, optimization_level=1)
+                    # self.qc = transpile(self.qc, optimization_level=1)
                     # print("Optimized: ")
                     gates(self.qc)
                     print("QEC counter: {}".format(self.qec_counter))
-                    if self.err:
-                        self.qec_ideal(pos=0)
+                    # if self.err:
+                    #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
             
                     if self.zeros == 1:
@@ -1974,6 +1974,9 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
     
     def h(self, pos: int):
+        if self.err and self.magiccounter%1==0:
+            self.qec_ideal(pos = pos)
+        self.magiccounter += 1
         for i in range(2):
             for j in range(self.n):
                 self.qc.reset(self.n*(i+self.logicalq)+j)
@@ -1981,6 +1984,8 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.h(self.n*(self.logicalq)+i)             #prep +_L
             self.qc.h(self.n*(self.logicalq+1)+i)
             self.qc.z(self.n*(self.logicalq+1)+i)           #prep -_L
+        if self.err:
+            self.qec_ideal(pos = self.logicalq+1)   #qec bei -_L
         
         self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)           #computationally very though
 
@@ -1998,31 +2003,36 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
 
     def rx(self, pos: int, angle: float):
-        self.qc.rx(angle, self.n*pos)
+        i = np.random.randint(0,2)
+        self.qc.rx(angle, self.n*pos+i)
     
     def sqrt_x(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.s(self.n*pos)
         # self.qc.h(self.n*pos)
-        self.qc.rx(np.pi/2, self.n*pos)
+        i = np.random.randint(0,2)
+        self.qc.rx(np.pi/2, self.n*pos+i)
     
     def sqrt_xdg(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.sdg(self.n*pos)
         # self.qc.h(self.n*pos)
-        self.qc.rx(-np.pi/2, self.n*pos)
+        i = np.random.randint(0,2)
+        self.qc.rx(-np.pi/2, self.n*pos+i)
     
     def sqrt2_x(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.t(self.n*pos)
         # self.qc.h(self.n*pos)
-        self.qc.rx(np.pi/4, self.n*pos)
+        i = np.random.randint(0,2)
+        self.qc.rx(np.pi/4, self.n*pos+i)
     
     def sqrt2_xdg(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.tdg(self.n*pos)
         # self.qc.h(self.n*pos)
-        self.qc.rx(-np.pi/4, self.n*pos)
+        i = np.random.randint(0,2)
+        self.qc.rx(-np.pi/4, self.n*pos+i)
 
     def s(self, pos: int):
         self.h(pos=pos)
@@ -2048,7 +2058,8 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
-            # self.qec_ideal(pos=targ)               #needed for FT
+            if True:
+                self.qec_ideal(pos=targ)               #needed for FT
             # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
@@ -2063,16 +2074,8 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                if self.err and self.magiccounter%1==0:
-                    self.qec_ideal(pos = pos)
-                self.magiccounter += 1
-                    # print("QEC applied, counter:  {}".format(self.qec_counter))
             if i == "tdg":
                 self.tdg(pos=pos)
-                if self.err and self.magiccounter%1==0:
-                    self.qec_ideal(pos = pos)
-                self.magiccounter += 1
-                    # print("QEC applied, counter:  {}".format(self.qec_counter))
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -2188,7 +2191,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
-        # noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
 
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):
