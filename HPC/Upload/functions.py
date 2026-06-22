@@ -2,8 +2,8 @@ from classes import *
 
 
 def gen_data(name):                   #code mit npz
-    p = np.linspace(0.00,0.005,5)
-    bias = [-1e4, -100, 0, 100, 1e4]
+    p = np.linspace(0.00,0.01,10)
+    bias = [-1e4, -100, -10, 0, 10, 100, 1e4]
 
     y = np.zeros((len(bias), len(p), 15))           #15 Winkel
     y_qec = np.zeros((len(bias), len(p), 15))       
@@ -17,7 +17,7 @@ def gen_data(name):                   #code mit npz
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Repcodez_d3_idealqec{name}.npz",
+    f"Repcodez_d3_qec{name}.npz",
     p=p,
     bias=bias,
     y=y,
@@ -103,7 +103,7 @@ def gen_data(name):                   #code mit npz
 
 
 # def gen_data(name):                           #code OG
-#     p = np.linspace(0,0.001,10)[4:7]
+#     p = np.linspace(0,0.001,10)[4:8]
 #     y, y_qec = [],[]
 #     err, err_qec = [], []
 
@@ -116,4 +116,4 @@ def gen_data(name):                   #code mit npz
 
 #     data = np.array((p, y, err))
 #     #data = np.array((p, y, err))
-#     np.savetxt("FTSteane_qec_4_6{}.txt".format(name), data, delimiter=",")
+#     np.savetxt("FTSteane_qec_4_7_new{}.txt".format(name), data, delimiter=",")

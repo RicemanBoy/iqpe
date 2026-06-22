@@ -425,8 +425,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     # gates(self.qc)
                     # self.qc = transpile(self.qc, optimization_level=1)
                     # print("Optimized: ")
-                    gates(self.qc)
-                    print("QEC counter: {}".format(self.qec_counter))
+                    # gates(self.qc)
+                    # print("QEC counter: {}".format(self.qec_counter))
                     # if self.err:
                     #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
@@ -445,7 +445,7 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
             hmm = convert(bitstring)
             diff = np.abs(hmm-angle[o])
             y += diff
-            print("Performance for angle {}: ".format(o), diff)
+            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", o), diff)
             bruh1.append(diff), y_list.append(diff)
     y = y/(n*k)
     arg = 0
@@ -592,6 +592,7 @@ class Steane7q:
         self.qc.s(2+7*pos), self.qc.s(4+7*pos), self.qc.s(5+7*pos)
 
     def t(self, pos: int):
+        self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
         self.h(pos=pos)
@@ -1122,6 +1123,7 @@ class Steane7q:
         self.qc.cx(1+7*pos, 2+7*pos)
 
     def tdg(self, pos: int):
+        self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
         self.h(pos=pos)
@@ -1232,15 +1234,13 @@ class Steane7q:
             if i == "t":
                 self.t(pos=pos)
                 #self.t_cheat(pos=pos)
-                if self.err and self.magiccounter%4==0:
-                    self.qec_ft(pos = pos)
-                self.magiccounter += 1
+                # if self.err and self.magiccounter%2==0:
+                #     self.qec_ft(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
                 #self.tdg_cheat(pos=pos)
-                if self.err and self.magiccounter%8==0:
-                    self.qec_ft(pos = pos)
-                self.magiccounter += 1
+                # if self.err and self.magiccounter%2==0:
+                #     self.qec_ft(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -1251,12 +1251,16 @@ class Steane7q:
         # if self.err:
         #     self.qec(pos = 0)
         self.u2(1, gate=gate)
-        # if self.err:
-        #     self.qec(pos = 1)
+        if self.err:
+            self.qec(pos = 0)
+            self.qec(pos = 1)
         self.cnot(control=0, target=1)
         self.u2(1, gate=adjgate)
         # if self.err:
         #     self.qec(pos = 1)
+        if self.err:
+            self.qec(pos = 0)
+            self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
     def qec_ft(self, pos: int):
@@ -1707,7 +1711,6 @@ class Steane7q:
         #return zeros, ones, preselected, post
 
 
-
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
@@ -1945,7 +1948,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.err = False
         self.postselection = False                  #useless hier, PS geht nicht bei dem Code, da jeder Bitstring einem logischen Zustand entspricht
 
-        qr = QuantumRegister(n*(logical_q+2)+1, "q")
+        qr = QuantumRegister(n*(logical_q+2)+2, "q")
         cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
@@ -1974,8 +1977,6 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
     
     def h(self, pos: int):
-        if self.err and self.magiccounter%1==0:
-            self.qec_ideal(pos = pos)
         self.magiccounter += 1
         for i in range(2):
             for j in range(self.n):
@@ -1985,7 +1986,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.h(self.n*(self.logicalq+1)+i)
             self.qc.z(self.n*(self.logicalq+1)+i)           #prep -_L
         if self.err:
-            self.qec_ideal(pos = self.logicalq+1)   #qec bei -_L
+            self.qec(pos = self.logicalq+1)   #qec bei -_L
         
         self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)           #computationally very though
 
@@ -2058,9 +2059,9 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
-            if True:
-                self.qec_ideal(pos=targ)               #needed for FT
-            # self.qec_counter -= 1
+            if self.err:
+                self.qec(pos=targ)               #needed for FT
+                # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -2094,32 +2095,116 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
+    def qec_nft(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        # for i in range(self.n-1):
+        #     self.qc.reset(anc)
+        #     self.qc.h(anc)
+        #     self.qc.cx(anc, self.n*pos + i)
+        #     self.qc.cx(anc, self.n*pos + i + 1)
+        #     self.qc.h(anc)
+        #     self.qc.id(anc)
+        #     self.qc.measure(anc, self.qecc[i])
+
+        # with self.qc.if_test((self.qecc[0], 1)):                #first
+        #     with self.qc.if_test((self.qecc[1], 0)):               #second
+        #         self.qc.z(self.n*pos)
+        
+        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
+        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
+        #         self.qc.z(self.n*pos+self.n-1)
+
+        # for i in range(self.n-2):       
+        #     with self.qc.if_test((self.qecc[i], 1)):
+        #         with self.qc.if_test((self.qecc[i+1], 1)):
+        #             self.qc.z(self.n*pos + i + 1)
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 0)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.cx(anc, 3*pos + 2)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[1])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):               
+                self.qc.z(3*pos)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                self.qc.z(3*pos + 1)
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                self.qc.z(3*pos + 2)
+
     def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
-
-        for i in range(self.n-1):
-            self.qc.reset(anc)
-            self.qc.h(anc)
-            self.qc.cx(anc, self.n*pos + i)
-            self.qc.cx(anc, self.n*pos + i + 1)
-            self.qc.h(anc)
-            self.qc.id(anc)
-            self.qc.measure(anc, self.qecc[i])
-
-        with self.qc.if_test((self.qecc[0], 1)):                #first
-            with self.qc.if_test((self.qecc[1], 0)):               #second
-                self.qc.z(self.n*pos)
-        
-        with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
-            with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
-                self.qc.z(self.n*pos+self.n-1)
-
-        for i in range(self.n-2):       
-            with self.qc.if_test((self.qecc[i], 1)):
-                with self.qc.if_test((self.qecc[i+1], 1)):
-                    self.qc.z(self.n*pos + i + 1)
-        
+        ancc = anc - 1
         self.qec_counter += 1
+
+        # for i in range(self.n-1):
+        #     self.qc.reset(anc)
+        #     self.qc.h(anc)
+        #     self.qc.cx(anc, self.n*pos + i)
+        #     self.qc.cx(anc, self.n*pos + i + 1)
+        #     self.qc.h(anc)
+        #     self.qc.id(anc)
+        #     self.qc.measure(anc, self.qecc[i])
+
+        # with self.qc.if_test((self.qecc[0], 1)):                #first
+        #     with self.qc.if_test((self.qecc[1], 0)):               #second
+        #         self.qc.z(self.n*pos)
+        
+        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
+        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
+        #         self.qc.z(self.n*pos+self.n-1)
+
+        # for i in range(self.n-2):       
+        #     with self.qc.if_test((self.qecc[i], 1)):
+        #         with self.qc.if_test((self.qecc[i+1], 1)):
+        #             self.qc.z(self.n*pos + i + 1)
+
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.cx(anc, 3*pos + 0)
+        self.qc.cx(ancc, 3*pos + 1)
+        self.qc.cx(anc, ancc)
+        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.cx(ancc, 3*pos + 2)
+        self.qc.cx(anc, ancc)
+        self.qc.h(anc), self.qc.h(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[1])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):               
+                self.qc.z(3*pos)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                self.qc.z(3*pos + 1)
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                self.qc.z(3*pos + 2)
 
     def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -2207,6 +2292,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):
             self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, read[self.n-1-i])
+
         sim = AerSimulator()
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
         result = job.result()
