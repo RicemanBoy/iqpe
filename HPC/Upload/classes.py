@@ -1985,8 +1985,8 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.h(self.n*(self.logicalq)+i)             #prep +_L
             self.qc.h(self.n*(self.logicalq+1)+i)
             self.qc.z(self.n*(self.logicalq+1)+i)           #prep -_L
-        if self.err:
-            self.qec(pos = self.logicalq+1)   #qec bei -_L
+        # if self.err:
+        #     self.qec(pos = self.logicalq+1)   #qec bei -_L
         
         self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)           #computationally very though
 
