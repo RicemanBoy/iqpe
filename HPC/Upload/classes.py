@@ -385,10 +385,10 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
+    with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+    with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
         for line in file:
             b.append(list(map(str, line.strip().split(","))))
     
@@ -425,8 +425,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     # gates(self.qc)
                     # self.qc = transpile(self.qc, optimization_level=1)
                     # print("Optimized: ")
-                    # gates(self.qc)
-                    # print("QEC counter: {}".format(self.qec_counter))
+                    gates(self.qc)
+                    print("QEC counter: {}".format(self.qec_counter))
                     # if self.err:
                     #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
@@ -658,7 +658,7 @@ class Steane7q:
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
-        if self.err:
+        if self.err and self.magiccounter%2==0:
             self.qec(pos=pos)
 
     def nFTt(self,pos: int):
@@ -1189,7 +1189,7 @@ class Steane7q:
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
-        if self.err:
+        if self.err and self.magiccounter%2==0:
             self.qec(pos=pos)
 
     def nFTtdg(self,pos: int):
@@ -1710,7 +1710,6 @@ class Steane7q:
         # print("Postselection discarded: ", (post/shots)*100, "%")
         #return zeros, ones, preselected, post
 
-
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
@@ -1995,7 +1994,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, self.qecc[i])
 
-        maj = majority_values(self.n)               #do majority vote to ensure FT
+        maj = majority_values(self.n)               #do majority vote to ensure FT, somewhat of an QEC step in itself
         for value in maj:
             with self.qc.if_test((self.qecc, value)):
                 self.qc.x(self.n*self.logicalq)
@@ -2081,6 +2080,14 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.h(pos=pos)
             if i == "z":
                 self.z(pos=pos)
+            if i == "t_x":
+                self.sqrt2_x(pos=pos)
+            if i == "tdg_x":
+                self.sqrt2_xdg(pos=pos)
+            if i == "s_x":
+                self.sqrt_x(pos=pos)
+            if i == "sdg_x":
+                self.sqrt_xdg(pos=pos)
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
@@ -2149,7 +2156,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
 
-    def qec(self, pos: int):
+    def qec_ft(self, pos: int):
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
         self.qec_counter += 1
@@ -2181,8 +2188,8 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 3*pos + 0)
         self.qc.cx(ancc, 3*pos + 1)
         self.qc.cx(anc, ancc)
-        self.qc.h(anc), self.qc.h(ancc)
-        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[0])
 
         self.qc.reset(anc), self.qc.reset(ancc)
@@ -2190,8 +2197,8 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 3*pos + 1)
         self.qc.cx(ancc, 3*pos + 2)
         self.qc.cx(anc, ancc)
-        self.qc.h(anc), self.qc.h(ancc)
-        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[1])
 
         with self.qc.if_test((self.qecc[0], 1)):                
@@ -2206,7 +2213,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
 
-    def qec_ideal(self, pos: int):
+    def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
