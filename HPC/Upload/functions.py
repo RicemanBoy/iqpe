@@ -17,7 +17,7 @@ def gen_data(name):                   #code mit npz
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Repcodez_d3_idealqec_new{name}.npz",
+    f"Phasecode_d3_nftqec{name}.npz",
     p=p,
     bias=bias,
     y=y,

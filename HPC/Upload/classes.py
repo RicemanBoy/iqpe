@@ -425,8 +425,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     # gates(self.qc)
                     # self.qc = transpile(self.qc, optimization_level=1)
                     # print("Optimized: ")
-                    gates(self.qc)
-                    print("QEC counter: {}".format(self.qec_counter))
+                    #gates(self.qc)
+                    #print("QEC counter: {}".format(self.qec_counter))
                     # if self.err:
                     #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
@@ -443,7 +443,8 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
                     del self
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
-            diff = np.abs(hmm-angle[o])
+            #diff = np.abs(hmm-angle[o])
+            diff = min(np.abs(hmm-angle[o]), 1-np.abs(hmm-angle[o]))
             y += diff
             print("Performance {}for angle {}: ".format("(QEC) " if qec else "", o), diff)
             bruh1.append(diff), y_list.append(diff)
@@ -2102,7 +2103,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
-    def qec_nft(self, pos: int):
+    def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -2213,7 +2214,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
 
-    def qec(self, pos: int):
+    def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
