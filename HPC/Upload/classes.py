@@ -1948,7 +1948,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.err = False
         self.postselection = False                  #useless hier, PS geht nicht bei dem Code, da jeder Bitstring einem logischen Zustand entspricht
 
-        qr = QuantumRegister(n*(logical_q+2)+2, "q")
+        qr = QuantumRegister(n*(logical_q+2)+3, "q")
         cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
@@ -2160,6 +2160,7 @@ class RepCode_z:      #Phaseflip protected repetition code
     def qec_ft(self, pos: int):
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
+        anccc = ancc - 1
         self.qec_counter += 1
 
         # for i in range(self.n-1):
@@ -2184,7 +2185,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #         with self.qc.if_test((self.qecc[i+1], 1)):
         #             self.qc.z(self.n*pos + i + 1)
 
-        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.reset(anc), self.qc.reset(ancc)                 #works for d=3
         self.qc.h(anc), self.qc.h(ancc)
         self.qc.cx(anc, 3*pos + 0)
         self.qc.cx(ancc, 3*pos + 1)
@@ -2213,6 +2214,29 @@ class RepCode_z:      #Phaseflip protected repetition code
         with self.qc.if_test((self.qecc[0], 0)):                
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
+
+        # self.qc.reset(anc), self.qc.reset(ancc), self.qc.reset(anccc)                 
+        # self.qc.h(anc), self.qc.h(ancc), self.qc.h(anccc)
+        # self.qc.cx(anc, 3*pos + 0)
+        # self.qc.cx(ancc, 3*pos + 1)
+        # self.qc.cx(anccc, 3*pos + 2)
+        # self.qc.cx(ancc, anc), self.qc.cx(ancc, anccc)
+        # self.qc.h(anc), self.qc.h(anccc)
+        # self.qc.id(anc), self.qc.id(anccc)
+        # self.qc.measure(anc, self.qecc[0])
+        # self.qc.measure(anccc, self.qecc[1])
+
+        # with self.qc.if_test((self.qecc[0], 1)):                
+        #     with self.qc.if_test((self.qecc[1], 0)):               
+        #         self.qc.z(3*pos)
+
+        # with self.qc.if_test((self.qecc[0], 1)):                
+        #     with self.qc.if_test((self.qecc[1], 1)):               
+        #         self.qc.z(3*pos + 1)
+        
+        # with self.qc.if_test((self.qecc[0], 0)):                
+        #     with self.qc.if_test((self.qecc[1], 1)):               
+        #         self.qc.z(3*pos + 2)
 
     def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
