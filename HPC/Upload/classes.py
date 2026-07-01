@@ -457,6 +457,86 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
 
     return y, sigma, y_list
 
+def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+    assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    y_list, bruh1 = [], []
+    for m in range(k):
+        for o in range(7):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                counter = 0
+                while True:
+                    if code == "z":
+                        self = RepCode_z(distance, 2)
+                    elif code == "x":
+                        self = RepCode(distance, 2)
+                    self.err = qec
+                    self.postselection = post
+                    
+                    self.x(pos=1)
+                    self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu(a[2*o+1], b[2*o+1])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
+                    self.h(pos=0)
+                    # print("Unoptimized: ")
+                    # gates(self.qc)
+                    # self.qc = transpile(self.qc, optimization_level=1)
+                    # print("Optimized: ")
+                    #gates(self.qc)
+                    #print("QEC counter: {}".format(self.qec_counter))
+                    # if self.err:
+                    #     self.qec_ideal(pos=0)
+                    self.readout(pos=0, shots=1, p=noise, bias=bias)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+                    counter += 1
+                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
+                    del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            #diff = np.abs(hmm-angle[o])
+            diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
+            y += diff
+            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            bruh1.append(diff), y_list.append(diff)
+    y = y/(n*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y, sigma, y_list
+
 
 
 class Steane7q:

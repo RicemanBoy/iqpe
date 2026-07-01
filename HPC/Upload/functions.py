@@ -5,19 +5,19 @@ def gen_data(name):                   #code mit npz
     p = np.linspace(0.00,0.005,6)
     bias = [-1e4, -100, -10, 0, 10, 100, 1e4]
 
-    y = np.zeros((len(bias), len(p), 15))           #15 Winkel
-    y_qec = np.zeros((len(bias), len(p), 15))       
+    y = np.zeros((len(bias), len(p), 7))           #7 Winkel !!!
+    y_qec = np.zeros((len(bias), len(p), 7))       
 
     for i, b in enumerate(bias):
         for j, r in enumerate(p):
-            _, _, y_list = avg15_repcode("z", 3, 3, r, qec = False, post= False, k = 1, bias = b)
-            _, _, y_qec_list = avg15_repcode("z", 3, 3, r, qec = True, post= False, k = 1, bias = b)
+            _, _, y_list = avg7_repcode("z", 3, 3, r, qec = False, post= False, k = 1, bias = b)
+            _, _, y_qec_list = avg7_repcode("z", 3, 3, r, qec = True, post= False, k = 1, bias = b)
 
             y[i, j, :] = y_list
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Phasecode_d3_ftqec_new{name}.npz",
+    f"Phasecode_d3_exactangles_nftqec{name}.npz",
     p=p,
     bias=bias,
     y=y,
