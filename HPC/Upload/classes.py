@@ -523,7 +523,6 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                     del self
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
-            #diff = np.abs(hmm-angle[o])
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
             print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
