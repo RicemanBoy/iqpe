@@ -17,7 +17,7 @@ def gen_data(name):                   #code mit npz
             y_qec[i, j, :] = y_qec_list
 
     np.savez(
-    f"Phasecode_d3_exactangles_nftqec{name}.npz",
+    f"Phasecode_d3_exactangles_idealqec{name}.npz",
     p=p,
     bias=bias,
     y=y,

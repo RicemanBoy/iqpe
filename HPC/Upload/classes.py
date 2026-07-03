@@ -2182,7 +2182,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
-    def qec(self, pos: int):
+    def qec_nft(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -2317,7 +2317,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     with self.qc.if_test((self.qecc[1], 1)):               
         #         self.qc.z(3*pos + 2)
 
-    def qec_ideal(self, pos: int):
+    def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
