@@ -10,8 +10,8 @@ def gen_data(name):                   #code mit npz
 
     for i, b in enumerate(bias):
         for j, r in enumerate(p):
-            _, _, y_list = avg7_repcode("z", 3, 3, r, qec = False, post= False, k = 1, bias = b)
-            _, _, y_qec_list = avg7_repcode("z", 3, 3, r, qec = True, post= False, k = 1, bias = b)
+            _, _, y_list = avg7_repcode_timo("z", 3, 3, r, qec = False, post= False, k = 1, bias = b)
+            _, _, y_qec_list = avg7_repcode_timo("z", 3, 3, r, qec = True, post= False, k = 1, bias = b)
 
             y[i, j, :] = y_list
             y_qec[i, j, :] = y_qec_list
