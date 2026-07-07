@@ -510,6 +510,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                     # if self.err:
                     #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1, p=noise, bias=bias)
+                    print("T/Tdg counter for iteration {}: {}".format(t, self.magiccounter))
             
                     if self.zeros == 1:
                         bitstring += "0"
@@ -673,7 +674,7 @@ class Steane7q:
         self.qecc = ClassicalRegister(6)
         self.qc.add_register(self.qecc)
     
-    def idling_err(self, pos: int):
+    def id(self, pos: int):
         for i in range(7):
             self.qc.id(i+7*pos)
 
@@ -2214,6 +2215,9 @@ class RotSurf9q:
         self.h(pos=target)
         if self.err:
             self.qec(pos=target)
+    
+    def id(self, pos: int):
+        self.qc.id(9*pos + i)
 
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
@@ -2782,7 +2786,7 @@ class RotSurf9q:
             self.qc.cx(anc, 3+9*pos)
             self.qc.cx(anc, 6+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #X0 X1 X3 X4 Stabilizer:
@@ -2793,7 +2797,7 @@ class RotSurf9q:
             self.qc.cx(anc, 0+9*pos)
             self.qc.cx(anc, 3+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,1)
 
             #X4 X5 X7 X8 Stabilizer:
@@ -2804,7 +2808,7 @@ class RotSurf9q:
             self.qc.cx(anc, 5+9*pos)
             self.qc.cx(anc, 8+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #X2 X5 Stabilizer:
@@ -2813,7 +2817,7 @@ class RotSurf9q:
             self.qc.cx(anc, 2+9*pos)
             self.qc.cx(anc, 5+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,3)
 
             with self.qc.if_test((0,1)):             #6
@@ -2852,7 +2856,7 @@ class RotSurf9q:
             self.qc.reset(anc)
             self.qc.cx(0+9*pos, anc)
             self.qc.cx(1+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #Z1 Z2 Z4 Z5 Stabilizer:
@@ -2861,7 +2865,7 @@ class RotSurf9q:
             self.qc.cx(5+9*pos, anc)
             self.qc.cx(1+9*pos, anc)
             self.qc.cx(2+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z3 Z4 Z6 Z7 Stabilizer:
@@ -2870,14 +2874,14 @@ class RotSurf9q:
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(6+9*pos, anc)
             self.qc.cx(7+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #Z7 Z8 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(7+9*pos, anc)
             self.qc.cx(8+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,3)
             
             with self.qc.if_test((0,1)):             #0
@@ -2917,7 +2921,7 @@ class RotSurf9q:
             self.qc.cx(anc, 0+9*pos)
             self.qc.cx(anc, 1+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,0)
             
             #X1 X2 X4 X5 Stabilizer:
@@ -2928,7 +2932,7 @@ class RotSurf9q:
             self.qc.cx(anc, 1+9*pos)
             self.qc.cx(anc, 2+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,1)
 
             #X3 X4 X6 X7 Stabilizer:
@@ -2939,7 +2943,7 @@ class RotSurf9q:
             self.qc.cx(anc, 6+9*pos)
             self.qc.cx(anc, 7+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #X7 X8 Stabilizer:
@@ -2948,7 +2952,7 @@ class RotSurf9q:
             self.qc.cx(anc, 7+9*pos)
             self.qc.cx(anc, 8+9*pos)
             self.qc.h(anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,3)
 
             with self.qc.if_test((0,1)):             #0
@@ -2987,7 +2991,7 @@ class RotSurf9q:
             self.qc.reset(anc)
             self.qc.cx(3+9*pos, anc)
             self.qc.cx(6+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #Z0 Z1 Z3 Z4 Stabilizer:
@@ -2996,7 +3000,7 @@ class RotSurf9q:
             self.qc.cx(1+9*pos, anc)
             self.qc.cx(0+9*pos, anc)
             self.qc.cx(3+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z4 Z5 Z7 Z8 Stabilizer:
@@ -3005,14 +3009,14 @@ class RotSurf9q:
             self.qc.cx(7+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
             self.qc.cx(8+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #Z2 Z5 Stabilizer:
             self.qc.reset(anc)
             self.qc.cx(2+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
-            self.qc.id(anc)
+            # self.qc.id(anc)
             self.qc.measure(anc,3)
             
             with self.qc.if_test((0,1)):             #6
@@ -4001,6 +4005,10 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):
             self.qc.z(self.n*pos + i)
 
+    def id(self, pos: int):
+        for i in range(self.n):
+            self.qc.id(self.n*pos + i)
+
     def x(self, pos: int):
         self.qc.x(self.n*pos)
     
@@ -4057,6 +4065,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.rx(-np.pi/2, self.n*pos+i)
     
     def sqrt2_x(self, pos: int):
+        self.magiccounter += 1
         # self.qc.h(self.n*pos)
         # self.qc.t(self.n*pos)
         # self.qc.h(self.n*pos)
@@ -4064,6 +4073,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.rx(np.pi/4, self.n*pos+i)
     
     def sqrt2_xdg(self, pos: int):
+        self.magiccounter += 1
         # self.qc.h(self.n*pos)
         # self.qc.tdg(self.n*pos)
         # self.qc.h(self.n*pos)
@@ -4138,7 +4148,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
 
-    def qec_nft(self, pos: int):
+    def qec(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -4273,7 +4283,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         #     with self.qc.if_test((self.qecc[1], 1)):               
         #         self.qc.z(3*pos + 2)
 
-    def qec(self, pos: int):
+    def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
