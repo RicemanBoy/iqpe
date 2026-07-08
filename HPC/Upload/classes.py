@@ -465,10 +465,10 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
         for line in file:
             b.append(list(map(str, line.strip().split(","))))
     
@@ -3760,16 +3760,17 @@ class RepCode:      #Bitflip protected repetition code
         self.postselection = False
         self.logicalq = logical_q
         self.err = False
+        self.magiccounter = 0
 
-        qr = QuantumRegister(n*(logical_q+2)+1, "q")
+        qr = QuantumRegister(n*(logical_q+2)+3, "q")
         cbit = ClassicalRegister(0, "c")
         self.qc = QuantumCircuit(qr, cbit)
 
-        self.qecc = ClassicalRegister(n-1)
+        self.qecc = ClassicalRegister(n)
         self.qc.add_register(self.qecc)
 
-        for i in range(n*logical_q):
-            self.qc.id(i)
+        # for i in range(n*logical_q):
+        #     self.qc.id(i)
 
     def x(self, pos: int):
         for i in range(self.n):
@@ -3778,37 +3779,42 @@ class RepCode:      #Bitflip protected repetition code
     def z(self, pos: int):
         self.qc.z(self.n*pos)
     
-    def h(self, pos: int):
+    def h_nft(self, pos: int):
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos, self.n*pos + i + 1)
         self.qc.h(self.n*pos)
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos, self.n*pos + i + 1)
     
-    def h_toff(self, pos: int):
+    def h(self, pos: int):
+        self.magiccounter += 1
         for i in range(2):
             for j in range(self.n):
                 self.qc.reset(self.n*(i+self.logicalq)+j)
-        self.qc.h(pos=self.n*(self.logicalq))
-        self.qc.cx(pos=self.n*(self.logicalq), control=self.n*(self.logicalq)+1)
-        self.qc.cx(pos=self.n*(self.logicalq), control=self.n*(self.logicalq)+2)
 
-        self.qc.h(pos=self.n*(self.logicalq+1))
-        self.qc.cx(pos=self.n*(self.logicalq+1), control=self.n*(self.logicalq+1)+1)
-        self.qc.cx(pos=self.n*(self.logicalq+1), control=self.n*(self.logicalq+1)+2)
-        self.z(pos=self.n*(self.logicalq+1))
+        self.qc.h(self.n*(self.logicalq)+0)             #prep +_L
+        self.qc.cx(self.n*(self.logicalq)+0, self.n*(self.logicalq)+1)
+        self.qc.cx(self.n*(self.logicalq)+0, self.n*(self.logicalq)+2)
+
+        self.qc.h(self.n*(self.logicalq+1)+0)           #prep -_L
+        self.qc.cx(self.n*(self.logicalq+1)+0, self.n*(self.logicalq+1)+1)
+        self.qc.cx(self.n*(self.logicalq+1)+0, self.n*(self.logicalq+1)+2)
+        self.qc.z(self.n*(self.logicalq+1)+0)
+        # if self.err:
+        #     self.qec(pos = self.logicalq+1)   #qec bei -_L
         
-        self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)
+        self.toff(control1=self.logicalq, control2=pos, targ=self.logicalq+1)           #computationally very though
 
         for i in range(self.n):                     #measure X_L
             self.qc.h(self.n*pos + i)
-            self.qc.id(self.n*pos + i)
+            # self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, self.qecc[i])
 
-        maj = majority_values(self.n)               #do majority vote to ensure FT
-        for value in maj:
-            with self.qc.if_test((self.qecc, value)):
-                self.qc.x(self.n*self.logicalq)
+        maj = majority_values(self.n)               #do majority vote to ensure FT, somewhat of an QEC step in itself
+        for i in range(self.n):
+            for value in maj:
+                with self.qc.if_test((self.qecc, value)):
+                    self.qc.x(self.n*self.logicalq+i)
 
         for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
@@ -3829,7 +3835,9 @@ class RepCode:      #Bitflip protected repetition code
         for i in range(self.n):
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
-            self.qec(pos=targ)
+            if self.err:
+                self.qec(pos=targ)               #needed for FT
+                # self.qec_counter -= 1
 
     def rz(self, pos: int, angle: float):
         self.qc.rz(angle, self.n*pos)
@@ -3995,7 +4003,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.add_register(self.qecc)
 
         for i in range(n*logical_q):
-            self.qc.id(i)
+            # self.qc.id(i)
             self.qc.h(i)
         
         for i in range(logical_q):
@@ -4035,7 +4043,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         for i in range(self.n):                     #measure X_L
             self.qc.h(self.n*pos + i)
-            self.qc.id(self.n*pos + i)
+            # self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, self.qecc[i])
 
         maj = majority_values(self.n)               #do majority vote to ensure FT, somewhat of an QEC step in itself
@@ -4351,7 +4359,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
         p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
         p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
-        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id'])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
 
