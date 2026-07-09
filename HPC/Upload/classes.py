@@ -1977,10 +1977,10 @@ class Steane7q:
         #             else:
         #                 bits[i] = 1
 
-        # for i in range(len(postprocess)):
-        #     if postprocess[i].count("1") != 0:
-        #         if bits[i] != "pre" and bits[i] != "post":
-        #             bits[i] = "post"
+        for i in range(len(postprocess)):                           #Postprocess von Flags bei QEC!
+            if postprocess[i].count("1") != 0:
+                if bits[i] != "pre" and bits[i] != "post":
+                    bits[i] = "post"
 
         #print(bits)
         ones = 0
@@ -2217,7 +2217,8 @@ class RotSurf9q:
             self.qec(pos=target)
     
     def id(self, pos: int):
-        self.qc.id(9*pos + i)
+        for i in range(9):
+            self.qc.id(9*pos + i)
 
     def x(self, pos: int):
         if self.hadamards[pos]%2==0:
@@ -3050,7 +3051,277 @@ class RotSurf9q:
                         self.qc.x(7+9*pos)
 
     def qec_ideal(self, pos: int):
-        return True
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        if self.hadamards[pos]%2==1:
+            #X3 X6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [3+9*pos, anc])
+            self.qc.append(cx_ideal, [6+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #X0 X1 X3 X4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [1+9*pos, anc])
+            self.qc.append(cx_ideal, [4+9*pos, anc])
+            self.qc.append(cx_ideal, [0+9*pos, anc])
+            self.qc.append(cx_ideal, [3+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,1)
+
+            #X4 X5 X7 X8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [4+9*pos, anc])
+            self.qc.append(cx_ideal, [7+9*pos, anc])
+            self.qc.append(cx_ideal, [5+9*pos, anc])
+            self.qc.append(cx_ideal, [8+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #X2 X5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [2+9*pos, anc])
+            self.qc.append(cx_ideal, [5+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.append(z_ideal,[6+9*pos])
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.append(z_ideal,[3+9*pos])
+
+            with self.qc.if_test((3,1)):             #2
+                with self.qc.if_test((2,0)):
+                    self.qc.append(z_ideal,[2+9*pos])
+            
+            with self.qc.if_test((3,1)):             #5
+                with self.qc.if_test((2,1)):
+                    self.qc.append(z_ideal,[5+9*pos])
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.append(z_ideal,[4+9*pos])
+
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.append(z_ideal,[0+9*pos])
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.append(z_ideal,[7+9*pos])
+
+        ###########################################################################################################
+
+            #Z0 Z1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 0+9*pos])
+            self.qc.append(cx_ideal, [anc, 1+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z1 Z2 Z4 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 4+9*pos])
+            self.qc.append(cx_ideal, [anc, 5+9*pos])
+            self.qc.append(cx_ideal, [anc, 1+9*pos])
+            self.qc.append(cx_ideal, [anc, 2+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z3 Z4 Z6 Z7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 3+9*pos])
+            self.qc.append(cx_ideal, [anc, 4+9*pos])
+            self.qc.append(cx_ideal, [anc, 6+9*pos])
+            self.qc.append(cx_ideal, [anc, 7+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 7+9*pos])
+            self.qc.append(cx_ideal, [anc, 8+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):
+                    self.qc.append(x_ideal,[0+9*pos])
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.append(x_ideal,[1+9*pos])
+            
+            with self.qc.if_test((3,1)):             #8
+                with self.qc.if_test((2,0)):
+                    self.qc.append(x_ideal,[8+9*pos])
+            
+            with self.qc.if_test((3,1)):             #7
+                with self.qc.if_test((2,1)):
+                    self.qc.append(x_ideal,[7+9*pos])
+            
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.append(x_ideal,[4+9*pos])
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.append(x_ideal,[2+9*pos])
+            
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.append(x_ideal,[3+9*pos])
+
+        else:
+            #X0 X1 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [0+9*pos, anc])
+            self.qc.append(cx_ideal, [1+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,0)
+            
+            #X1 X2 X4 X5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [4+9*pos, anc])
+            self.qc.append(cx_ideal, [5+9*pos, anc])
+            self.qc.append(cx_ideal, [1+9*pos, anc])
+            self.qc.append(cx_ideal, [2+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,1)
+
+            #X3 X4 X6 X7 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [3+9*pos, anc])
+            self.qc.append(cx_ideal, [4+9*pos, anc])
+            self.qc.append(cx_ideal, [6+9*pos, anc])
+            self.qc.append(cx_ideal, [7+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #X7 X8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(h_ideal,[anc])
+            self.qc.append(cx_ideal, [7+9*pos, anc])
+            self.qc.append(cx_ideal, [8+9*pos, anc])
+            self.qc.append(h_ideal,[anc])
+            # self.qc.id(anc)
+            self.qc.measure(anc,3)
+
+            with self.qc.if_test((0,1)):             #0
+                with self.qc.if_test((1,0)):    
+                    self.qc.append(z_ideal,[0+9*pos])
+
+            with self.qc.if_test((0,1)):             #1
+                with self.qc.if_test((1,1)):
+                    self.qc.append(z_ideal,[1+9*pos])
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.append(z_ideal,[4+9*pos])
+
+            with self.qc.if_test((2,1)):             #7
+                with self.qc.if_test((3,1)):
+                    self.qc.append(z_ideal,[7+9*pos])
+
+            with self.qc.if_test((2,0)):             #8
+                with self.qc.if_test((3,1)):
+                    self.qc.append(z_ideal,[8+9*pos])
+
+            with self.qc.if_test((0,0)):             #2 und 5
+                with self.qc.if_test((1,1)):        
+                    with self.qc.if_test((2,0)):    
+                        self.qc.append(z_ideal,[2+9*pos])
+
+            with self.qc.if_test((1,0)):             #3 und 6
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.append(z_ideal,[3+9*pos])
+
+        ###########################################################################################################
+
+            #Z3 Z6 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 3+9*pos])
+            self.qc.append(cx_ideal, [anc, 6+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,0)
+
+            #Z0 Z1 Z3 Z4 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 4+9*pos])
+            self.qc.append(cx_ideal, [anc, 1+9*pos])
+            self.qc.append(cx_ideal, [anc, 0+9*pos])
+            self.qc.append(cx_ideal, [anc, 3+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,1)
+        
+            #Z4 Z5 Z7 Z8 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 4+9*pos])
+            self.qc.append(cx_ideal, [anc, 7+9*pos])
+            self.qc.append(cx_ideal, [anc, 5+9*pos])
+            self.qc.append(cx_ideal, [anc, 8+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,2)
+
+            #Z2 Z5 Stabilizer:
+            self.qc.reset(anc)
+            self.qc.append(cx_ideal, [anc, 2+9*pos])
+            self.qc.append(cx_ideal, [anc, 5+9*pos])
+            # self.qc.id(anc)
+            self.qc.measure(anc,3)
+            
+            with self.qc.if_test((0,1)):             #6
+                with self.qc.if_test((1,0)):
+                    self.qc.append(x_ideal,[6+9*pos])
+
+            with self.qc.if_test((0,1)):             #3
+                with self.qc.if_test((1,1)):
+                    self.qc.append(x_ideal,[3+9*pos])
+
+            with self.qc.if_test((1,1)):             #4
+                with self.qc.if_test((2,1)):
+                    self.qc.append(x_ideal,[4+9*pos])
+
+            with self.qc.if_test((2,0)):             #2
+                with self.qc.if_test((3,1)):
+                    self.qc.append(x_ideal,[2+9*pos])
+
+            with self.qc.if_test((2,1)):             #5
+                with self.qc.if_test((3,1)):
+                    self.qc.append(x_ideal,[5+9*pos])
+            
+            with self.qc.if_test((0,0)):             #0 und 1
+                with self.qc.if_test((1,1)):
+                    with self.qc.if_test((2,0)):
+                        self.qc.append(x_ideal,[0+9*pos])
+            
+            with self.qc.if_test((1,0)):             #7 und 8
+                with self.qc.if_test((2,1)):
+                    with self.qc.if_test((3,0)):
+                        self.qc.append(x_ideal,[7+9*pos])
 
     def qec_zstab(self, pos: int):
         self.qec_counter += 1
