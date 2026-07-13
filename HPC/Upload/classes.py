@@ -465,12 +465,20 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
+    if code == "z":
+        with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
+    else:
+        with open("{}unitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
     
     y = 0
     y_list, bruh1 = [], []
@@ -4428,6 +4436,9 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.cnot(control=0, target=1)
 
     def qec(self, pos: int):
+        if self.n == 5:
+            self.qec5(pos=pos)
+            return
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -4481,6 +4492,132 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
 
+    def qec5(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 5*pos + 0)
+        self.qc.cx(anc, 5*pos + 1)
+        self.qc.h(anc)
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 5*pos + 1)
+        self.qc.cx(anc, 5*pos + 2)
+        self.qc.h(anc)
+        self.qc.measure(anc, self.qecc[1])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 5*pos + 2)
+        self.qc.cx(anc, 5*pos + 3)
+        self.qc.h(anc)
+        self.qc.measure(anc, self.qecc[2])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 5*pos + 3)
+        self.qc.cx(anc, 5*pos + 4)
+        self.qc.h(anc)
+        self.qc.measure(anc, self.qecc[3])
+
+        ### Single-qubit errors #####
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):       
+                with self.qc.if_test((self.qecc[2], 0)):  
+                    with self.qc.if_test((self.qecc[3], 0)):        
+                        self.qc.z(5*pos)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):   
+                with self.qc.if_test((self.qecc[2], 0)):    
+                    with self.qc.if_test((self.qecc[3], 0)):  
+                        self.qc.z(5*pos + 1)
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                with self.qc.if_test((self.qecc[2], 1)):  
+                    with self.qc.if_test((self.qecc[3], 0)):  
+                        self.qc.z(5*pos + 2)
+
+        with self.qc.if_test((self.qecc[0], 0)):  
+            with self.qc.if_test((self.qecc[1], 0)):                
+                with self.qc.if_test((self.qecc[2], 1)):     
+                    with self.qc.if_test((self.qecc[3], 1)):             
+                        self.qc.z(5*pos + 3)
+
+        with self.qc.if_test((self.qecc[0], 0)):  
+            with self.qc.if_test((self.qecc[1], 0)):   
+                with self.qc.if_test((self.qecc[2], 0)):                
+                    with self.qc.if_test((self.qecc[3], 1)):              
+                        self.qc.z(5*pos + 4)
+
+        ### Two-qubit errors #####
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):  
+                    with self.qc.if_test((self.qecc[3], 0)):            
+                        self.qc.z(5*pos), self.qc.z(5*pos + 1)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.z(5*pos), self.qc.z(5*pos + 2)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos), self.qc.z(5*pos + 3)
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos), self.qc.z(5*pos + 4)
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.z(5*pos + 1), self.qc.z(5*pos + 2)
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos + 1), self.qc.z(5*pos + 3)
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos + 1), self.qc.z(5*pos + 4)
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos + 2), self.qc.z(5*pos + 3)
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.z(5*pos + 2), self.qc.z(5*pos + 4)
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.z(5*pos + 3), self.qc.z(5*pos + 4)
+        
     def qec_ft(self, pos: int):
         anc = self.qc.num_qubits - 1
         ancc = anc - 1
