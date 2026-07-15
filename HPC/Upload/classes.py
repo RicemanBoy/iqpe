@@ -1977,13 +1977,13 @@ class Steane7q:
                     else:
                         bits[i] = 1
 
-        # if self.postselection == False:                  #wenn postselect aus, dann soll er alle shots, die durch preselection raus sind, coinflip machen
-        #     for i in range(len(bits)):
-        #         if bits[i] == "pre":
-        #             if np.random.rand() < 0.5:
-        #                 bits[i] = 0
-        #             else:
-        #                 bits[i] = 1
+        if self.postselection == False:                  #wenn postselect aus, dann soll er alle shots, die durch preselection raus sind, coinflip machen
+            for i in range(len(bits)):
+                if bits[i] == "pre":
+                    if np.random.rand() < 0.5:
+                        bits[i] = 0
+                    else:
+                        bits[i] = 1
 
         for i in range(len(postprocess)):                           #Postprocess von Flags bei QEC!
             if postprocess[i].count("1") != 0:
