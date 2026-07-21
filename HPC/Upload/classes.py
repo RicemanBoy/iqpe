@@ -1,6 +1,3 @@
-from pdb import pm
-from turtle import pos
-
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3, qasm2, qpy
 from qiskit.visualization import plot_histogram
 import numpy as np
@@ -13,17 +10,15 @@ from qiskit.synthesis import generate_basic_approximations
 from qiskit.quantum_info import Operator
 
 from qiskit import transpile
-from qiskit.transpiler import PassManager
-from qiskit.transpiler.passes import BasisTranslator
-from qiskit.circuit.equivalence_library import SessionEquivalenceLibrary
+from qiskit.quantum_info import Statevector
+from qiskit.primitives import StatevectorSampler, StatevectorEstimator
+from qiskit.quantum_info import SparsePauliOp
 
 from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
     pauli_error, depolarizing_error, thermal_relaxation_error)
 
 from qiskit.circuit.library import UnitaryGate
-from qiskit.circuit.classical import expr
 
-from itertools import product
 
 matrix_h = ([[2**(-0.5),2**(-0.5)],[2**(-0.5),-2**(-0.5)]])
 h_ideal = UnitaryGate(matrix_h)
@@ -1910,7 +1905,7 @@ class Steane7q:
         p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
 
         noise_model = NoiseModel()
-        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id", "t", "tdg"])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
 
         read = ClassicalRegister(7)
@@ -1923,11 +1918,14 @@ class Steane7q:
         # self.qc = transpile(self.qc, optimization_level=1)
 
         sim = AerSimulator()
-        
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
-
         result = job.result()
         counts = result.get_counts()
+
+        # sim = AerSimulator(method = "statevector", noise_model=noise_model)
+        # tqc = transpile(self.qc, sim) 
+        # result = sim.run(tqc, shots=shots).result()
+        # counts = result.get_counts()
 
         #print(counts)
 
@@ -1940,10 +1938,11 @@ class Steane7q:
         allcbits = len(bitstring[0])                
         pre, preselected = [i[allcbits-3:allcbits-1] for i in bitstring], 0                 #Flags during intialization
         bits = [i[:7] for i in bitstring]                                                   #Bits that make up the logical qubits
-        postprocess = [i[7:allcbits-10] for i in bitstring]                                 #Flags during qec to make it fault tolerant, if at least one strikes, need to discard shot
+        postprocess = [i[7:-9] for i in bitstring]                                 #Flags during qec to make it fault tolerant, if at least one strikes, need to discard shot
 
-        #print(bits)
-        # print(postprocess)
+        print(bitstring)
+        print(bits)
+        print("FLAGS: ", postprocess)
 
         for i in range(len(pre)):
             if pre[i].count("1") != 0:
@@ -1977,7 +1976,7 @@ class Steane7q:
                     else:
                         bits[i] = 1
 
-        if self.postselection == False:                  #wenn postselect aus, dann soll er alle shots, die durch preselection raus sind, coinflip machen
+        if not self.postselection:                  #wenn postselect aus, dann soll er alle shots, die durch preselection raus sind, coinflip machen
             for i in range(len(bits)):
                 if bits[i] == "pre":
                     if np.random.rand() < 0.5:
