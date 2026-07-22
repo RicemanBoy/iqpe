@@ -1917,15 +1917,14 @@ class Steane7q:
 
         # self.qc = transpile(self.qc, optimization_level=1)
 
-        sim = AerSimulator()
-        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
-        result = job.result()
-        counts = result.get_counts()
-
-        # sim = AerSimulator(method = "statevector", noise_model=noise_model)
-        # tqc = transpile(self.qc, sim) 
-        # result = sim.run(tqc, shots=shots).result()
+        # sim = AerSimulator()
+        # job = sim.run(self.qc, shots=shots, noise_model=noise_model)
+        # result = job.result()
         # counts = result.get_counts()
+
+        sim = AerSimulator(method = "statevector", noise_model=noise_model)
+        result = sim.run(self.qc, shots=shots).result()
+        counts = result.get_counts()
 
         #print(counts)
 
