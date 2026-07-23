@@ -3,6 +3,8 @@ from qiskit.visualization import plot_histogram
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker
+from functools import wraps
+from dataclasses import dataclass
 #import bitstring
 from qiskit_aer import AerSimulator
 from qiskit.transpiler.passes.synthesis import SolovayKitaev
@@ -32,6 +34,26 @@ x_ideal = UnitaryGate(matrix_x)
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
+@dataclass
+class Command:
+    method: str
+    args: tuple
+    kwargs: dict
+
+#Damit kann ich speichern welche Gates im QC aufgerufen wurde für Statevectorsimulation
+def record(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self._recording and self._call_depth == 0:
+            self.history.append(Command(func.__name__, args, kwargs))
+
+        self._call_depth += 1
+        try:
+            return func(self, *args, **kwargs)
+        finally:
+            self._call_depth -= 1
+
+    return wrapper
 
 def majority_values(n):
     threshold = n // 2 + 1
@@ -1917,13 +1939,9 @@ class Steane7q:
 
         # self.qc = transpile(self.qc, optimization_level=1)
 
-        # sim = AerSimulator()
-        # job = sim.run(self.qc, shots=shots, noise_model=noise_model)
-        # result = job.result()
-        # counts = result.get_counts()
-
-        sim = AerSimulator(method = "statevector", noise_model=noise_model)
-        result = sim.run(self.qc, shots=shots).result()
+        sim = AerSimulator()
+        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
+        result = job.result()
         counts = result.get_counts()
 
         #print(counts)
@@ -4263,18 +4281,22 @@ class RepCode:      #Bitflip protected repetition code
 class RepCode_z:      #Phaseflip protected repetition code
     def __init__(self, n: int, logical_q: int):              
         self.ones = 0
-        self.post = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
         self.magiccounter = 0
         self.logicalq = logical_q
         self.err = False
-        self.postselection = False                  #useless hier, PS geht nicht bei dem Code, da jeder Bitstring einem logischen Zustand entspricht
+        self.noise_model = self.__noise_model__(0,0)
+
+        ### Speichert welche Gates benutzt wurden, wichtig für Statevector simulation ####
+        self.history = []
+        self._call_depth = 0
+        self._recording = False
+        ##################################################################################
 
         qr = QuantumRegister(n*(logical_q+2)+3, "q")
-        cbit = ClassicalRegister(0, "c")
-        self.qc = QuantumCircuit(qr, cbit)
+        self.qc = QuantumCircuit(qr)
 
         self.qecc = ClassicalRegister(n)
         self.qc.add_register(self.qecc)
@@ -4284,16 +4306,41 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.h(i)
         
         for i in range(logical_q):
-            self.h(pos=i)
+            self.h(i)
 
+        self._recording = True
+
+    def __noise_model__(self, p: float, bias: float):
+        p_x, p_z = 0, 0
+        if bias > 0:
+            p_x += (bias/(1+bias))*p
+            p_z += p - p_x
+        elif bias < 0:
+            p_z += (np.abs(bias)/(1+np.abs(bias)))*p
+            p_x += p - p_z
+        else:
+            p_x += p/2
+            p_z += p/2
+        noise_model = NoiseModel()
+        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
+        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
+        p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
+        return noise_model
+   
+    @record
     def z(self, pos: int):
         for i in range(self.n):
             self.qc.z(self.n*pos + i)
 
+    @record
     def id(self, pos: int):
         for i in range(self.n):
             self.qc.id(self.n*pos + i)
 
+    @record
     def x(self, pos: int):
         self.qc.x(self.n*pos)
     
@@ -4303,7 +4350,8 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.h(self.n*pos)
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
-    
+
+    @record
     def h(self, pos: int):
         self.magiccounter += 1
         for i in range(2):
@@ -4331,24 +4379,28 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
 
+    @record
     def rx(self, pos: int, angle: float):
         i = np.random.randint(0,2)
         self.qc.rx(angle, self.n*pos+i)
-    
+
+    @record
     def sqrt_x(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.s(self.n*pos)
         # self.qc.h(self.n*pos)
         i = np.random.randint(0,2)
         self.qc.rx(np.pi/2, self.n*pos+i)
-    
+
+    @record
     def sqrt_xdg(self, pos: int):
         # self.qc.h(self.n*pos)
         # self.qc.sdg(self.n*pos)
         # self.qc.h(self.n*pos)
         i = np.random.randint(0,2)
         self.qc.rx(-np.pi/2, self.n*pos+i)
-    
+
+    @record
     def sqrt2_x(self, pos: int):
         self.magiccounter += 1
         # self.qc.h(self.n*pos)
@@ -4356,7 +4408,8 @@ class RepCode_z:      #Phaseflip protected repetition code
         # self.qc.h(self.n*pos)
         i = np.random.randint(0,2)
         self.qc.rx(np.pi/4, self.n*pos+i)
-    
+
+    @record
     def sqrt2_xdg(self, pos: int):
         self.magiccounter += 1
         # self.qc.h(self.n*pos)
@@ -4365,38 +4418,45 @@ class RepCode_z:      #Phaseflip protected repetition code
         i = np.random.randint(0,2)
         self.qc.rx(-np.pi/4, self.n*pos+i)
 
+    @record
     def s(self, pos: int):
         self.h(pos=pos)
         self.sqrt_x(pos=pos)
         self.h(pos=pos)
 
+    @record
     def sdg(self, pos: int):
         self.h(pos=pos)
         self.sqrt_xdg(pos=pos)
         self.h(pos=pos)
-    
+
+    @record
     def t(self, pos: int):
         self.h(pos=pos)
         self.sqrt2_x(pos=pos)
         self.h(pos=pos)
 
+    @record    
     def tdg(self, pos: int):
         self.h(pos=pos)
         self.sqrt2_xdg(pos=pos)
         self.h(pos=pos)
 
+    @record
     def toff(self, control1: int, control2: int, targ: int):
         for i in range(self.n):
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec(pos=targ)               #needed for FT
+                self.qec_statevector(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
 
+    @record
     def cnot(self, control: int, target: int):
         for i in range(self.n):
             self.qc.cx(self.n*control + i, self.n*target + i)
-    
+
+    @record
     def u2(self, pos: int, gate: list):
         for i in gate:
             if i == "s":
@@ -4420,6 +4480,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             if i == "sdg_x":
                 self.sqrt_xdg(pos=pos)
 
+    @record
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
         # if self.err:
@@ -4432,6 +4493,50 @@ class RepCode_z:      #Phaseflip protected repetition code
         # if self.err:
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
+
+    @record
+    def qec_statevector(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 0)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.cx(anc, 3*pos + 2)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[1])
+
+        self.qc.save_statevector(label="psi")
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        psi_full = result.data(0)["psi"]
+
+        bit = list(result.get_counts().keys())[0]           #Das ist das gesamte klassische Register, z.B. 0100...0101 , Achtung: Ganz rechts ist der erste Bit und ganz links der letzte Bit!
+
+        qr2 = QuantumRegister(self.n*(self.logicalq+2)+3, "q")         #Qcirq+ClassicalRegister für H_L/QEC wiederherstellen und weitermachen
+        self.qc = QuantumCircuit(qr2)
+        self.qc.add_register(self.qecc)
+        self.qc.set_statevector(psi_full)
+
+        del psi_full
+
+        #Nur die letzten 2 Bits nehmen, da wir nur 2 Stabilizer haben
+
+        if bit[1:] == "01":                                     #S_0    strike
+            self.qc.z(3*pos)
+        elif bit[1:] == "11":                                   #S_0 S_1        strike
+            self.qc.z(3*pos + 1)
+        elif bit[1:] == "10":                                   #S_1        strike
+            self.qc.z(3*pos + 2)
 
     def qec(self, pos: int):
         if self.n == 5:
@@ -4750,24 +4855,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               #second
                 self.qc.append(z_ideal, [3*pos+2])
 
-    def readout(self, pos: int, shots: int, p: float, bias = 0):        
-        p_x, p_z = 0, 0
-        if bias > 0:
-            p_x += (bias/(1+bias))*p
-            p_z += p - p_x
-        elif bias < 0:
-            p_z += (np.abs(bias)/(1+np.abs(bias)))*p
-            p_x += p - p_z
-        else:
-            p_x += p/2
-            p_z += p/2
-        noise_model = NoiseModel()
-        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
-        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
-        p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
-        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
-        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
-        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
+    def readout_old(self, pos: int, shots: int):      #funktioniert auch, wenn man nur 1 Shot machen und dann extern drüber for loop macht lol
 
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):
@@ -4784,16 +4872,14 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, read[self.n-1-i])
 
-        sim = AerSimulator()
-        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
-        result = job.result()
+        sim = AerSimulator(method = "statevector", noise_model=self.noise_model)
+        result = sim.run(self.qc, shots=shots).result()
         counts = result.get_counts()
+            
 
         bitstring = list(counts.keys())
         bits = [i.replace(" ","") for i in bitstring]
         counter = list(counts.values())
-
-        allcbits = len(bitstring[0])
 
         bits = [i[:self.n] for i in bits]
 
@@ -4807,27 +4893,70 @@ class RepCode_z:      #Phaseflip protected repetition code
                     if j == bits[i]:
                         bits[i] = 1
                         break
-            if bits[i] != 1 and bits[i] != 0:
-                # print("Wrong bitstring: ", bits[i])
-                if self.postselection:
-                    bits[i] = "post"
-                    print("Postselected!")
-                else:
-                    if np.random.rand() < 0.5:
-                        bits[i] = 0
-                    else:
-                        bits[i] = 1
 
-        zero, one, err = 0, 0, 0
+        zero, one = 0, 0
 
         for i, val in enumerate(bits):
             if val == 0:
                 zero += counter[i]
             elif val == 1:
                 one += counter[i]
-            else:
-                err += counter[i]
 
         self.ones += one/shots
         self.zeros += zero/shots
-        self.post += err/shots
+
+    def readout(self, pos: int, shots: int):        
+            self.qc = None
+
+            count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
+            for i in range(2**self.n):
+                bit = inv_covert(i,self.n)
+                if bit.count("1")%2 == 0:
+                    count0.append(bit)
+                else:
+                    count1.append(bit)
+
+            zero, one, err = 0, 0, 0
+    
+            for o in range(shots):
+                circuit = RepCode_z(self.n, self.logicalq)
+                for command in self.history:
+                    method = getattr(circuit, command.method)
+                    method(*command.args, **command.kwargs)
+    
+                read = ClassicalRegister(self.n)
+                circuit.qc.add_register(read)
+                
+                for i in range(self.n):
+                    circuit.qc.id(self.n*pos + i)
+                    circuit.qc.measure(self.n*pos + i, read[self.n-1-i])
+
+                sim = AerSimulator(method = "statevector", noise_model=self.noise_model)
+                result = sim.run(circuit.qc, shots=1).result()
+                counts = result.get_counts()
+
+                bitstring = list(counts.keys())
+                bits = [i.replace(" ","") for i in bitstring]
+                counter = list(counts.values())
+                
+                bits = [i[:self.n] for i in bits]
+        
+                for i in range(len(bits)):
+                    for j in count0:
+                        if j == bits[i]:
+                            bits[i] = 0
+                            break
+                    if bits[i] != 0:
+                        for j in count1:
+                            if j == bits[i]:
+                                bits[i] = 1
+                                break
+    
+                for i, val in enumerate(bits):
+                    if val == 0:
+                        zero += counter[i]
+                    elif val == 1:
+                        one += counter[i]
+    
+            self.ones += one/shots
+            self.zeros += zero/shots
