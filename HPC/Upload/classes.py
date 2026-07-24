@@ -511,6 +511,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                         self = RepCode_z(distance, 2)
                     elif code == "x":
                         self = RepCode(distance, 2)
+                    self.noise_model = self.__noise_model__(noise, bias)
                     self.err = qec
                     self.postselection = post
                     
@@ -534,7 +535,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                     #print("QEC counter: {}".format(self.qec_counter))
                     # if self.err:
                     #     self.qec_ideal(pos=0)
-                    self.readout(pos=0, shots=1, p=noise, bias=bias)
+                    self.readout(pos=0, shots=1)
                     print("T/Tdg counter for iteration {}: {}".format(t, self.magiccounter))
             
                     if self.zeros == 1:
@@ -562,7 +563,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
 
     return y, sigma, y_list
 
-def avg7_repcode_timo(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #only exact angles and take avg of N shots of each angle with pos/neg performance possible  
+def avg7_repcode_timo(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #IGNORE THIS FUNCTION, only exact angles and take avg of N shots of each angle with pos/neg performance possible  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -4389,7 +4390,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         # self.qc.h(self.n*pos)
         # self.qc.s(self.n*pos)
         # self.qc.h(self.n*pos)
-        i = np.random.randint(0,2)
+        i = np.random.randint(0,self.n-1)
         self.qc.rx(np.pi/2, self.n*pos+i)
 
     @record
@@ -4397,7 +4398,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         # self.qc.h(self.n*pos)
         # self.qc.sdg(self.n*pos)
         # self.qc.h(self.n*pos)
-        i = np.random.randint(0,2)
+        i = np.random.randint(0,self.n-1)
         self.qc.rx(-np.pi/2, self.n*pos+i)
 
     @record
@@ -4406,7 +4407,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         # self.qc.h(self.n*pos)
         # self.qc.t(self.n*pos)
         # self.qc.h(self.n*pos)
-        i = np.random.randint(0,2)
+        i = np.random.randint(0,self.n-1)
         self.qc.rx(np.pi/4, self.n*pos+i)
 
     @record
@@ -4415,7 +4416,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         # self.qc.h(self.n*pos)
         # self.qc.tdg(self.n*pos)
         # self.qc.h(self.n*pos)
-        i = np.random.randint(0,2)
+        i = np.random.randint(0,self.n-1)
         self.qc.rx(-np.pi/4, self.n*pos+i)
 
     @record
@@ -4448,7 +4449,10 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec_statevector(pos=targ)               #needed for FT
+                if self.n == 3:
+                    self.qec_statevector(pos=targ)               #needed for FT
+                elif self.n == 5:
+                    self.qec(pos=targ)
                 # self.qec_counter -= 1
 
     @record
@@ -4855,7 +4859,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               #second
                 self.qc.append(z_ideal, [3*pos+2])
 
-    def readout_old(self, pos: int, shots: int):      #funktioniert auch, wenn man nur 1 Shot machen und dann extern drüber for loop macht lol
+    def readout(self, pos: int, shots: int):      #funktioniert auch, wenn man nur 1 Shot machen und dann extern drüber for loop macht lol
 
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):
@@ -4872,7 +4876,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.id(self.n*pos + i)
             self.qc.measure(self.n*pos + i, read[self.n-1-i])
 
-        sim = AerSimulator(method = "statevector", noise_model=self.noise_model)
+        sim = AerSimulator(method = "statevector", noise_model=self.noise_model)            #hier kann man auch was anderes als statevecotor nehmen, da wir eh am Ende sind
         result = sim.run(self.qc, shots=shots).result()
         counts = result.get_counts()
             
@@ -4905,7 +4909,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.ones += one/shots
         self.zeros += zero/shots
 
-    def readout(self, pos: int, shots: int):        
+    def readout_with_memoryloop(self, pos: int, shots: int):        #speichert den log. Circuit und wiederholt in #shots time, muss man nur machen, wenn man mehr als 1 Shot im Readout macht
             self.qc = None
 
             count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
