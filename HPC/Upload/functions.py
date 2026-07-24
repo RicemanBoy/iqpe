@@ -108,9 +108,9 @@ def gen_data(name):                           #code OG
     err, err_qec = [], []
 
     for r in p:
-        ok, errr = avg7_repcode("z", 5, 3, r, qec = False, post= False, k = 1, bias = 1e-4)
+        ok, errr, y_list = avg7_repcode("z", 5, 3, r, qec = False, post= False, k = 1, bias = 1e-4)
         y.append(ok), err.append(errr)
-        ok1, errr1 = avg7_repcode("z", 5, 3, r, qec = True, post= False, k = 1, bias = 1e-4)
+        ok1, errr1, y1_list = avg7_repcode("z", 5, 3, r, qec = True, post= False, k = 1, bias = 1e-4)
         y_qec.append(ok1), err_qec.append(errr1)
 
     data = np.array((p, y, y_qec, err, err_qec))
