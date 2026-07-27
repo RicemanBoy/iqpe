@@ -1,5 +1,8 @@
 {
     "git.autorefresh": true,
+    "python.analysis.extraPaths": [
+        "./HPC/Upload"
+    ],
     "python-envs.pythonProjects": [
         {
             "path": ".",
