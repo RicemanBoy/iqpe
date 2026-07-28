@@ -21,7 +21,10 @@ from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
 
 from qiskit.circuit.library import UnitaryGate
 
-from rep_code_decoder import decode_qec_block, data_readout_to_syndrome
+try:
+    from .rep_code_decoder import decode_qec_block, data_readout_to_syndrome
+except ImportError:
+    from rep_code_decoder import decode_qec_block, data_readout_to_syndrome
 
 
 
@@ -4552,28 +4555,6 @@ class RepCode_z:      #Phaseflip protected repetition code
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
-        # for i in range(self.n-1):
-        #     self.qc.reset(anc)
-        #     self.qc.h(anc)
-        #     self.qc.cx(anc, self.n*pos + i)
-        #     self.qc.cx(anc, self.n*pos + i + 1)
-        #     self.qc.h(anc)
-        #     self.qc.id(anc)
-        #     self.qc.measure(anc, self.qecc[i])
-
-        # with self.qc.if_test((self.qecc[0], 1)):                #first
-        #     with self.qc.if_test((self.qecc[1], 0)):               #second
-        #         self.qc.z(self.n*pos)
-        
-        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
-        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
-        #         self.qc.z(self.n*pos+self.n-1)
-
-        # for i in range(self.n-2):       
-        #     with self.qc.if_test((self.qecc[i], 1)):
-        #         with self.qc.if_test((self.qecc[i+1], 1)):
-        #             self.qc.z(self.n*pos + i + 1)
-
         self.qc.reset(anc)
         self.qc.h(anc)
         self.qc.cx(anc, 3*pos + 0)
@@ -4727,6 +4708,132 @@ class RepCode_z:      #Phaseflip protected repetition code
                 with self.qc.if_test((self.qecc[2], 1)):              
                     with self.qc.if_test((self.qecc[3], 0)): 
                         self.qc.z(5*pos + 3), self.qc.z(5*pos + 4)
+
+    def qec5_ideal(self, pos: int):
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        self.qc.reset(anc)
+        self.qc.append(h_ideal, [anc])
+        self.qc.append(cx_ideal, [5*pos + 0, anc])
+        self.qc.append(cx_ideal, [5*pos + 1, anc])
+        self.qc.append(h_ideal, [anc])
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc)
+        self.qc.append(h_ideal, [anc])
+        self.qc.append(cx_ideal, [5*pos + 1, anc])
+        self.qc.append(cx_ideal, [5*pos + 2, anc])
+        self.qc.append(h_ideal, [anc])
+        self.qc.measure(anc, self.qecc[1])
+
+        self.qc.reset(anc)
+        self.qc.append(h_ideal, [anc])
+        self.qc.append(cx_ideal, [5*pos + 2, anc])
+        self.qc.append(cx_ideal, [5*pos + 3, anc])
+        self.qc.append(h_ideal, [anc])
+        self.qc.measure(anc, self.qecc[2])
+
+        self.qc.reset(anc)
+        self.qc.append(h_ideal, [anc])
+        self.qc.append(cx_ideal, [5*pos + 3, anc])
+        self.qc.append(cx_ideal, [5*pos + 4, anc])
+        self.qc.append(h_ideal, [anc])
+        self.qc.measure(anc, self.qecc[3])
+
+        ### Single-qubit errors #####
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):       
+                with self.qc.if_test((self.qecc[2], 0)):  
+                    with self.qc.if_test((self.qecc[3], 0)):        
+                        self.qc.append(z_ideal, [5*pos+0])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):   
+                with self.qc.if_test((self.qecc[2], 0)):    
+                    with self.qc.if_test((self.qecc[3], 0)):  
+                        self.qc.append(z_ideal, [5*pos+1])
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):               
+                with self.qc.if_test((self.qecc[2], 1)):  
+                    with self.qc.if_test((self.qecc[3], 0)):  
+                        self.qc.append(z_ideal, [5*pos+2])
+
+        with self.qc.if_test((self.qecc[0], 0)):  
+            with self.qc.if_test((self.qecc[1], 0)):                
+                with self.qc.if_test((self.qecc[2], 1)):     
+                    with self.qc.if_test((self.qecc[3], 1)):             
+                        self.qc.append(z_ideal, [5*pos+3])
+
+        with self.qc.if_test((self.qecc[0], 0)):  
+            with self.qc.if_test((self.qecc[1], 0)):   
+                with self.qc.if_test((self.qecc[2], 0)):                
+                    with self.qc.if_test((self.qecc[3], 1)):              
+                        self.qc.append(z_ideal, [5*pos+4])
+
+        ### Two-qubit errors  --> 5*4/2 = 10 Possiblities #####
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):  
+                    with self.qc.if_test((self.qecc[3], 0)):            
+                        self.qc.append(z_ideal, [5*pos+0]), self.qc.append(z_ideal, [5*pos+1])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.append(z_ideal, [5*pos+0]), self.qc.append(z_ideal, [5*pos+2])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+0]), self.qc.append(z_ideal, [5*pos+3])
+
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+0]), self.qc.append(z_ideal, [5*pos+4])
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.append(z_ideal, [5*pos+1]), self.qc.append(z_ideal, [5*pos+2])
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+1]), self.qc.append(z_ideal, [5*pos+3])
+        
+        with self.qc.if_test((self.qecc[0], 1)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+1]), self.qc.append(z_ideal, [5*pos+4])
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 0)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+2]), self.qc.append(z_ideal, [5*pos+3])
+
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 1)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 1)): 
+                        self.qc.append(z_ideal, [5*pos+2]), self.qc.append(z_ideal, [5*pos+4])
+        
+        with self.qc.if_test((self.qecc[0], 0)):                
+            with self.qc.if_test((self.qecc[1], 0)):  
+                with self.qc.if_test((self.qecc[2], 1)):              
+                    with self.qc.if_test((self.qecc[3], 0)): 
+                        self.qc.append(z_ideal, [5*pos+3]), self.qc.append(z_ideal, [5*pos+4])
 
     def syndromes5(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -4934,60 +5041,15 @@ class RepCode_z:      #Phaseflip protected repetition code
                 count0.append(bit)
             else:
                 count1.append(bit)
+        read = ClassicalRegister(self.n)
+        self.qc.add_register(read)
+        for i in range(self.n):
+            self.qc.id(self.n*pos + i)
+            self.qc.measure(self.n*pos + i, read[self.n-1-i])
 
-
-        if self.err == False or self.n == 3:
-            read = ClassicalRegister(self.n)
-            self.qc.add_register(read)
-            for i in range(self.n):
-                self.qc.id(self.n*pos + i)
-                self.qc.measure(self.n*pos + i, read[self.n-1-i])
-        elif self.err == True and self.n == 5:
-            spacetime_syndromes = []
-            for i in range(5):                  #qec5_block
-                self.syndromes5(pos=pos)
-                self.qc.save_statevector(label="psi")
-                sim = AerSimulator(method="statevector", noise_model = self.noise_model)
-                result = sim.run(self.qc, shots=1).result()
-                psi_full = result.data(0)["psi"]
-                bit = list(result.get_counts().keys())[0]           #Das ist das gesamte klassische Register, z.B. 0100...0101 , Achtung: Ganz rechts ist der erste Bit und ganz links der letzte Bit!
-                spacetime_syndromes.append(bit[1:])
-                qr2 = QuantumRegister(self.n*(self.logicalq+2)+3, "q")         #Qcirq+ClassicalRegister für H_L/QEC wiederherstellen und weitermachen
-                self.qc = QuantumCircuit(qr2)
-                self.qc.add_register(self.qecc)
-                self.qc.set_statevector(psi_full)
-                del psi_full
-
-            for i in range(self.n):
-                self.qc.id(self.n*pos + i)
-                self.qc.measure(self.n*pos + i, self.qecc[i])
-            sim = AerSimulator(method="statevector", noise_model = self.noise_model)
-            result = sim.run(self.qc, shots=1).result()
-            bit = list(result.get_counts().keys())[0]
-            del result
-     
-            s_final = data_readout_to_syndrome(bit)
-            correction = decode_qec_block(spacetime_syndromes + [s_final])
-
-            print("Syndromes: ", spacetime_syndromes + [s_final], "   |   Korrektur: ", correction)
-
-            bits = list(bit)[::-1]                    # bits[q] = data qubit q
-            for q in correction:
-                bits[q] = str(1 - int(bits[q]))
-            logical = round(sum(int(b) for b in bits) / len(bits))
-
-            if logical == 0:
-                self.zeros += 1
-            else:
-                self.ones += 1
-            return
-
-
-
-        sim = AerSimulator(noise_model=self.noise_model)            #hier kann man auch was anderes als statevecotor nehmen, da wir eh am Ende sind
+        sim = AerSimulator(noise_model=self.noise_model)
         result = sim.run(self.qc, shots=shots).result()
         counts = result.get_counts()
-            
 
         bitstring = list(counts.keys())
         bits = [i.replace(" ","") for i in bitstring]
@@ -5005,19 +5067,16 @@ class RepCode_z:      #Phaseflip protected repetition code
                     if j == bits[i]:
                         bits[i] = 1
                         break
-
         zero, one = 0, 0
-
         for i, val in enumerate(bits):
             if val == 0:
                 zero += counter[i]
             elif val == 1:
                 one += counter[i]
-
         self.ones += one/shots
         self.zeros += zero/shots
 
-    def readout_with_memoryloop(self, pos: int, shots: int):        #speichert den log. Circuit und wiederholt in #shots time, muss man nur machen, wenn man mehr als 1 Shot im Readout macht
+    def readout_with_memoryloop(self, pos: int, shots: int):        #VORSICHT HIER; MUSS MAN ERST TESTEN, speichert den log. Circuit und wiederholt in #shots time, muss man nur machen, wenn man mehr als 1 Shot im Readout macht
             self.qc = None
 
             count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
