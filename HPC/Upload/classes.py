@@ -560,7 +560,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
             y += diff
             print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
             bruh1.append(diff), y_list.append(diff)
-    y = y/(n*k)
+    y = y/(7*k)
     arg = 0
     for i in range(len(bruh1)):
         arg += (y-bruh1[i])**2
