@@ -567,7 +567,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
     sigma = ((1/(k*n))*arg)**0.5
     sigma = sigma/((k*n)**0.5)
 
-    return y, sigma, y_list
+    return y_list
 
 
 class Steane7q:
@@ -4374,7 +4374,7 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
                 if self.n == 3:
-                    self.qec(pos=targ)               #needed for FT
+                    self.qec_ideal(pos=targ)               #needed for FT
                 elif self.n == 5:
                     self.qec5(pos=targ)
                 # self.qec_counter -= 1
