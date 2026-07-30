@@ -542,7 +542,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                     # if self.err:
                     #     self.qec_ideal(pos=0)
                     self.readout(pos=0, shots=1)
-                    print("T/Tdg counter for iteration {}: {}".format(t, self.magiccounter))
+                    # print("T/Tdg counter for iteration {}: {}".format(t, self.magiccounter))
             
                     if self.zeros == 1:
                         bitstring += "0"
@@ -569,88 +569,6 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
 
     return y, sigma, y_list
 
-def avg7_repcode_timo(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #IGNORE THIS FUNCTION, only exact angles and take avg of N shots of each angle with pos/neg performance possible  
-    assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
-    n = 15
-    angle = np.linspace(0,1,n+2)
-    angle = np.delete(angle, [n+1])
-    angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
-    
-    y = 0
-    y_list, bruh1 = [], []
-    for m in range(k):
-        for o in range(7):
-            bitstring = ""
-            rots = []
-            for t in range(iter):
-                rots = [k*0.5 for k in rots]
-                counter = 0
-                while True:
-                    if code == "z":
-                        self = RepCode_z(distance, 2)
-                    elif code == "x":
-                        self = RepCode(distance, 2)
-                    self.err = qec
-                    self.postselection = post
-                    
-                    self.x(pos=1)
-                    self.h(pos=0)
-                    #############################
-                    for j in range(2**(iter-t-1)):
-                        self.cu(a[2*o+1], b[2*o+1])
-                    ###############################
-                    for l in rots:
-                        if l == 0.25:
-                            self.sdg(pos=0)
-                        if l == 0.125:
-                            self.tdg(pos=0)
-                    self.h(pos=0)
-                    # print("Unoptimized: ")
-                    # gates(self.qc)
-                    # self.qc = transpile(self.qc, optimization_level=1)
-                    # print("Optimized: ")
-                    #gates(self.qc)
-                    #print("QEC counter: {}".format(self.qec_counter))
-                    # if self.err:
-                    #     self.qec_ideal(pos=0)
-                    self.readout(pos=0, shots=1, p=noise, bias=bias)
-            
-                    if self.zeros == 1:
-                        bitstring += "0"
-                        break
-                    if self.ones == 1:
-                        bitstring += "1"
-                        rots.append(0.5)
-                        break
-                    counter += 1
-                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
-                    del self
-            bitstring = bitstring[::-1]
-            hmm = convert(bitstring)
-            diff = 0
-            if np.abs(hmm-angle[2*o+1]) <= 1-np.abs(hmm-angle[2*o+1]):
-                diff += hmm-angle[2*o+1]
-            else:
-                diff += 1-np.abs(hmm-angle[2*o+1])
-            y += diff
-            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
-            bruh1.append(diff), y_list.append(hmm)              #y_list enthält die gemessenen Winkel, nicht die Performance!
-    y = y/(n*k)
-    arg = 0
-    for i in range(len(bruh1)):
-        arg += (y-bruh1[i])**2
-    sigma = ((1/(k*n))*arg)**0.5
-    sigma = sigma/((k*n)**0.5)
-
-    return y, sigma, y_list
 
 class Steane7q:
     def __init__(self, n: int, magic = 1):
@@ -4456,9 +4374,9 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
                 if self.n == 3:
-                    self.qec_statevector(pos=targ)               #needed for FT
+                    self.qec(pos=targ)               #needed for FT
                 elif self.n == 5:
-                    self.qec(pos=targ)
+                    self.qec5(pos=targ)
                 # self.qec_counter -= 1
 
     @record
@@ -4550,7 +4468,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
     def qec(self, pos: int):
         if self.n == 5:
-            self.qec5_block(pos=pos)
+            self.qec5(pos=pos)
             return
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
@@ -4583,7 +4501,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc[1], 1)):               
                 self.qc.z(3*pos + 2)
 
-    def qec5(self, pos: int):
+    def qec5(self, pos: int):           #qec for d=5 repcode
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -4709,7 +4627,7 @@ class RepCode_z:      #Phaseflip protected repetition code
                     with self.qc.if_test((self.qecc[3], 0)): 
                         self.qc.z(5*pos + 3), self.qc.z(5*pos + 4)
 
-    def qec5_ideal(self, pos: int):
+    def qec5_ideal(self, pos: int):         #ideal qec for d=5 repcode
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -4835,7 +4753,7 @@ class RepCode_z:      #Phaseflip protected repetition code
                     with self.qc.if_test((self.qecc[3], 0)): 
                         self.qc.append(z_ideal, [5*pos+3]), self.qc.append(z_ideal, [5*pos+4])
 
-    def syndromes5(self, pos: int):
+    def syndromes5(self, pos: int):                 #ONLY syndrome extraction for d=5
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
 
@@ -4867,7 +4785,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.h(anc)
         self.qc.measure(anc, self.qecc[3])
 
-    def qec5_block(self, pos: int):
+    def qec5_block(self, pos: int):                     #5 Blocks of syndrome extraction, followed by decoding and correction, for d=5
 
         spacetime_syndromes = []
 

@@ -115,4 +115,4 @@ def gen_data(name):                           #code OG
 
     data = np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    np.savetxt("d5_Repcodez_ideal{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d5_Repcodez{}.txt".format(name), data, delimiter=",")
