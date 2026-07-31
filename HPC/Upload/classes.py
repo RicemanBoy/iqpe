@@ -4376,7 +4376,7 @@ class RepCode_z:      #Phaseflip protected repetition code
                 if self.n == 3:
                     self.qec_ideal(pos=targ)               #needed for FT
                 elif self.n == 5:
-                    self.qec5(pos=targ)
+                    self.qec5_block(pos=targ)
                 # self.qec_counter -= 1
 
     @record
