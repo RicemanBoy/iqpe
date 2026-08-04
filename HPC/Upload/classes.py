@@ -569,6 +569,85 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
 
     return y_list
 
+def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+    assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    if code == "z":
+        with open("{}unitary{}_repz.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}_repz.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
+    else:
+        with open("{}unitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                a.append(list(map(str, line.strip().split(","))))
+        with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+            for line in file:
+                b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    y_list, bruh1 = [], []
+    for m in range(k):
+        for o in range(7):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                counter = 0
+                while True:
+                    if code == "z":
+                        self = RepCode_z(distance, 1)
+                    elif code == "x":
+                        self = RepCode(distance, 1)
+                    self.noise_model = self.__noise_model__(noise, bias)
+                    self.err = qec
+                    self.postselection = post
+                    
+                    self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu_ramsey(a[2*o+1])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
+                    self.h(pos=0)
+
+                    self.readout(pos=0, shots=1)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+                    counter += 1
+                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
+                    del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
+            y += diff
+            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            bruh1.append(diff), y_list.append(diff)
+    y = y/(7*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y_list
 
 class Steane7q:
     def __init__(self, n: int, magic = 1):
@@ -4421,6 +4500,10 @@ class RepCode_z:      #Phaseflip protected repetition code
         # if self.err:
         #     self.qec(pos = 1)
         self.cnot(control=0, target=1)
+
+    def cu_ramsey(self, gate: list):
+        self.u2(0, gate=gate)
+        self.u2(0, gate=gate)
 
     @record
     def qec_statevector(self, pos: int):
