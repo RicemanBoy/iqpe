@@ -1,5 +1,6 @@
 import gates as gate
 import numpy as np
+import qutip as qt
 from utils import multiply, gcd
 
 # Solovay-Kitaev approximation algorithm
@@ -11,7 +12,7 @@ def solovay_kitaev(U, tree, n):
             dist, index = tree['tree'].query(v, k=1)
             name = tree['names'][index[0, 0]]
             if name == '':
-                return gate.I
+                return qt.qeye(U.dims[0])
             else:
                 basis = tree['basis']
                 return multiply([basis[int(x)] for x in name])

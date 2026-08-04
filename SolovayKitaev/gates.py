@@ -1,25 +1,41 @@
 import qutip as qt
+import qutip_qip.operations as op
 import numpy as np
-from utils import det
 
 # 1 qubit gates
 I = qt.qeye(2)
 X = qt.sigmax()
 Y = qt.sigmay()
 Z = qt.sigmaz()
-H = qt.hadamard_transform()
-S = qt.phasegate(np.pi / 2)
-T = qt.phasegate(np.pi / 4)
-SQNOT = qt.sqrtnot()
+H = qt.Qobj([[1, 1],
+             [1, -1]]) / np.sqrt(2)
+
+S = qt.Qobj([
+    [1, 0],
+    [0, 1j]
+            ])
+
+T = qt.Qobj([
+    [1, 0],
+    [0, np.exp(1j * np.pi / 4)]
+            ])
+
+SQNOT = 0.5 * qt.Qobj([
+    [1+1j, 1-1j],
+    [1-1j, 1+1j]
+])
+
+def det(A):
+    return np.linalg.det(A.full())
 
 def Rx(angle):
-    return qt.rx(angle)
+    return op.rx(angle)
 
 def Ry(angle):
-    return qt.ry(angle)
+    return op.ry(angle)
 
 def Rz(angle):
-    return qt.rz(angle)
+    return op.rz(angle)
 
 def R(axis, angle):
     angle = np.remainder(angle, 2 * np.pi)
@@ -31,21 +47,47 @@ def R(axis, angle):
 def Phase(angle):
     return qt.phasegate(angle)
 
+def H1():
+    return qt.tensor(H, I, I)
+
+def H2():
+    return qt.tensor(I, H, I)
+
+def H3():
+    return qt.tensor(I, I, H)
+
+def Real_Rz(angle):
+    """
+    Creates the real version of Rz with the help of an ancilla.
+
+    Parameters
+    ----------
+    angle : Angle of the Rz-gate
+
+    Returns
+    -------
+    Real 4x4 matrix that applies on the data qubit AND ancilla qubit, where the data qubit is the first one.
+    """
+    Rz_matrix = Rz(angle).full()
+    Rz_real = qt.Qobj(np.real(Rz_matrix))
+    Rz_imag = qt.Qobj(np.imag(Rz_matrix))
+    return qt.tensor(qt.qeye(2), Rz_real) + qt.tensor(-X*Z, Rz_imag)
+
 # 2 qubit gates
-CNOT = qt.cnot()
-CZ = qt.csign()
-Berkeley = qt.berkeley()
-SWAP = qt.swap()
-iSWAP = qt.iswap()
-SQSWAP = qt.sqrtswap()
-SQiSWAP = qt.sqrtiswap()
+CNOT = op.cnot()
+CZ = op.csign()
+Berkeley = op.berkeley()
+SWAP = op.swap()
+iSWAP = op.iswap()
+SQSWAP = op.sqrtswap()
+SQiSWAP = op.sqrtiswap()
 
 def aSWAP(angle):
-    return qt.swapalpha(angle)
+    return op.swapalpha(angle)
 
 # 3 qubit gates
-Fredkin = qt.fredkin()
-Toffoli = qt.toffoli()
+Fredkin = op.fredkin()
+Toffoli = op.toffoli()
 
 
 

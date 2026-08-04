@@ -1,6 +1,5 @@
 from classes import *
 
-
 # def gen_data(name):                   #code mit npz
 #     p = np.linspace(0.00,0.005,6)
 #     bias = [-1e4, -100, -10, 0, 10, 100, 1e4]
@@ -103,8 +102,8 @@ from classes import *
 
 
 def gen_data(name):                           #code OG
-    p = np.linspace(0.0,0.005,6)
-    # p = [0.005]
+    # p = np.linspace(0.0,0.005,6)
+    p = [np.linspace(0,0.03,10)[0]]
     y, y_qec = [],[]
     err, err_qec = [], []
 
@@ -116,4 +115,4 @@ def gen_data(name):                           #code OG
 
     data = np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    np.savetxt("d5_Repcodez_smaller{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d5_Repcodez_block_-1_{}.txt".format(name), data, delimiter=",")
