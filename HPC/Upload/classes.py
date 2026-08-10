@@ -480,7 +480,7 @@ def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False
 
     return y, sigma, y_list
 
-def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -519,7 +519,6 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
                         self = RepCode(distance, 2)
                     self.noise_model = self.__noise_model__(noise, bias)
                     self.err = qec
-                    self.postselection = post
                     
                     self.x(pos=1)
                     self.h(pos=0)
@@ -569,7 +568,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
 
     return y_list
 
-def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -608,7 +607,6 @@ def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec =
                         self = RepCode(distance, 1)
                     self.noise_model = self.__noise_model__(noise, bias)
                     self.err = qec
-                    self.postselection = post
                     
                     self.h(pos=0)
                     #############################
@@ -648,6 +646,7 @@ def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec =
     sigma = sigma/((k*n)**0.5)
 
     return y_list
+
 
 class Steane7q:
     def __init__(self, n: int, magic = 1):
