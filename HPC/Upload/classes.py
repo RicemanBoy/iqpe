@@ -4452,9 +4452,9 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
                 if self.n == 3:
-                    self.qec_ideal(pos=targ)               #needed for FT
+                    self.qec(pos=targ)               #needed for FT
                 elif self.n == 5:
-                    self.qec5_block(pos=targ)
+                    self.qec5(pos=targ)
                 # self.qec_counter -= 1
 
     @record
