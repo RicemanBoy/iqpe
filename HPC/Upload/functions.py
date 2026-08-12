@@ -103,16 +103,16 @@ from classes import *
 
 def gen_data(name):                           #code OG
     p = np.linspace(0.0,0.005,6)
-    # p = [np.linspace(0,0.03,10)[1]]
+    # p = [np.linspace(0,0.005,6)[2]]
     y, y_qec = [],[]
     err, err_qec = [], []
 
     for r in p:
-        y_list = avg7_repcode_ramsey("z", 5, 3, r, qec = False, k = 1, bias = -1e4)       
+        y_list = avg7_repcode("z", 3, 3, r, qec = False, k = 1, bias = -1e4)       
         y.append(np.mean(y_list)), err.append(np.std(y_list))
-        y1_list = avg7_repcode_ramsey("z", 5, 3, r, qec = True, k = 1, bias = -1e4)
+        y1_list = avg7_repcode("z", 3, 3, r, qec = True, k = 1, bias = -1e4)
         y_qec.append(np.mean(y1_list)), err_qec.append(np.std(y1_list))
 
     data = np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    np.savetxt("d5_Repcodez_ramsey_ideal{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d3_Repcodez_smaller{}.txt".format(name), data, delimiter=",")

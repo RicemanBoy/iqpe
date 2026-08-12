@@ -4372,6 +4372,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):                     #measure X_L
             self.qc.h(self.n*pos + i)
             # self.qc.id(self.n*pos + i)
+        for i in range(self.n):
             self.qc.measure(self.n*pos + i, self.qecc[i])
 
         maj = majority_values(self.n)               #do majority vote to ensure FT, somewhat of an QEC step in itself
@@ -4452,9 +4453,9 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
                 if self.n == 3:
-                    self.qec(pos=targ)               #needed for FT
+                    self.qec_block(pos=targ)               #needed for FT
                 elif self.n == 5:
-                    self.qec5_ideal(pos=targ)
+                    self.qec5(pos=targ)
                 # self.qec_counter -= 1
 
     @record
@@ -4835,6 +4836,26 @@ class RepCode_z:      #Phaseflip protected repetition code
                     with self.qc.if_test((self.qecc[3], 0)): 
                         self.qc.append(z_ideal, [5*pos+3]), self.qc.append(z_ideal, [5*pos+4])
 
+    def syndromes(self, pos: int):                 #ONLY syndrome extraction for d=3
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 0)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[0])
+
+        self.qc.reset(anc)
+        self.qc.h(anc)
+        self.qc.cx(anc, 3*pos + 1)
+        self.qc.cx(anc, 3*pos + 2)
+        self.qc.h(anc)
+        self.qc.id(anc)
+        self.qc.measure(anc, self.qecc[1])
+        
     def syndromes5(self, pos: int):                 #ONLY syndrome extraction for d=5
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
@@ -4867,12 +4888,12 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.h(anc)
         self.qc.measure(anc, self.qecc[3])
 
-    def qec5_block(self, pos: int):                     #5 Blocks of syndrome extraction, followed by decoding and correction, for d=5
+    def qec_block(self, pos: int):                     #n Blocks of syndrome extraction, followed by decoding and correction
 
         spacetime_syndromes = []
 
-        for i in range(5):
-            self.syndromes5(pos=pos)
+        for i in range(self.n):
+            self.syndromes(pos=pos)
             self.qc.save_statevector(label="psi")
             sim = AerSimulator(method="statevector", noise_model = self.noise_model)
             result = sim.run(self.qc, shots=1).result()
@@ -4896,7 +4917,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         # print("Syndromes: ", spacetime_syndromes, "  |   Korrektur hier: ", correction)
 
         for i in correction:
-            self.qc.z(5*pos + i)
+            self.qc.z(self.n*pos + i)
 
     def qec_ft(self, pos: int):
         anc = self.qc.num_qubits - 1
