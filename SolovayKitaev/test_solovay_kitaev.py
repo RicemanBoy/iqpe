@@ -8,7 +8,7 @@ from utils import load_tree
 
 U = qt.tensor(qt.qeye(2), gate.Real_Rz(np.pi/4))
 
-tree = load_tree('SolovayKitaev/trees/HToff_5.pkl')
+tree = load_tree('SolovayKitaev/trees/HCPhase_5.pkl')
 
 U_approx = solovay_kitaev(U, tree, 2)
 

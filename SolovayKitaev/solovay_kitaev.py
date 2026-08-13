@@ -1,21 +1,29 @@
 import gates as gate
 import numpy as np
 import qutip as qt
-from utils import multiply, gcd
+from utils import multiply, gcd, su, phase_features
 
 # Solovay-Kitaev approximation algorithm
 def solovay_kitaev(U, tree, n):
+    d = tree['basis'][0].shape[0]
+    if U.shape[0] != d:
+        raise ValueError('U has dimension {0}, but the tree is built from {1} dimensional '
+                         'gates'.format(U.shape[0], d))
+    if np.asarray(tree['tree'].data).shape[1] != 2 * d ** 2:
+        raise ValueError('The tree was built with an older version of create_tree, '
+                         'please create it again')
+
     def skfunc(U, n):
         if n == 0:
-            M = U.full()
-            v = np.array([[np.real(M[0, 0]), np.imag(M[0, 0]), np.real(M[1, 0]), np.imag(M[1, 0])]])
-            dist, index = tree['tree'].query(v, k=1)
-            name = tree['names'][index[0, 0]]
+            # One query per SU(d) representative, so the lookup ignores global phases
+            distance, index = tree['tree'].query(phase_features(su(U)), k=1)
+            name = tree['names'][index[np.argmin(distance[:, 0]), 0]]
             if name == '':
                 return qt.qeye(U.dims[0])
             else:
                 basis = tree['basis']
-                return multiply([basis[int(x)] for x in name])
+                V = multiply([basis[int(x)] for x in name])
+                return V if V.dims == U.dims else qt.Qobj(V.full(), dims=U.dims)
         else:
             U_next = skfunc(U, n - 1)
             V, W = gcd(U * U_next.dag())

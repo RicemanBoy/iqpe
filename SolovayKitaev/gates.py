@@ -48,13 +48,10 @@ def Phase(angle):
     return qt.phasegate(angle)
 
 def H1():
-    return qt.tensor(H, I, I)
+    return qt.tensor(H, I)
 
 def H2():
-    return qt.tensor(I, H, I)
-
-def H3():
-    return qt.tensor(I, I, H)
+    return qt.tensor(I, H)
 
 def Real_Rz(angle):
     """
@@ -81,6 +78,7 @@ SWAP = op.swap()
 iSWAP = op.iswap()
 SQSWAP = op.sqrtswap()
 SQiSWAP = op.sqrtiswap()
+CS = op.cs_gate()
 
 def aSWAP(angle):
     return op.swapalpha(angle)
