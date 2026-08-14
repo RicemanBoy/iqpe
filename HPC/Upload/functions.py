@@ -104,7 +104,7 @@ from classes_old import *
 
 
 def gen_data(name):                           #code OG
-    p = np.linspace(0.0,0.005,6)
+    p = np.linspace(0.002,0.006,10)
     # p = [np.linspace(0,0.005,6)[2]]
     y, y_qec = [],[]
     err, err_qec = [], []
@@ -117,4 +117,4 @@ def gen_data(name):                           #code OG
 
     data = np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    np.savetxt("d5_Repcodez_smaller_ideal{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d5_Repcodez_large_ideal{}.txt".format(name), data, delimiter=",")
