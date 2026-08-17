@@ -1086,6 +1086,24 @@ class RepCode_z:      #Phaseflip protected repetition code
             if i == "sdg_x":
                 self.sqrt_xdg(pos=pos)
 
+    def u2_htoff(self, pos: int, gate: list):
+        for i in range(self.n*2):
+            self.qc.reset(self.n*self.logicalq+i)
+
+        self.qc.h(pos+1)
+        
+        
+        for i in gate:
+            if i == "h0":
+                self.h(pos=pos)
+            if i == "h1":
+                self.h(pos=pos+1)
+            if i == "h2":
+                self.h(pos=pos+2)
+            if i == "toff":
+                self.toff(control1=pos, control2=pos+1, targ=pos+2)    
+
+
     @record
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
@@ -1192,6 +1210,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 5*pos + 0)
         self.qc.cx(anc, 5*pos + 1)
         self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[0])
 
         self.qc.reset(anc)
@@ -1199,6 +1218,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 5*pos + 1)
         self.qc.cx(anc, 5*pos + 2)
         self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[1])
 
         self.qc.reset(anc)
@@ -1206,6 +1226,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 5*pos + 2)
         self.qc.cx(anc, 5*pos + 3)
         self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[2])
 
         self.qc.reset(anc)
@@ -1213,6 +1234,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 5*pos + 3)
         self.qc.cx(anc, 5*pos + 4)
         self.qc.h(anc)
+        self.qc.id(anc)
         self.qc.measure(anc, self.qecc[3])
 
         ### Single-qubit errors #####

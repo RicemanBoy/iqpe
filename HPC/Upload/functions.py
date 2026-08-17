@@ -104,7 +104,7 @@ from classes_old import *
 
 
 def gen_data(name):                           #code OG
-    p = np.linspace(0.002,0.006,10)
+    p = np.linspace(0.00,0.006,5)
     # p = [np.linspace(0,0.005,6)[2]]
     y, y_qec = [],[]
     err, err_qec = [], []
