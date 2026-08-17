@@ -3,7 +3,6 @@ from qiskit.visualization import plot_histogram
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker
-from functools import wraps
 from dataclasses import dataclass
 #import bitstring
 from qiskit_aer import AerSimulator
@@ -46,20 +45,6 @@ class Command:
     args: tuple
     kwargs: dict
 
-#Damit kann ich speichern welche Gates im QC aufgerufen wurde für Statevectorsimulation
-def record(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        if self._recording and self._call_depth == 0:
-            self.history.append(Command(func.__name__, args, kwargs))
-
-        self._call_depth += 1
-        try:
-            return func(self, *args, **kwargs)
-        finally:
-            self._call_depth -= 1
-
-    return wrapper
 
 def majority_values(n):
     threshold = n // 2 + 1
@@ -647,6 +632,74 @@ def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec =
 
     return y_list
 
+def avg7_repcode_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("HPC/Upload/unitary15_toffh.txt", "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("HPC/Upload/adjunitary15_toffh.txt", "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    y_list, bruh1 = [], []
+    for m in range(k):
+        for o in range(7):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                counter = 0
+                while True:
+                    self = RepCode_z(distance, 3)
+                    self.noise_model = self.__noise_model__(noise, bias)
+                    self.err = qec
+                    
+                    self.h(pos=0)
+                    self.prep_catalyst(0)       # once per circuit, never between gates
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu_ramsey_htoff(a[2*o+1])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
+                    self.h(pos=0)
+
+                    self.readout(pos=0, shots=1)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+                    counter += 1
+                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
+                    del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
+            y += diff
+            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            bruh1.append(diff), y_list.append(diff)
+    y = y/(7*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y_list
+
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
@@ -932,17 +985,14 @@ class RepCode_z:      #Phaseflip protected repetition code
         noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
         return noise_model
    
-    @record
     def z(self, pos: int):
         for i in range(self.n):
             self.qc.z(self.n*pos + i)
 
-    @record
     def id(self, pos: int):
         for i in range(self.n):
             self.qc.id(self.n*pos + i)
 
-    @record
     def x(self, pos: int):
         self.qc.x(self.n*pos)
     
@@ -953,7 +1003,6 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n - 1):
             self.qc.cx(self.n*pos + i + 1, self.n*pos)
 
-    @record
     def h(self, pos: int):
         self.magiccounter += 1
         for i in range(2):
@@ -982,70 +1031,48 @@ class RepCode_z:      #Phaseflip protected repetition code
         for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
 
-    @record
     def rx(self, pos: int, angle: float):
         i = np.random.randint(0,2)
         self.qc.rx(angle, self.n*pos+i)
 
-    @record
     def sqrt_x(self, pos: int):
-        # self.qc.h(self.n*pos)
-        # self.qc.s(self.n*pos)
-        # self.qc.h(self.n*pos)
         i = np.random.randint(0,self.n-1)
         self.qc.rx(np.pi/2, self.n*pos+i)
 
-    @record
     def sqrt_xdg(self, pos: int):
-        # self.qc.h(self.n*pos)
-        # self.qc.sdg(self.n*pos)
-        # self.qc.h(self.n*pos)
         i = np.random.randint(0,self.n-1)
         self.qc.rx(-np.pi/2, self.n*pos+i)
 
-    @record
     def sqrt2_x(self, pos: int):
         self.magiccounter += 1
-        # self.qc.h(self.n*pos)
-        # self.qc.t(self.n*pos)
-        # self.qc.h(self.n*pos)
         i = np.random.randint(0,self.n-1)
         self.qc.rx(np.pi/4, self.n*pos+i)
 
-    @record
     def sqrt2_xdg(self, pos: int):
         self.magiccounter += 1
-        # self.qc.h(self.n*pos)
-        # self.qc.tdg(self.n*pos)
-        # self.qc.h(self.n*pos)
         i = np.random.randint(0,self.n-1)
         self.qc.rx(-np.pi/4, self.n*pos+i)
 
-    @record
     def s(self, pos: int):
         self.h(pos=pos)
         self.sqrt_x(pos=pos)
         self.h(pos=pos)
 
-    @record
     def sdg(self, pos: int):
         self.h(pos=pos)
         self.sqrt_xdg(pos=pos)
         self.h(pos=pos)
 
-    @record
     def t(self, pos: int):
         self.h(pos=pos)
         self.sqrt2_x(pos=pos)
         self.h(pos=pos)
 
-    @record    
     def tdg(self, pos: int):
         self.h(pos=pos)
         self.sqrt2_xdg(pos=pos)
         self.h(pos=pos)
 
-    @record
     def toff(self, control1: int, control2: int, targ: int):
         for i in range(self.n):
             for j in range(self.n):
@@ -1057,12 +1084,10 @@ class RepCode_z:      #Phaseflip protected repetition code
                     self.qec5_ideal(pos=targ)
                 # self.qec_counter -= 1
 
-    @record
     def cnot(self, control: int, target: int):
         for i in range(self.n):
             self.qc.cx(self.n*control + i, self.n*target + i)
 
-    @record
     def u2(self, pos: int, gate: list):
         for i in gate:
             if i == "s":
@@ -1086,25 +1111,57 @@ class RepCode_z:      #Phaseflip protected repetition code
             if i == "sdg_x":
                 self.sqrt_xdg(pos=pos)
 
-    def u2_htoff(self, pos: int, gate: list):
+    def prep_catalyst(self, pos: int):
+        ####### Prepare catalyst state: [1/sqrt(2)]*|00>  + (1/2)*(|01> - |11>)
+        # Call this ONCE, before the first u2_htoff.  The catalyst on pos+1, pos+2 carries
+        # the imaginary part of every amplitude and stays entangled with the data qubit,
+        # so resetting or re-preparing it between gates destroys the accumulated phase.
+
         for i in range(self.n*2):
-            self.qc.reset(self.n*self.logicalq+i)
+            self.qc.reset(self.n*(self.logicalq-2)+i)
 
-        self.qc.h(pos+1)
-        
-        
+        self.h(pos+2)
+
+        self.sqrt_xdg(pos+1)
+        self.h(pos+1)
+        self.sqrt2_xdg(pos+1)
+        self.h(pos+1)
+
+        self.cnot(control=pos+2, target=pos+1)
+
+        self.h(pos+1)
+        self.sqrt2_x(pos+1)
+        self.h(pos+1)
+        self.sqrt_x(pos+1)
+
+        self.h(pos+2)
+        self.cnot(control=pos+1, target=pos+2)
+        self.h(pos+2)
+        #####################################################
+
+    def u2_htoff(self, pos: int, gate: list):
+        # pos is the data qubit; pos+1 and pos+2 are the catalyst register and must
+        # already hold |c_R>, prepared once by prep_catalyst().  Do not reset them here.
         for i in gate:
-            if i == "h0":
+            if i == "z0":
+                self.z(pos=pos)
+            elif i == "h0":
                 self.h(pos=pos)
-            if i == "h1":
+            elif i == "h1":
                 self.h(pos=pos+1)
-            if i == "h2":
+            elif i == "h2":
                 self.h(pos=pos+2)
-            if i == "toff":
-                self.toff(control1=pos, control2=pos+1, targ=pos+2)    
+            elif i == "toff":
+                self.toff(control1=pos, control2=pos+1, targ=pos+2)  
+            elif i == "toff(0_2)":
+                self.toff(control1=pos, control2=pos+2, targ=pos+1)
+            elif i == "cnot(0_1)":
+                self.cnot(control = pos, target = pos+1)
+            elif i == "cnot(0_2)":
+                self.cnot(control = pos, target = pos+2)
+            else:
+                print("Error, forgot: ", i)
 
-
-    @record
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
         # if self.err:
@@ -1122,7 +1179,10 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.u2(0, gate=gate)
         self.u2(0, gate=gate)
 
-    @record
+    def cu_ramsey_htoff(self, gate: list):
+            self.u2_htoff(0, gate=gate)
+            self.u2_htoff(0, gate=gate)
+
     def qec_statevector(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
@@ -1675,7 +1735,6 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.append(z_ideal, [3*pos+2])
 
     def readout(self, pos: int, shots: int):      #funktioniert, wenn man nur 1 Shot machen und dann extern drüber for loop macht lol
-
         count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
         for i in range(2**self.n):
             bit = inv_covert(i,self.n)
@@ -1718,58 +1777,3 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.ones += one/shots
         self.zeros += zero/shots
 
-    def readout_with_memoryloop(self, pos: int, shots: int):        #VORSICHT HIER; MUSS MAN ERST TESTEN, speichert den log. Circuit und wiederholt in #shots time, muss man nur machen, wenn man mehr als 1 Shot im Readout macht
-            self.qc = None
-
-            count0, count1 = [], []                 #alle statevectors für 0_L und 1_L
-            for i in range(2**self.n):
-                bit = inv_covert(i,self.n)
-                if bit.count("1")%2 == 0:
-                    count0.append(bit)
-                else:
-                    count1.append(bit)
-
-            zero, one, err = 0, 0, 0
-    
-            for o in range(shots):
-                circuit = RepCode_z(self.n, self.logicalq)
-                for command in self.history:
-                    method = getattr(circuit, command.method)
-                    method(*command.args, **command.kwargs)
-    
-                read = ClassicalRegister(self.n)
-                circuit.qc.add_register(read)
-                
-                for i in range(self.n):
-                    circuit.qc.id(self.n*pos + i)
-                    circuit.qc.measure(self.n*pos + i, read[self.n-1-i])
-
-                sim = AerSimulator(method = "statevector", noise_model=self.noise_model)
-                result = sim.run(circuit.qc, shots=1).result()
-                counts = result.get_counts()
-
-                bitstring = list(counts.keys())
-                bits = [i.replace(" ","") for i in bitstring]
-                counter = list(counts.values())
-                
-                bits = [i[:self.n] for i in bits]
-        
-                for i in range(len(bits)):
-                    for j in count0:
-                        if j == bits[i]:
-                            bits[i] = 0
-                            break
-                    if bits[i] != 0:
-                        for j in count1:
-                            if j == bits[i]:
-                                bits[i] = 1
-                                break
-    
-                for i, val in enumerate(bits):
-                    if val == 0:
-                        zero += counter[i]
-                    elif val == 1:
-                        one += counter[i]
-    
-            self.ones += one/shots
-            self.zeros += zero/shots
