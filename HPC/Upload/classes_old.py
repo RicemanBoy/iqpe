@@ -3426,3 +3426,131 @@ class RotSurf9q:
         self.ones = ones
         self.zeros = zeros
         self.post = err
+
+class Steane17q:
+    def __init__(self, n = 1):
+        self.n = n
+
+        self.zeros = 0
+        self.ones = 0
+        self.preselected = 0
+        self.post = 0
+        self.err = False
+        self.qec_counter = 0
+        self.magiccounter = 0
+
+        self.classical_ec = False
+        self.postselection = True
+
+        qr = QuantumRegister(17*n+2,"q")
+        cbits = ClassicalRegister(3, "c")
+        
+        self.qc = QuantumCircuit(qr, cbits)
+        
+        anc = self.qc.num_qubits - 1
+        ### Preparation from this paper: https://arxiv.org/pdf/2601.13313 ######
+        # for i in range(n):
+        #     self.qc.h(0+17*i)
+        #     self.qc.h(1+17*i)
+        #     self.qc.h(2+17*i)
+        #     self.qc.h(3+17*i)
+        #     self.qc.h(4+17*i)
+        #     self.qc.h(9+17*i)
+        #     self.qc.h(10+17*i)
+        #     self.qc.h(12+17*i)
+
+        #     self.qc.cx(2+17*i, 16+17*i)
+        #     self.qc.cx(3+17*i, 14+17*i)
+        #     self.qc.cx(4+17*i, 7+17*i)
+        #     self.qc.cx(10+17*i, 15+17*i)
+
+        #     self.qc.cx(2+17*i, 6+17*i)
+        #     self.qc.cx(4+17*i, 5+17*i)
+        #     self.qc.cx(7+17*i, 8+17*i)
+        #     self.qc.cx(10+17*i, 13+17*i)
+        #     self.qc.cx(9+17*i, 15+17*i)
+
+        #     self.qc.cx(0+17*i, 2+17*i)
+        #     self.qc.cx(3+17*i, 7+17*i)
+        #     self.qc.cx(5+17*i, 6+17*i)
+        #     self.qc.cx(12+17*i, 9+17*i)
+        #     self.qc.cx(8+17*i, 11+17*i)
+        #     self.qc.cx(1+17*i, 4+17*i)
+
+        #     self.qc.cx(0+17*i, 3+17*i)
+        #     self.qc.cx(2+17*i, 14+17*i)
+        #     self.qc.cx(7+17*i, 16+17*i)
+        #     self.qc.cx(12+17*i, 5+17*i)
+        #     self.qc.cx(9+17*i, 11+17*i)
+        #     self.qc.cx(15+17*i, 8+17*i)
+        #     self.qc.cx(4+17*i, 10+17*i)
+        #     self.qc.cx(1+17*i, 13+17*i)
+
+        ### Preparation from this paper: https://arxiv.org/pdf/2402.17761 ######
+        for i in range(n):
+            self.qc.h(6+17*i)
+            self.qc.h(1+17*i)
+            self.qc.h(2+17*i)
+            self.qc.h(16+17*i)
+            self.qc.h(4+17*i)
+            self.qc.h(11+17*i)
+            self.qc.h(12+17*i)
+            self.qc.h(14+17*i)
+
+            self.qc.cx(1+17*i, 13+17*i)
+            self.qc.cx(12+17*i, 0+17*i)
+            self.qc.cx(0+17*i, 3+17*i)
+            self.qc.cx(4+17*i, 5+17*i)
+            self.qc.cx(6+17*i, 9+17*i)
+            self.qc.cx(11+17*i, 10+17*i)
+
+            self.qc.cx(4+17*i, 1+17*i)
+            self.qc.cx(16+17*i, 7+17*i)
+            self.qc.cx(14+17*i, 6+17*i)
+            self.qc.cx(9+17*i, 8+17*i)
+
+            self.qc.cx(2+17*i, 13+17*i)
+            self.qc.cx(0+17*i, 15+17*i)
+
+            self.qc.cx(16+17*i, 15+17*i)
+            self.qc.cx(13+17*i, 12+17*i)
+            self.qc.cx(3+17*i, 8+17*i)
+
+            self.qc.cx(0+17*i, 5+17*i)
+            self.qc.cx(14+17*i, 16+17*i)
+
+            self.qc.cx(8+17*i, 1+17*i)
+            self.qc.cx(15+17*i, 11+17*i)
+            self.qc.cx(1+17*i, 3+17*i)
+            self.qc.cx(8+17*i, 6+17*i)
+            self.qc.cx(14+17*i, 11+17*i)
+
+            self.qc.cx(2+17*i, 0+17*i)
+            self.qc.cx(10+17*i, 6+17*i)
+
+            self.qc.cx(10+17*i, 7+17*i)
+            
+        self.qecc = ClassicalRegister(16)
+        self.qc.add_register(self.qecc)
+
+
+    def readout(self, pos: int, shots: int, p = 0):
+        read = ClassicalRegister(17)
+        self.qc.add_register(read)
+
+        for i in range(17):
+            # self.qc.id(i+7*pos)
+            self.qc.measure(i+17*pos,read[16-i])
+
+        # self.qc = transpile(self.qc, optimization_level=1)
+
+        print(self.qc.count_ops())
+
+        sim = AerSimulator()
+        job = sim.run(self.qc, shots=shots)
+        result = job.result()
+        counts = result.get_counts()
+
+        print(counts)
+        self.qc.draw("mpl")
+        return
