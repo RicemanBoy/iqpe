@@ -20,10 +20,10 @@ from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
 
 from qiskit.circuit.library import UnitaryGate
 
-try:
-    from .rep_code_decoder import decode_qec_block, data_readout_to_syndrome
-except ImportError:
-    from rep_code_decoder import decode_qec_block, data_readout_to_syndrome
+# try:
+#     from .rep_code_decoder import decode_qec_block, data_readout_to_syndrome
+# except ImportError:
+#     from rep_code_decoder import decode_qec_block, data_readout_to_syndrome
 
 
 
