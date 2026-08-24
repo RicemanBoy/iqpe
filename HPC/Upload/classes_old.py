@@ -41,6 +41,94 @@ def parity_values(n):
         if value.bit_count() % 2 == 1
     ]
 
+def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
+    k = list(bin)
+    a = [int(i) for i in k]
+    n = 0
+    for i in range(len(a)):
+        if a[i] == 1:
+            n += 1/2**(i+1)
+    return n
+
+def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0, post = False, path = ""):       #only exact angles!  
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+
+    a, b = [], []
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            a.append(list(map(str, line.strip().split(","))))
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+        for line in file:
+            b.append(list(map(str, line.strip().split(","))))
+    
+    y = 0
+    y_list, bruh1 = [], []
+    for m in range(k):
+        for o in range(7):
+            bitstring = ""
+            rots = []
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                counter = 0
+                while True:
+                    if code == "steane":
+                        self = Steane7q(1, 1)
+                    elif code == "rotsurf":
+                        self = RotSurf9q(1)
+                    elif code == "steane17":
+                        self = Steane17q(1)
+
+                    self.err = qec
+                    self.h(pos=0)
+                    #############################
+                    for j in range(2**(iter-t-1)):
+                        self.cu_ramsey(a[2*o+1])
+                    ###############################
+                    for l in rots:
+                        if l == 0.25:
+                            self.sdg(pos=0)
+                        if l == 0.125:
+                            self.tdg(pos=0)
+                    self.h(pos=0)
+
+                    self.readout(pos=0, shots=1, p = noise)
+            
+                    if self.zeros == 1:
+                        bitstring += "0"
+                        break
+                    if self.ones == 1:
+                        bitstring += "1"
+                        rots.append(0.5)
+                        break
+                    if not post:
+                        if np.random.rand() < 0.5:
+                            bitstring += "0"
+                            break
+                        else:
+                            bitstring += "1"
+                            rots.append(0.5)
+                            break
+                    counter += 1
+                    print("Angle {}, {}%% errorrate, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
+                    del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
+            y += diff
+            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            bruh1.append(diff), y_list.append(diff)
+    y = y/(7*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y_list
+
 class Steane7q:
     def __init__(self, n: int, magic = 1):
         self.n = n
@@ -55,6 +143,8 @@ class Steane7q:
 
         self.classical_ec = False
         self.postselection = True
+
+        self.noise_model = self.__noise_model__(0,0)
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
@@ -94,6 +184,26 @@ class Steane7q:
 
         self.qecc = ClassicalRegister(6)
         self.qc.add_register(self.qecc)
+
+    def __noise_model__(self, p: float, bias: float):
+        p_x, p_z = 0, 0
+        if bias > 0:
+            p_x += (bias/(1+bias))*p
+            p_z += p - p_x
+        elif bias < 0:
+            p_z += (np.abs(bias)/(1+np.abs(bias)))*p
+            p_x += p - p_z
+        else:
+            p_x += p/2
+            p_z += p/2
+        noise_model = NoiseModel()
+        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
+        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
+        p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
+        return noise_model
     
     def id(self, pos: int):
         for i in range(7):
@@ -178,7 +288,7 @@ class Steane7q:
         self.qc.sdg(0+7*pos), self.qc.sdg(1+7*pos), self.qc.sdg(3+7*pos), self.qc.sdg(6+7*pos)
         self.qc.s(2+7*pos), self.qc.s(4+7*pos), self.qc.s(5+7*pos)
 
-    def t(self, pos: int):
+    def FT_t(self, pos: int):
         self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
@@ -276,7 +386,7 @@ class Steane7q:
 
 ###################### Phaselflip code #######################
 
-    def t_phaseflip(self, pos: int):
+    def t(self, pos: int):
         for i in range(3):                      #initialize +_L on the phaseflip code
             self.qc.reset(7*self.n + i)
             self.qc.h(7*self.n + i)
@@ -311,7 +421,7 @@ class Steane7q:
             for i in range(7):
                 self.qc.sdg(7*pos+i)
 
-    def tdg_phaseflip(self, pos: int):
+    def tdg(self, pos: int):
         for i in range(3):                      #initialize +_L on the phaseflip code
             self.qc.reset(7*self.n + i)
             self.qc.h(7*self.n + i)
@@ -783,7 +893,7 @@ class Steane7q:
         self.qc.cx(0+7*pos, 2+7*pos)
         self.qc.cx(1+7*pos, 2+7*pos)
 
-    def tdg(self, pos: int):
+    def FT_tdg(self, pos: int):
         self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
@@ -923,6 +1033,10 @@ class Steane7q:
             self.qec(pos = 0)
             self.qec(pos = 1)
         self.cnot(control=0, target=1)
+
+    def cu_ramsey(self, gate: list):
+        self.u2(0, gate=gate)
+        self.u2(0, gate=gate)
 
     def qec_ft(self, pos: int):
         self.qec_counter += 1
@@ -3524,7 +3638,7 @@ class Steane17q:
         self.postselection = True
 
         qr = QuantumRegister(17*n+2,"q")
-        cbits = ClassicalRegister(0, "c")
+        cbits = ClassicalRegister(1, "c")
         
         self.qc = QuantumCircuit(qr, cbits)
         
@@ -3634,16 +3748,17 @@ class Steane17q:
 
     def s(self, pos = 0):
         for i in range(17):
-            self.qc.sdg(i+17*pos)
+            self.qc.s(i+17*pos)
 
     def sdg(self, pos = 0):
         for i in range(17):
-            self.qc.s(i+17*pos)
+            self.qc.sdg(i+17*pos)
 
     def t(self, pos = 0):
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
-        self.qc.h(anc), self.qc.t(anc)
+        self.qc.h(anc)
+        self.qc.t(anc)
 
         self.qc.cx(0+17*pos, anc)
         self.qc.cx(1+17*pos, anc)
@@ -3653,9 +3768,9 @@ class Steane17q:
 
         self.qc.measure(anc, 0)
 
-        for i in range(17):
-            with self.qc.if_test((0,1)):
-                self.qc.sdg(i+17*pos)
+        with self.qc.if_test((0,1)):
+            for i in range(17):
+                self.qc.s(i+17*pos)
 
     def tdg(self, pos = 0):
             anc = self.qc.num_qubits - 1
@@ -3672,14 +3787,46 @@ class Steane17q:
     
             for i in range(17):
                 with self.qc.if_test((0,1)):
-                    self.qc.s(i+17*pos)
+                    self.qc.sdg(i+17*pos)
+
+    def u2(self, pos: int, gate: list):
+        for i in gate:
+            if i == "s":
+                self.s(pos=pos)
+            if i == "sdg":
+                self.sdg(pos=pos)
+            if i == "t":
+                self.t(pos=pos)
+                #self.t_cheat(pos=pos)
+                # if self.err and self.magiccounter%2==0:
+                #     self.qec_ft(pos = pos)
+            if i == "tdg":
+                self.tdg(pos=pos)
+                #self.tdg_cheat(pos=pos)
+                # if self.err and self.magiccounter%2==0:
+                #     self.qec_ft(pos = pos)
+            if i == "h":
+                self.h(pos=pos)
+            if i == "z":
+                self.z(pos=pos)
+
+    def cu_ramsey(self, gate: list):
+        self.u2(0, gate=gate)
+        self.u2(0, gate=gate)
             
     def readout(self, pos: int, shots: int, p = 0):
+        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+
+        noise_model = NoiseModel()
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id", "t", "tdg"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
+        
         read = ClassicalRegister(17)
         self.qc.add_register(read)
 
         for i in range(17):
-            # self.qc.id(i+7*pos)
+            self.qc.id(i+7*pos)
             self.qc.measure(i+17*pos,read[16-i])
 
         # self.qc = transpile(self.qc, optimization_level=1)
@@ -3688,7 +3835,7 @@ class Steane17q:
         code1 = ['01100010111010101', '01111000101001011', '00110100011111001', '00110000010100001', '00100101101011110', '10100010100000010', '01100010010011111', '11011101111111010', '11100001111010001', '00000011111101011', '00101010000111111', '01011110100010110', '10100110110110010', '00001000101110000', '10011010101110001', '01011110111111110', '00011101001100111', '11010110110001001', '10110111101011111', '00100101000010100', '10011010000111011', '10000100000010101', '10011010110011001', '01110111011000010', '11010010100111001', '01011110001011100', '01110111110001000', '10010101101011010', '01001111100010011', '00100001100000110', '00101010110011101', '10110011100000111', '01000000111010000', '01001011101001011', '01011010110100110', '10111100111000100', '00100101110110110', '00110100101011011', '01111100100010011', '01111000000000001', '01111100111111011', '10101101010001011', '11000011010011110', '10101101100101001', '00010010010100100', '01100010001110111', '10100010001001000', '11101010101001010', '00101110111000101', '10000000111101111', '00000011100000011', '10001011101110100', '10001111100101100', '01101101100010110', '11100101000101011', '01010001001110111', '00001000110011000', '00001000011010010', '10000000010100101', '00011101100101101', '00000111000010001', '01001111001011001', '11111011101001111', '01001011110100011', '10010001010100000', '01101001110100110', '10001011000111110', '01000000010011010', '00101110010001111', '00011001011010111', '10101101001100011', '01110011111010000', '10011110001100011', '01001011000000001', '10101001101110001', '01110111101100000', '10011110111000001', '01010101000101111', '11111011000000101', '11110100101100100', '01011110010110100', '10110111110110111', '00000011010100001', '11110100000101110', '11001100100010111', '11010010001110011', '10101101111000001', '11010110101100001', '00011101111000101', '00000111110110011', '00100001010100100', '01011010011101100', '10110111000010101', '00110100110110011', '11000111110001100', '01010101110001101', '11100001100111001', '10000100011111101', '11010010010011011', '10011110100101001', '11011101001011000', '01000100110001000', '11111011011101101', '11111111010110101', '11101010000000000', '10010101110110010', '11001000101001111', '00111011101110000', '11110100011000110', '01101001011101100', '10110111011111101', '01111000011101001', '00101110001100111', '10101001110011001', '00010010111101110', '10100110000010000', '00010110101011110', '00111111010001010', '01000100101100000', '10010001100000010', '11001000110100111', '11110000100111100', '11000011111010100', '11111111001011101', '01110011001110010', '10000000100000111', '10001011011010110', '01101101010110100', '10010101011111000', '11100001010011011', '00111111100101000', '00111011011010010', '00000011001001001', '11000011100111100', '00011101010001111', '11011101100010010', '00111111111000000', '01110011100111000', '01100110110001101', '11101010011101000', '00001100001100010', '10110011010100101', '10011010011010011', '00110100000010001', '11011101010110000', '00011001101110101', '01010101011000111', '00000111101011011', '01000100011000010', '10001011110011100', '11010010111010001', '01101101001011100', '00111111001100010', '01010001010011111', '11001000000000101', '10111000110011100', '11001100001011101', '11000011001110110', '01100010100111101', '00010010100000110', '00001100100101000', '01011010000000100', '11101110001011000', '01000000001110010', '00001000000111010', '11101110010110000', '11111111100010111', '11100101110001001', '11111111111111111', '00010010001001100', '10111100001100110', '00110000001001001', '11011001110100010', '01100110011000111', '11010110011000011', '00011001110011101', '10100010111101010', '11111011110100111', '10010001111101010', '11100101101100001', '11101110100010010', '11110000010011110', '10100110011111000', '01111000110100011', '01101001101001110', '10100110101011010', '00010110000010100', '11110000001110110', '01001011011101001', '10000100110110111', '10010001001001000', '11001000011101101', '00110000100000011', '00011001000111111', '00000111011111001', '01100110101100101', '00100101011111100', '10111000011010110', '10110011111101111', '11100101011000011', '10111100010001110', '01111100001011001', '00111011000111010', '10001111010001110', '11011001000000000', '11001100010110101', '01110111000101010', '00001100111000000', '10011110010001011', '10111100100101100', '00001100010001010', '11011001011101000', '00100001111101110', '11100001001110011', '01111100010110001', '10000100101011111', '10010101000010000', '01001111010110001', '10001111111000100', '11110100110001100', '01101001000000100', '01010101101100101', '10110011001001101', '10101001011010011', '00010110110110110', '01100110000101111', '11000111101100100', '11011001101001010', '01010001100111101', '00101110100101101', '01000100000101010', '10101001000111011', '00100001001001100', '10111000101110100', '10001111001100110', '11000111000101110', '01010001111010101', '10000000001001101', '11101010110100010', '01001111111111011', '00110000111101011', '00101010011010111', '00101010101110101', '11001100111111111', '11110000111010100', '10111000000111110', '00111011110011000', '01101101111111110', '11101110111111010', '11010110000101011', '01110011010011010', '01011010101001110', '11000111011000110', '00010110011111100', '01000000100111000', '10100010010100000']
                 
         sim = AerSimulator()
-        job = sim.run(self.qc, shots=shots)
+        job = sim.run(self.qc, shots=shots, noise_model=noise_model)
         result = job.result()
         counts = result.get_counts()
 
@@ -3696,11 +3843,7 @@ class Steane17q:
         bitstring = [i.replace(" ","") for i in bitstring]
         hmm = list(counts.values())
 
-        print("Total shots:", sum(hmm))
-
         bits = [i[:17] for i in bitstring]
-
-        print(bits)
 
         for i in range(len(bits)):
             for j in code0:
@@ -3721,18 +3864,18 @@ class Steane17q:
                     else:
                         bits[i] = 1
     
-            for i in range(len(bits)):
-                if bits[i] == 0:
-                    self.zeros += hmm[i]
-                if bits[i] == 1:
-                    self.ones += hmm[i]
-                if bits[i] == "post":
-                    self.post += hmm[i]
-                if bits[i] == "pre":
-                    self.preselected += hmm[i]
-            shots = 1
-            self.ones = (self.ones/shots)
-            self.zeros = (self.zeros/shots)
-            self.post = (self.post/shots)
-            self.preselected = (self.preselected/shots)
+        for i in range(len(bits)):
+            if bits[i] == 0:
+                self.zeros += hmm[i]
+            if bits[i] == 1:
+                self.ones += hmm[i]
+            if bits[i] == "post":
+                self.post += hmm[i]
+            if bits[i] == "pre":
+                self.preselected += hmm[i]
+
+        self.ones = (self.ones/shots)
+        self.zeros = (self.zeros/shots)
+        self.post = (self.post/shots)
+        self.preselected = (self.preselected/shots)
         return counts

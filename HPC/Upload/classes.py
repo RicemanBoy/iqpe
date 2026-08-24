@@ -700,6 +700,7 @@ def avg7_repcode_ramsey_htoff(distance: int, iter: int, noise: float, qec = Fals
 
     return y_list
 
+
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
         self.ones = 0
