@@ -3,7 +3,7 @@ from qiskit.visualization import plot_histogram
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker
-from functools import wraps
+from functools import wraps, reduce
 from dataclasses import dataclass
 #import bitstring
 from qiskit_aer import AerSimulator
@@ -15,12 +15,31 @@ from qiskit import transpile
 from qiskit.quantum_info import Statevector
 from qiskit.primitives import StatevectorSampler, StatevectorEstimator
 from qiskit.quantum_info import SparsePauliOp
+from qiskit.circuit.classical import expr
 
 from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
     pauli_error, depolarizing_error, thermal_relaxation_error)
 
 from qiskit.circuit.library import UnitaryGate
 
+matrix_h = ([[2**(-0.5),2**(-0.5)],[2**(-0.5),-2**(-0.5)]])
+h_ideal = UnitaryGate(matrix_h)
+
+matrix_cx = ([[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]])
+cx_ideal = UnitaryGate(matrix_cx)       #Erst Target, dann Control Qubit!!
+
+matrix_x = ([[0,1],[1,0]])
+x_ideal = UnitaryGate(matrix_x)
+
+matrix_z = ([[1,0],[0,-1]])
+z_ideal = UnitaryGate(matrix_z)
+
+def parity_values(n):
+    return [
+        value
+        for value in range(2**n)
+        if value.bit_count() % 2 == 1
+    ]
 
 class Steane7q:
     def __init__(self, n: int, magic = 1):
@@ -171,50 +190,50 @@ class Steane7q:
         ancc = anc - 1
 
         for i in range(7):
-            self.qc.reset(i+7*2)
+            self.qc.reset(i+7*self.n)
 
-        self.qc.append(h_ideal,[0+7*2])
-        self.qc.append(h_ideal,[1+7*2])
-        self.qc.ry(np.pi/4,2+7*2)
-        self.qc.append(h_ideal,[3+7*2])
+        self.qc.append(h_ideal,[0+7*self.n])
+        self.qc.append(h_ideal,[1+7*self.n])
+        self.qc.ry(np.pi/4,2+7*self.n)
+        self.qc.append(h_ideal,[3+7*self.n])
 
-        self.qc.append(cx_ideal, [4+7*2, 2+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 0+7*2])
+        self.qc.append(cx_ideal, [4+7*self.n, 2+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 0+7*self.n])
         
-        self.qc.append(cx_ideal, [5+7*2, 3+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 3+7*self.n])
 
-        self.qc.append(cx_ideal, [5+7*2, 2+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 2+7*self.n])
 
-        self.qc.append(cx_ideal, [4+7*2, 0+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 1+7*2])
+        self.qc.append(cx_ideal, [4+7*self.n, 0+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 1+7*self.n])
 
-        self.qc.append(cx_ideal, [2+7*2, 0+7*2])
+        self.qc.append(cx_ideal, [2+7*self.n, 0+7*self.n])
 
-        self.qc.append(cx_ideal, [5+7*2, 1+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 1+7*self.n])
 
-        self.qc.append(cx_ideal, [2+7*2, 1+7*2])
-        self.qc.append(cx_ideal, [4+7*2, 3+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 3+7*2])
+        self.qc.append(cx_ideal, [2+7*self.n, 1+7*self.n])
+        self.qc.append(cx_ideal, [4+7*self.n, 3+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 3+7*self.n])
         #################################Controlled Hadamards##########################################
         self.qc.reset(ancc)
         self.qc.append(h_ideal,[ancc])
         for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+2*7)
-            self.qc.cz(ancc,6-i+2*7)
-            self.qc.ry(np.pi/4,6-i+2*7)
+            self.qc.ry(-np.pi/4,6-i+self.n*7)
+            self.qc.cz(ancc,6-i+self.n*7)
+            self.qc.ry(np.pi/4,6-i+self.n*7)
         self.qc.append(h_ideal,[ancc])
         # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
         self.sdg(pos=pos)
         for i in range(7):
-            self.qc.cx(i+7*2,i+7*pos)
+            self.qc.cx(i+7*self.n,i+7*pos)
         self.s(pos=pos)
         self.qc.reset(anc-1)
         #############################Measure logical state of the magic state for state injection#############################
-        self.sdg(pos=2)
-        self.h(pos=2)
+        self.sdg(pos=self.n)
+        self.h(pos=self.n)
         for i in range(7):
-            self.qc.cx(i+2*7, anc-1)
+            self.qc.cx(i+self.n*7, anc-1)
         self.qc.measure(anc-1,0)
         #################################Apply conditioned Ry(pi/2) onto the Target###########################
         for i in range(7):
@@ -254,6 +273,80 @@ class Steane7q:
                 self.qc.z(0+7*pos)
                 self.qc.z(1+7*pos)
                 self.qc.z(2+7*pos)
+
+###################### Phaselflip code #######################
+
+    def t_phaseflip(self, pos: int):
+        for i in range(3):                      #initialize +_L on the phaseflip code
+            self.qc.reset(7*self.n + i)
+            self.qc.h(7*self.n + i)
+
+        ##### T_L on the phaseflip code #####
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        self.qc.h(self.n*7)
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        
+        self.qc.rx(np.pi/4, self.n*7)
+
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        self.qc.h(self.n*7)
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        ##### T_L on the phaseflip code #####
+
+        for i in range(3):
+            self.qc.cx(7*pos + i, self.n*7 + i)
+
+        for i in range(3):
+            self.qc.measure(self.n*7 + i, self.qecc[i])
+
+        MASK = 0b000111  # qecc[0], qecc[1], qecc[2]
+        masked = expr.bit_and(self.qecc, MASK)
+        cond = reduce(expr.logic_or,                #Z_L of the phaseflip code is Z0Z1Z2, so the logical outcome is the parity of the 3 bits, not the majority
+                    (expr.equal(masked, v) for v in parity_values(3)))
+        with self.qc.if_test(cond):
+            for i in range(7):
+                self.qc.sdg(7*pos+i)
+
+    def tdg_phaseflip(self, pos: int):
+        for i in range(3):                      #initialize +_L on the phaseflip code
+            self.qc.reset(7*self.n + i)
+            self.qc.h(7*self.n + i)
+
+        ##### T_L on the phaseflip code #####
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        self.qc.h(self.n*7)
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        
+        self.qc.rx(-np.pi/4, self.n*7)
+
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        self.qc.h(self.n*7)
+        for i in range(2):
+            self.qc.cx(self.n*7 + i + 1, self.n*7)
+        ##### T_L on the phaseflip code #####
+
+        for i in range(3):
+            self.qc.cx(7*pos + i, self.n*7 + i)
+
+        for i in range(3):
+            self.qc.measure(self.n*7 + i, self.qecc[i])
+
+        MASK = 0b000111  # qecc[0], qecc[1], qecc[2]
+        masked = expr.bit_and(self.qecc, MASK)
+        cond = reduce(expr.logic_or,                #Z_L of the phaseflip code is Z0Z1Z2, so the logical outcome is the parity of the 3 bits, not the majority
+                    (expr.equal(masked, v) for v in parity_values(3)))
+        with self.qc.if_test(cond):
+            for i in range(7):
+                self.qc.s(7*pos+i)
+     
+##################### Phaseflip code #########################
 
     def t_switch(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -702,50 +795,50 @@ class Steane7q:
         ancc = anc - 1
 
         for i in range(7):
-            self.qc.reset(i+7*2)
+            self.qc.reset(i+7*self.n)
 
-        self.qc.append(h_ideal,[0+7*2])
-        self.qc.append(h_ideal,[1+7*2])
-        self.qc.ry(np.pi/4,2+7*2)
-        self.qc.append(h_ideal,[3+7*2])
+        self.qc.append(h_ideal,[0+7*self.n])
+        self.qc.append(h_ideal,[1+7*self.n])
+        self.qc.ry(np.pi/4,2+7*self.n)
+        self.qc.append(h_ideal,[3+7*self.n])
 
-        self.qc.append(cx_ideal, [4+7*2, 2+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 0+7*2])
+        self.qc.append(cx_ideal, [4+7*self.n, 2+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 0+7*self.n])
         
-        self.qc.append(cx_ideal, [5+7*2, 3+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 3+7*self.n])
 
-        self.qc.append(cx_ideal, [5+7*2, 2+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 2+7*self.n])
 
-        self.qc.append(cx_ideal, [4+7*2, 0+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 1+7*2])
+        self.qc.append(cx_ideal, [4+7*self.n, 0+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 1+7*self.n])
 
-        self.qc.append(cx_ideal, [2+7*2, 0+7*2])
+        self.qc.append(cx_ideal, [2+7*self.n, 0+7*self.n])
 
-        self.qc.append(cx_ideal, [5+7*2, 1+7*2])
+        self.qc.append(cx_ideal, [5+7*self.n, 1+7*self.n])
 
-        self.qc.append(cx_ideal, [2+7*2, 1+7*2])
-        self.qc.append(cx_ideal, [4+7*2, 3+7*2])
-        self.qc.append(cx_ideal, [6+7*2, 3+7*2])
+        self.qc.append(cx_ideal, [2+7*self.n, 1+7*self.n])
+        self.qc.append(cx_ideal, [4+7*self.n, 3+7*self.n])
+        self.qc.append(cx_ideal, [6+7*self.n, 3+7*self.n])
         #################################Controlled Hadamards##########################################
         self.qc.reset(ancc)
         self.qc.append(h_ideal,[ancc])
         for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+2*7)
-            self.qc.cz(ancc,6-i+2*7)
-            self.qc.ry(np.pi/4,6-i+2*7)
+            self.qc.ry(-np.pi/4,6-i+self.n*7)
+            self.qc.cz(ancc,6-i+self.n*7)
+            self.qc.ry(np.pi/4,6-i+self.n*7)
         self.qc.append(h_ideal,[ancc])
         # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
         self.sdg(pos=pos)
         for i in range(7):
-            self.qc.cx(i+7*2,i+7*pos)
+            self.qc.cx(i+7*self.n,i+7*pos)
         self.s(pos=pos)
         self.qc.reset(anc-1)
         #############################Measure logical state of the magic state for state injection#############################
-        self.sdg(pos=2)
-        self.h(pos=2)
+        self.sdg(pos=self.n)
+        self.h(pos=self.n)
         for i in range(7):
-            self.qc.cx(i+2*7, anc-1)
+            self.qc.cx(i+self.n*7, anc-1)
         self.qc.measure(anc-1,0)
         #################################Apply conditioned Ry(pi/2) onto the Target###########################
         for i in range(3):
@@ -1311,7 +1404,7 @@ class Steane7q:
         self.qc.add_register(read)
 
         for i in range(7):
-            # self.qc.id(i+7*pos)
+            self.qc.id(i+7*pos)
             self.qc.measure(i+7*pos,read[6-i])
 
         # self.qc = transpile(self.qc, optimization_level=1)
@@ -1334,9 +1427,9 @@ class Steane7q:
         bits = [i[:7] for i in bitstring]                                                   #Bits that make up the logical qubits
         postprocess = [i[7:-9] for i in bitstring]                                 #Flags during qec to make it fault tolerant, if at least one strikes, need to discard shot
 
-        print(bitstring)
-        print(bits)
-        print("FLAGS: ", postprocess)
+        # print(bitstring)
+        # print(bits)
+        # print("FLAGS: ", postprocess)
 
         for i in range(len(pre)):
             if pre[i].count("1") != 0:
@@ -1346,8 +1439,8 @@ class Steane7q:
         test_0 = ["0000000","1010101","0110011","1100110","0001111","1011010","0111100","1101001"]
         test_1 = ["1111111","0101010","1001100","0011001","1110000","0100101","1000011","0010110"]
 
-        if self.classical_ec:
-            bits = self.__classical_error_correction__(bits)
+        # if self.classical_ec:
+        #     bits = self.__classical_error_correction__(bits)
 
         for i in range(len(bits)):
             for j in test_0:
@@ -1408,13 +1501,6 @@ class Steane7q:
         self.zeros = zeros
         self.post = post
         self.preselected = preselected
-        #magic = (magic/shots)
-
-        # print("0: ", zeros*100, "%")
-        # print("1: ", ones*100, "%")
-        # print("Preselection discarded: ", (preselected/shots)*100, "%")
-        # print("Postselection discarded: ", (post/shots)*100, "%")
-        #return zeros, ones, preselected, post
 
 class RotSurf9q:
     def __init__(self, n: int, magic = 0):
