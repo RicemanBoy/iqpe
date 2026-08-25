@@ -41,6 +41,13 @@ def parity_values(n):
         if value.bit_count() % 2 == 1
     ]
 
+def gates(qc:QuantumCircuit):
+    hmm = dict(qc.count_ops())
+    hmm["reset"] = 0
+    hmm["measure"] = 00
+    hmm["swap"] = 0
+    return sum(hmm.values())
+
 def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
     k = list(bin)
     a = [int(i) for i in k]
@@ -68,6 +75,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
     y_list, bruh1 = [], []
     for m in range(k):
         for o in range(7):
+            gatecount = 0
             bitstring = ""
             rots = []
             for t in range(iter):
@@ -93,8 +101,11 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                         if l == 0.125:
                             self.tdg(pos=0)
                     self.h(pos=0)
+                    if self.err:
+                        self.qec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
+                    gatecount += gates(self.qc)
             
                     if self.zeros == 1:
                         bitstring += "0"
@@ -118,7 +129,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
             hmm = convert(bitstring)
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
-            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            print("Performance {}for angle {} ({} gates): ".format("(QEC) " if qec else "", 2*o+1, gatecount), diff)
             bruh1.append(diff), y_list.append(diff)
     y = y/(7*k)
     arg = 0
@@ -3622,6 +3633,55 @@ class RotSurf9q:
         self.zeros = zeros
         self.post = err
 
+############################## [[17,1,5]] 4.8.8 Color Code ##############################
+# The 8 faces of the square-octagon lattice (https://arxiv.org/pdf/2601.13313, Fig. 3b).
+# The code is self-dual, so the X- and Z-type generators sit on the same faces.
+# 36 CNOTs per basis. Qubits 0, 1, 12 are the three corners of the triangle,
+# the bottom row of the lattice (0,1,2,4,6) is the logical operator used in x()/z().
+STABS_17Q = [(5, 9, 11, 12),                # square
+             (8, 10, 13, 15),               # square
+             (3, 7, 14, 16),                # square
+             (2, 6, 14, 16),                # octagon, cut by the boundary
+             (4, 5, 6, 7, 8, 10, 11, 16),   # octagon
+             (1, 4, 10, 13),                # octagon, cut by the boundary
+             (8, 9, 11, 15),                # octagon, cut by the boundary
+             (0, 2, 3, 14)]                  # octagon, cut by the boundary
+
+# syndrome (bit i = face i) -> minimum weight correction. Covers every single- and
+# twoqubit error; the 140 syndromes that only weight>=3 errors produce are left alone,
+# so those runs stay outside the code space and get postselected in readout().
+CORR_17Q = {
+    0x01: (12,), 0x02: (1, 13), 0x03: (8, 11), 0x04: (0, 3),
+    0x05: (5, 7), 0x08: (0, 2), 0x09: (5, 6), 0x0C: (0, 14),
+    0x0D: (5, 16), 0x10: (1, 4), 0x11: (5,), 0x12: (1, 10),
+    0x13: (8, 9), 0x14: (7,), 0x15: (7, 12), 0x18: (6,),
+    0x19: (6, 12), 0x1C: (16,), 0x1D: (12, 16), 0x20: (1,),
+    0x21: (1, 12), 0x22: (13,), 0x23: (5, 10), 0x24: (4, 7),
+    0x26: (7, 10), 0x28: (4, 6), 0x2A: (6, 10), 0x2C: (4, 16),
+    0x2E: (10, 16), 0x30: (4,), 0x31: (1, 5), 0x32: (10,),
+    0x33: (5, 13), 0x34: (1, 7), 0x36: (7, 13), 0x38: (1, 6),
+    0x3A: (6, 13), 0x3C: (1, 16), 0x3E: (13, 16), 0x40: (5, 11),
+    0x41: (9,), 0x42: (15,), 0x43: (5, 8), 0x45: (7, 11),
+    0x46: (7, 8), 0x49: (6, 11), 0x4A: (6, 8), 0x4D: (11, 16),
+    0x4E: (8, 16), 0x50: (5, 9), 0x51: (11,), 0x52: (8,),
+    0x53: (5, 15), 0x55: (7, 9), 0x56: (7, 15), 0x59: (6, 9),
+    0x5A: (6, 15), 0x5D: (9, 16), 0x5E: (15, 16), 0x60: (8, 10),
+    0x61: (1, 9), 0x62: (1, 15), 0x63: (9, 13), 0x70: (8, 13),
+    0x71: (1, 11), 0x72: (1, 8), 0x73: (9, 10), 0x80: (0,),
+    0x81: (0, 12), 0x84: (3,), 0x85: (3, 12), 0x88: (2,),
+    0x89: (2, 12), 0x8C: (14,), 0x8D: (12, 14), 0x90: (2, 6),
+    0x91: (0, 5), 0x94: (0, 7), 0x95: (3, 5), 0x98: (0, 6),
+    0x99: (2, 5), 0x9C: (0, 16), 0x9D: (5, 14), 0xA0: (0, 1),
+    0xA2: (0, 13), 0xA4: (1, 3), 0xA6: (3, 13), 0xA8: (1, 2),
+    0xAA: (2, 13), 0xAC: (1, 14), 0xAE: (13, 14), 0xB0: (0, 4),
+    0xB2: (0, 10), 0xB4: (3, 4), 0xB6: (3, 10), 0xB8: (2, 4),
+    0xBA: (2, 10), 0xBC: (4, 14), 0xBE: (10, 14), 0xC1: (0, 9),
+    0xC2: (0, 15), 0xC5: (3, 9), 0xC6: (3, 15), 0xC9: (2, 9),
+    0xCA: (2, 15), 0xCD: (9, 14), 0xCE: (14, 15), 0xD1: (0, 11),
+    0xD2: (0, 8), 0xD5: (3, 11), 0xD6: (3, 8), 0xD9: (2, 11),
+    0xDA: (2, 8), 0xDD: (11, 14), 0xDE: (8, 14),
+}
+
 class Steane17q:
     def __init__(self, n = 1):
         self.n = n
@@ -3812,8 +3872,47 @@ class Steane17q:
 
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
+        # if self.err:
+        #     self.qec(0)
         self.u2(0, gate=gate)
-            
+
+    def qec(self, pos = 0):
+        self.qec_counter += 1
+        if self.qecc not in self.qc.cregs:              # qecc is not added in __init__
+            self.qc.add_register(self.qecc)
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        ##################################Z-Stabilizers##########################################
+        for i, face in enumerate(STABS_17Q):
+            for q in face:
+                self.qc.cx(q+17*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[i])
+            self.qc.reset(anc)
+            self.qc.id(anc)
+        ##################################X-Stabilizers##############################################
+        for i, face in enumerate(STABS_17Q):
+            self.qc.h(anc)
+            for q in face:
+                self.qc.cx(anc, q+17*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[8+i])
+            self.qc.reset(anc)
+            self.qc.id(anc)
+        ##################################Bitflip Error correction##############################################
+        zsyn = expr.bit_and(self.qecc, 0x00FF)
+        for syndrome, qubits in CORR_17Q.items():
+            with self.qc.if_test(expr.equal(zsyn, syndrome)):
+                for q in qubits:
+                    self.qc.x(q+17*pos)
+        ##################################Phaseflip Error correction##############################################
+        xsyn = expr.bit_and(self.qecc, 0xFF00)
+        for syndrome, qubits in CORR_17Q.items():
+            with self.qc.if_test(expr.equal(xsyn, syndrome << 8)):
+                for q in qubits:
+                    self.qc.z(q+17*pos)
+
     def readout(self, pos: int, shots: int, p = 0):
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
         p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
