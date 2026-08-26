@@ -34,6 +34,12 @@ x_ideal = UnitaryGate(matrix_x)
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
+matrix_t = ([[1,0],[0,np.exp(1j*(np.pi/4))]])
+t_ideal = UnitaryGate(matrix_t)
+
+matrix_tdg = ([[1,0],[0,np.exp(-1j*(np.pi/4))]])
+tdg_ideal = UnitaryGate(matrix_tdg)
+
 def parity_values(n):
     return [
         value
@@ -3832,6 +3838,24 @@ class Steane17q:
             for i in range(17):
                 self.qc.s(i+17*pos)
 
+    def t_ideal(self, pos = 0):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        self.qc.append(h_ideal,[anc])
+        self.qc.append(t_ideal,[anc])
+
+        self.qc.append(cx_ideal, [anc, 0+17*pos])
+        self.qc.append(cx_ideal, [anc, 1+17*pos])
+        self.qc.append(cx_ideal, [anc, 2+17*pos])
+        self.qc.append(cx_ideal, [anc, 4+17*pos])
+        self.qc.append(cx_ideal, [anc, 6+17*pos])
+
+        self.qc.measure(anc, 0)
+
+        with self.qc.if_test((0,1)):
+            for i in range(17):
+                self.qc.s(i+17*pos)
+
     def tdg(self, pos = 0):
             anc = self.qc.num_qubits - 1
             self.qc.reset(anc)
@@ -3848,6 +3872,24 @@ class Steane17q:
             for i in range(17):
                 with self.qc.if_test((0,1)):
                     self.qc.sdg(i+17*pos)
+
+    def tdg_ideal(self, pos = 0):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        self.qc.append(h_ideal,[anc])
+        self.qc.append(tdg_ideal,[anc])
+
+        self.qc.append(cx_ideal, [anc, 0+17*pos])
+        self.qc.append(cx_ideal, [anc, 1+17*pos])
+        self.qc.append(cx_ideal, [anc, 2+17*pos])
+        self.qc.append(cx_ideal, [anc, 4+17*pos])
+        self.qc.append(cx_ideal, [anc, 6+17*pos])
+
+        self.qc.measure(anc, 0)
+
+        with self.qc.if_test((0,1)):
+            for i in range(17):
+                self.qc.sdg(i+17*pos)
 
     def u2(self, pos: int, gate: list):
         for i in gate:
