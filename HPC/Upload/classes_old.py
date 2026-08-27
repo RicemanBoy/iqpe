@@ -108,7 +108,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec(0)
+                        self.qec_ideal(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -3914,8 +3914,8 @@ class Steane17q:
 
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
-        # if self.err:
-        #     self.qec(0)
+        if self.err:
+            self.qec_ideal(0)
         self.u2(0, gate=gate)
 
     def qec(self, pos = 0):
@@ -3954,6 +3954,40 @@ class Steane17q:
             with self.qc.if_test(expr.equal(xsyn, syndrome << 8)):
                 for q in qubits:
                     self.qc.z(q+17*pos)
+
+    def qec_ideal(self, pos = 0):
+        self.qec_counter += 1
+        if self.qecc not in self.qc.cregs:              # qecc is not added in __init__
+            self.qc.add_register(self.qecc)
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        ##################################Z-Stabilizers##########################################
+        for i, face in enumerate(STABS_17Q):
+            for q in face:
+                self.qc.append(cx_ideal, [anc, q+17*pos])
+            self.qc.measure(anc, self.qecc[i])
+            self.qc.reset(anc)
+        ##################################X-Stabilizers##############################################
+        for i, face in enumerate(STABS_17Q):
+            self.qc.append(h_ideal, [anc])
+            for q in face:
+                self.qc.append(cx_ideal, [q+17*pos, anc])
+            self.qc.append(h_ideal, [anc])
+            self.qc.measure(anc, self.qecc[8+i])
+            self.qc.reset(anc)
+        ##################################Bitflip Error correction##############################################
+        zsyn = expr.bit_and(self.qecc, 0x00FF)
+        for syndrome, qubits in CORR_17Q.items():
+            with self.qc.if_test(expr.equal(zsyn, syndrome)):
+                for q in qubits:
+                    self.qc.append(x_ideal, [q+17*pos])
+        ##################################Phaseflip Error correction##############################################
+        xsyn = expr.bit_and(self.qecc, 0xFF00)
+        for syndrome, qubits in CORR_17Q.items():
+            with self.qc.if_test(expr.equal(xsyn, syndrome << 8)):
+                for q in qubits:
+                    self.qc.append(z_ideal, [q+17*pos])
+
 
     def readout(self, pos: int, shots: int, p = 0):
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
