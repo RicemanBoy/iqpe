@@ -70,10 +70,10 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
+    with open("{}unitary{}_improved_with_rs.txt".format(path, n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
+    with open("{}adjunitary{}_improved_with_rs.txt".format(path, n), "r") as file:
         for line in file:
             b.append(list(map(str, line.strip().split(","))))
     
