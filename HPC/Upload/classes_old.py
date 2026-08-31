@@ -3914,8 +3914,8 @@ class Steane17q:
 
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
-        if self.err:
-            self.qec_ideal(0)
+        # if self.err:
+        #     self.qec_ideal(0)
         self.u2(0, gate=gate)
 
     def qec(self, pos = 0):
