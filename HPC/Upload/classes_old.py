@@ -21,6 +21,7 @@ from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
     pauli_error, depolarizing_error, thermal_relaxation_error)
 
 from qiskit.circuit.library import UnitaryGate
+from sympy import true
 
 matrix_h = ([[2**(-0.5),2**(-0.5)],[2**(-0.5),-2**(-0.5)]])
 h_ideal = UnitaryGate(matrix_h)
@@ -70,10 +71,10 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
     angle = np.delete(angle, [0])
 
     a, b = [], []
-    with open("{}unitary{}_improved_with_rs.txt".format(path, n), "r") as file:
+    with open("{}unitary{}.txt".format(path, n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}_improved_with_rs.txt".format(path, n), "r") as file:
+    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
         for line in file:
             b.append(list(map(str, line.strip().split(","))))
     
@@ -146,6 +147,14 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
 
     return y_list
 
+# Steane [[7,1,3]] lookup table. Key = 3 bit sub-syndrome of the qecc register, read MSB..LSB.
+# Z-Stabilizers  qecc[2]qecc[1]qecc[0]  -> X correction
+# X-Stabilizers  qecc[5]qecc[4]qecc[3]  -> Z correction
+CORR_7Q = {
+    "000": (),    "001": (3,), "010": (1,), "011": (5,),
+    "100": (0,),  "101": (4,), "110": (2,), "111": (6,),
+}
+
 class Steane7q:
     def __init__(self, n: int, magic = 1):
         self.n = n
@@ -157,6 +166,8 @@ class Steane7q:
         self.err = False
         self.qec_counter = 0
         self.magiccounter = 0
+
+        self.preselection_flag = False      #change to true if the initialization flag striked!
 
         self.classical_ec = False
         self.postselection = True
@@ -401,7 +412,7 @@ class Steane7q:
                 self.qc.z(1+7*pos)
                 self.qc.z(2+7*pos)
 
-###################### Phaselflip code #######################
+###################### Phaselflip code (für magic state) #######################
 
     def t(self, pos: int):
         for i in range(3):                      #initialize +_L on the phaseflip code
@@ -473,7 +484,7 @@ class Steane7q:
             for i in range(7):
                 self.qc.s(7*pos+i)
      
-##################### Phaseflip code #########################
+##################### Phaseflip code (für magic state) #########################
 
     def t_switch(self, pos: int):
         anc = self.qc.num_qubits - 1
@@ -1216,6 +1227,174 @@ class Steane7q:
                 with self.qc.if_test((self.qecc[5],1)):
                     self.qc.z(6+7*pos)
 
+################################# Neues FTQEC Procol based on arxiv:1708.02246, page 5, "Flag 1-FTEC Protocol" ##########################
+    def flagsyndrome(self, pos: int):
+        self.qec_counter += 1
+        flags = ClassicalRegister(6)
+        self.qc.add_register(flags)
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        self.qc.reset(anc), self.qc.reset(ancc)
+        ##################################Z-Stabilizers##########################################
+        self.qc.h(ancc)
+        self.qc.cx(0+7*pos, anc)
+        self.qc.cx(ancc,anc)
+        self.qc.cx(2+7*pos, anc)
+        self.qc.cx(4+7*pos, anc)
+        self.qc.cx(ancc,anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc), self.qc.h(ancc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[2]), self.qc.measure(ancc, flags[0])
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+
+        self.qc.h(ancc)
+        self.qc.cx(1+7*pos, anc)
+        self.qc.cx(ancc, anc)
+        self.qc.cx(2+7*pos, anc)
+        self.qc.cx(5+7*pos, anc)
+        self.qc.cx(ancc, anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc), self.qc.h(ancc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[1]), self.qc.measure(ancc, flags[1])
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+
+        self.qc.h(ancc)
+        self.qc.cx(3+7*pos, anc)
+        self.qc.cx(ancc, anc)
+        self.qc.cx(4+7*pos, anc)
+        self.qc.cx(5+7*pos, anc)
+        self.qc.cx(ancc, anc)
+        self.qc.cx(6+7*pos, anc)
+
+        self.qc.id(anc), self.qc.h(ancc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[0]), self.qc.measure(ancc, flags[2])
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+        ##################################X-Stabilizers##############################################
+        self.qc.h(anc)
+        self.qc.cx(anc, 0+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[5]), self.qc.measure(ancc, flags[3])
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 1+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 2+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[4]), self.qc.measure(ancc, flags[4])
+        self.qc.reset(anc), self.qc.reset(ancc)
+        self.qc.id(anc), self.qc.id(ancc)
+
+        self.qc.h(anc)
+        self.qc.cx(anc, 3+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 4+7*pos)
+        self.qc.cx(anc, 5+7*pos)
+        self.qc.cx(anc, ancc)
+        self.qc.cx(anc, 6+7*pos)
+        self.qc.h(anc)
+
+        self.qc.id(anc), self.qc.id(ancc)
+        self.qc.measure(anc, self.qecc[3]), self.qc.measure(ancc, flags[5])
+        self.qc.reset(anc), self.qc.reset(ancc)
+
+    def reset_qec(self, result):
+        psi_full = result.data(0)["psi"]
+        qr2 = QuantumRegister(7*(self.n+1)+2, "q")
+        cbit = ClassicalRegister(1, "c")
+        self.qc = QuantumCircuit(qr2, cbit)
+        self.qc.add_register(self.qecc)
+        self.qc.set_statevector(psi_full)
+        del psi_full
+
+    def _flag_round(self, pos: int):
+        #one round of flagged syndrome extraction --> (flags, syndrome, bitstring, result)
+        #layout of the space-stripped counts bitstring:  flags[0:6] | qecc[6:12] | cbits[12:]
+        self.flagsyndrome(pos=pos)
+        self.qc.save_statevector(label="psi")
+
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        counts = result.get_counts()                #one shot --> one bitstring
+
+        bitstring = list(counts.keys())
+        bitstring = [i.replace(" ","") for i in bitstring][0]
+
+        return bitstring[:6], bitstring[6:12], bitstring, result
+
+    def correct_7q(self, syndrome: str, pos: int):
+        #syndrome = the 6 bit qecc slice:  qecc[5]qecc[4]qecc[3] | qecc[2]qecc[1]qecc[0]
+        for q in CORR_7Q[syndrome[3:6]]:                #Z-Stabilizers --> X errors
+            self.qc.x(q+7*pos)
+        for q in CORR_7Q[syndrome[0:3]]:                #X-Stabilizers --> Z errors
+            self.qc.z(q+7*pos)
+
+    def flagFTec(self, pos: int, max_rounds = 10):
+        #based on https://arxiv.org/pdf/1708.02246 , protocol on page 5, "Flag 1-FTEC Protocol"  --> no need of postselection, but we need statevector simulation for classical decoding
+
+        flags_r1, syndrome_r1, bitstring, result = self._flag_round(pos=pos)
+
+        if flags_r1.count("1") != 0:            #3.Case, falls direkt geflagged wird
+            self.reset_qec(result)
+            self.qec(pos=pos)                   #muss ich genauer nochmal anschauen und machen
+            return
+
+        if len(bitstring) == 15:
+            preselection = bitstring[12:14]        #cbits, one bit for each logical qubit
+            if preselection.count("1") != 0:
+                self.preselection_flag = True               #an sich kann man hier mit der Simulation aufhören, aber wie skippe ich so weit?
+                return 
+
+        self.reset_qec(result)
+
+        flags_r2, syndrome_r2, bitstring, result = self._flag_round(pos=pos)
+
+        self.reset_qec(result)
+
+        #First case scenario: no flags and identical syndromes
+        if flags_r2.count("1") == 0 and syndrome_r1 == syndrome_r2:
+            self.correct_7q(syndrome_r2, pos=pos)
+            return
+        #second case scenario: no flags and different syndromes --> keep measuring until one syndrome shows up twice in a row
+        elif flags_r2.count("1") == 0:
+            syndrome_prev = syndrome_r2
+            for _ in range(max_rounds):
+                flags_r, syndrome_r, bitstring, result = self._flag_round(pos=pos)
+                self.reset_qec(result)
+                if flags_r.count("1") != 0:
+                    self.qec(pos=pos)
+                    return
+                if syndrome_r == syndrome_prev:
+                    self.correct_7q(syndrome_r, pos=pos)
+                    return
+                syndrome_prev = syndrome_r
+            self.qec(pos=pos)                   #kein Konvergieren innerhalb max_rounds --> fallback auf die unflagged EC
+            return
+        elif flags_r2.count("1") != 0:
+            self.qec(pos=pos)
+
+    
+
+#######################################################################################################################################
+
     def qec(self, pos: int):
         self.qec_counter += 1
         anc = self.qc.num_qubits - 1
@@ -1622,6 +1801,10 @@ class Steane7q:
                 post += hmm[i]
             if bits[i] == "pre":
                 preselected += hmm[i]
+
+        if shots == 1 and self.preselection_flag:                  #only valid for shots = 1 and we use the 1-FTEC-protocol!!!
+            ones, zeros, post = 0, 0, 0
+            preselected = 1
         
         ones = (ones/shots)
         zeros = (zeros/shots)
