@@ -21,7 +21,6 @@ from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
     pauli_error, depolarizing_error, thermal_relaxation_error)
 
 from qiskit.circuit.library import UnitaryGate
-from sympy import true
 
 matrix_h = ([[2**(-0.5),2**(-0.5)],[2**(-0.5),-2**(-0.5)]])
 h_ideal = UnitaryGate(matrix_h)
@@ -108,8 +107,12 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                         if l == 0.125:
                             self.tdg(pos=0)
                     self.h(pos=0)
-                    if self.err:
+                    print("Gates before last QEC step: ", gates(self.qc))
+                    if self.err and code != "steane":
                         self.qec_ideal(0)
+                    if self.err and code == "steane":
+                        self.qec_ft(0)
+                        print("Gates after last QEC step: ", gates(self.qc))
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -155,6 +158,22 @@ CORR_7Q = {
     "100": (0,),  "101": (4,), "110": (2,), "111": (6,),
 }
 
+STABS_7Q = ((0,2,4,6), (1,2,5,6), (3,4,5,6))    #order matches qecc[2],qecc[1],qecc[0] and qecc[5],qecc[4],qecc[3]
+
+# Flag error sets E(g_i) of the 1-flag circuits in flagsyndrome(), needed for case 3 of the Flag 1-FTEC
+# Protocol. Key = the 6 bit qecc slice of the following unflagged syndrome measurement, value = the qubits
+# the flagged fault hit. flags[0..2] are the Z-Stabilizer circuits (Z errors on the data), flags[3..5] the
+# X-Stabilizer circuits (X errors). Entries that agree with E_min(s) up to a stabilizer are left out and
+# fall through to CORR_7Q, as in the "otherwise apply E_min(s)" of the protocol.
+CORR_FLAG_7Q = {
+    0: {"010000": (4,6),   "100000": (2,4,6), "111000": (6,)},      #C(Z{0,2,4,6})
+    1: {"010000": (2,5,6), "100000": (5,6),   "111000": (6,)},      #C(Z{1,2,5,6})
+    2: {"001000": (4,5,6), "100000": (5,6),   "111000": (6,)},      #C(Z{3,4,5,6})
+    3: {"000010": (4,6),   "000100": (2,4,6), "000111": (6,)},      #C(X{0,2,4,6})
+    4: {"000010": (2,5,6), "000100": (5,6),   "000111": (6,)},      #C(X{1,2,5,6})
+    5: {"000001": (4,5,6), "000100": (5,6),   "000111": (6,)},      #C(X{3,4,5,6})
+}
+
 class Steane7q:
     def __init__(self, n: int, magic = 1):
         self.n = n
@@ -176,6 +195,7 @@ class Steane7q:
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
+        self.cbits = cbits
         
         self.qc = QuantumCircuit(qr, cbits)
         
@@ -255,9 +275,6 @@ class Steane7q:
         for i in range(7):
             self.qc.sdg(i+7*pos)
 
-        # self.qc.s(0+7*pos), self.qc.s(1+7*pos), self.qc.s(3+7*pos), self.qc.s(6+7*pos)
-        # self.qc.sdg(2+7*pos), self.qc.sdg(4+7*pos), self.qc.sdg(5+7*pos)
-
     def t_ghz(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
@@ -313,10 +330,10 @@ class Steane7q:
             self.qc.cx(i+7*control, i+7*target)
 
     def sdg(self, pos: int):
-        self.qc.sdg(0+7*pos), self.qc.sdg(1+7*pos), self.qc.sdg(3+7*pos), self.qc.sdg(6+7*pos)
-        self.qc.s(2+7*pos), self.qc.s(4+7*pos), self.qc.s(5+7*pos)
+        for i in range(7):
+            self.qc.s(i+7*pos)
 
-    def FT_t(self, pos: int):
+    def t(self, pos: int):
         self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
@@ -414,7 +431,7 @@ class Steane7q:
 
 ###################### Phaselflip code (für magic state) #######################
 
-    def t(self, pos: int):
+    def t_ph(self, pos: int):
         for i in range(3):                      #initialize +_L on the phaseflip code
             self.qc.reset(7*self.n + i)
             self.qc.h(7*self.n + i)
@@ -449,7 +466,7 @@ class Steane7q:
             for i in range(7):
                 self.qc.sdg(7*pos+i)
 
-    def tdg(self, pos: int):
+    def tdg_ph(self, pos: int):
         for i in range(3):                      #initialize +_L on the phaseflip code
             self.qc.reset(7*self.n + i)
             self.qc.h(7*self.n + i)
@@ -921,7 +938,7 @@ class Steane7q:
         self.qc.cx(0+7*pos, 2+7*pos)
         self.qc.cx(1+7*pos, 2+7*pos)
 
-    def FT_tdg(self, pos: int):
+    def tdg(self, pos: int):
         self.magiccounter += 1
         self.h(pos=pos)
         self.sdg(pos=pos)
@@ -1032,14 +1049,8 @@ class Steane7q:
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                #self.t_cheat(pos=pos)
-                # if self.err and self.magiccounter%2==0:
-                #     self.qec_ft(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
-                #self.tdg_cheat(pos=pos)
-                # if self.err and self.magiccounter%2==0:
-                #     self.qec_ft(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -1316,6 +1327,8 @@ class Steane7q:
         self.qc.measure(anc, self.qecc[3]), self.qc.measure(ancc, flags[5])
         self.qc.reset(anc), self.qc.reset(ancc)
 
+        return flags
+
     def reset_qec(self, result):
         psi_full = result.data(0)["psi"]
         qr2 = QuantumRegister(7*(self.n+1)+2, "q")
@@ -1325,10 +1338,19 @@ class Steane7q:
         self.qc.set_statevector(psi_full)
         del psi_full
 
+    def _creg_bits(self, bitstring: str, creg):
+        #the counts bitstring lists the classical registers in reverse order of when they were added,
+        #so the position of a register depends on how many registers the circuit currently has
+        start = 0
+        for reg in reversed(self.qc.cregs):
+            if reg == creg:                     #qiskit rebuilds the register objects, so compare by name/size
+                return bitstring[start:start+reg.size]
+            start += reg.size
+        return None
+
     def _flag_round(self, pos: int):
-        #one round of flagged syndrome extraction --> (flags, syndrome, bitstring, result)
-        #layout of the space-stripped counts bitstring:  flags[0:6] | qecc[6:12] | cbits[12:]
-        self.flagsyndrome(pos=pos)
+        #one round of syndrome extraction with the 1-flag circuits --> (flags, syndrome, bitstring, result)
+        flags = self.flagsyndrome(pos=pos)
         self.qc.save_statevector(label="psi")
 
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
@@ -1338,27 +1360,80 @@ class Steane7q:
         bitstring = list(counts.keys())
         bitstring = [i.replace(" ","") for i in bitstring][0]
 
-        return bitstring[:6], bitstring[6:12], bitstring, result
+        return self._creg_bits(bitstring, flags), self._creg_bits(bitstring, self.qecc), bitstring, result
+
+    def syndrome(self, pos: int):
+        #unflagged syndrome measurement, measure only. The outcome is read out classically (so it can be
+        #fed into a lookup table) instead of being corrected in the circuit like in qec().
+        self.qec_counter += 1
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        ##################################Z-Stabilizers##########################################
+        for bit, stab in zip((2,1,0), STABS_7Q):
+            for q in stab:
+                self.qc.cx(q+7*pos, anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[bit])
+            self.qc.reset(anc)
+            self.qc.id(anc)
+        ##################################X-Stabilizers##############################################
+        for bit, stab in zip((5,4,3), STABS_7Q):
+            self.qc.h(anc)
+            for q in stab:
+                self.qc.cx(anc, q+7*pos)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[bit])
+            self.qc.reset(anc)
+            self.qc.id(anc)
+
+        self.qc.save_statevector(label="psi")
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        bitstring = list(result.get_counts().keys())[0].replace(" ","")
+        syndrome = self._creg_bits(bitstring, self.qecc)
+        self.reset_qec(result)
+
+        return syndrome
 
     def correct_7q(self, syndrome: str, pos: int):
-        #syndrome = the 6 bit qecc slice:  qecc[5]qecc[4]qecc[3] | qecc[2]qecc[1]qecc[0]
+        #E_min(s). syndrome = the 6 bit qecc slice:  qecc[5]qecc[4]qecc[3] | qecc[2]qecc[1]qecc[0]
         for q in CORR_7Q[syndrome[3:6]]:                #Z-Stabilizers --> X errors
             self.qc.x(q+7*pos)
         for q in CORR_7Q[syndrome[0:3]]:                #X-Stabilizers --> Z errors
             self.qc.z(q+7*pos)
 
-    def flagFTec(self, pos: int, max_rounds = 10):
+    def flagcorrect(self, flags: str, pos: int):
+        #3.Case of the protocol: a circuit C(g_i) flagged, so the syndrome is measured again with the
+        #non-flag circuits. If the outcome s matches an element E of the flag error set E(g_i) that
+        #element is applied, otherwise E_min(s).
+        flag_i = len(flags)-1 - flags.index("1")        #the flags slice is printed high bit first
+        syndrome = self.syndrome(pos=pos)
+
+        qubits = CORR_FLAG_7Q[flag_i].get(syndrome)
+        if qubits is None:
+            self.correct_7q(syndrome, pos=pos)
+            return
+        for q in qubits:
+            if flag_i < 3:
+                self.qc.z(q+7*pos)                      #Z-Stabilizer circuits flag on Z errors
+            else:
+                self.qc.x(q+7*pos)                      #X-Stabilizer circuits flag on X errors
+
+    def flagFTec(self, pos: int):
         #based on https://arxiv.org/pdf/1708.02246 , protocol on page 5, "Flag 1-FTEC Protocol"  --> no need of postselection, but we need statevector simulation for classical decoding
+        #The protocol repeats the flagged syndrome measurement until case 1, 2 or 3 applies. After the
+        #second round one of the three always applies, so two flagged rounds are enough.
 
         flags_r1, syndrome_r1, bitstring, result = self._flag_round(pos=pos)
 
         if flags_r1.count("1") != 0:            #3.Case, falls direkt geflagged wird
             self.reset_qec(result)
-            self.qec(pos=pos)                   #muss ich genauer nochmal anschauen und machen
+            self.flagcorrect(flags_r1, pos=pos)
             return
 
-        if len(bitstring) == 15:
-            preselection = bitstring[12:14]        #cbits, one bit for each logical qubit
+        preselection = self._creg_bits(bitstring, self.cbits)
+        if preselection is not None:            #cbits, one bit for each logical qubit
             if preselection.count("1") != 0:
                 self.preselection_flag = True               #an sich kann man hier mit der Simulation aufhören, aber wie skippe ich so weit?
                 return 
@@ -1369,29 +1444,15 @@ class Steane7q:
 
         self.reset_qec(result)
 
-        #First case scenario: no flags and identical syndromes
-        if flags_r2.count("1") == 0 and syndrome_r1 == syndrome_r2:
+        #3.Case: a circuit C(g_i) flagged --> non-flag syndrome measurement + flag error set E(g_i)
+        if flags_r2.count("1") != 0:
+            self.flagcorrect(flags_r2, pos=pos)
+        #1.Case: no flags and the syndrome was repeated twice in a row --> E_min(s)
+        elif syndrome_r1 == syndrome_r2:
             self.correct_7q(syndrome_r2, pos=pos)
-            return
-        #second case scenario: no flags and different syndromes --> keep measuring until one syndrome shows up twice in a row
-        elif flags_r2.count("1") == 0:
-            syndrome_prev = syndrome_r2
-            for _ in range(max_rounds):
-                flags_r, syndrome_r, bitstring, result = self._flag_round(pos=pos)
-                self.reset_qec(result)
-                if flags_r.count("1") != 0:
-                    self.qec(pos=pos)
-                    return
-                if syndrome_r == syndrome_prev:
-                    self.correct_7q(syndrome_r, pos=pos)
-                    return
-                syndrome_prev = syndrome_r
-            self.qec(pos=pos)                   #kein Konvergieren innerhalb max_rounds --> fallback auf die unflagged EC
-            return
-        elif flags_r2.count("1") != 0:
+        #2.Case: no flags but the two syndromes differ --> non-flag syndrome measurement + E_min(s)
+        else:
             self.qec(pos=pos)
-
-    
 
 #######################################################################################################################################
 
@@ -4082,14 +4143,8 @@ class Steane17q:
                 self.sdg(pos=pos)
             if i == "t":
                 self.t(pos=pos)
-                #self.t_cheat(pos=pos)
-                # if self.err and self.magiccounter%2==0:
-                #     self.qec_ft(pos = pos)
             if i == "tdg":
                 self.tdg(pos=pos)
-                #self.tdg_cheat(pos=pos)
-                # if self.err and self.magiccounter%2==0:
-                #     self.qec_ft(pos = pos)
             if i == "h":
                 self.h(pos=pos)
             if i == "z":
@@ -4097,8 +4152,8 @@ class Steane17q:
 
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
-        # if self.err:
-        #     self.qec_ideal(0)
+        if self.err:
+            self.qec_ideal(0)
         self.u2(0, gate=gate)
 
     def qec(self, pos = 0):
