@@ -1,24 +1,10 @@
-from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3, qasm2, qpy
-from qiskit.visualization import plot_histogram
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import ticker
-from functools import wraps, reduce
-from dataclasses import dataclass
-#import bitstring
+
 from qiskit_aer import AerSimulator
-from qiskit.transpiler.passes.synthesis import SolovayKitaev
-from qiskit.synthesis import generate_basic_approximations
-from qiskit.quantum_info import Operator
 
-from qiskit import transpile
-from qiskit.quantum_info import Statevector
-from qiskit.primitives import StatevectorSampler, StatevectorEstimator
-from qiskit.quantum_info import SparsePauliOp
-from qiskit.circuit.classical import expr
-
-from qiskit_aer.noise import (NoiseModel, QuantumError, ReadoutError,
-    pauli_error, depolarizing_error, thermal_relaxation_error)
+from qiskit_aer.noise import (NoiseModel, pauli_error)
 
 from qiskit.circuit.library import UnitaryGate
 
@@ -79,7 +65,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
     
     y = 0
     y_list, bruh1 = [], []
-    for m in range(k):
+    for _ in range(k):
         for o in range(7):
             gatecount = 0
             bitstring = ""
@@ -89,16 +75,15 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                 counter = 0
                 while True:
                     if code == "steane":
-                        self = Steane7q(1, 1)
-                    elif code == "rotsurf":
-                        self = RotSurf9q(1)
-                    elif code == "steane17":
-                        self = Steane17q(1)
+                        self = Steane7q(1, 1, noise=noise)
+                    else:
+                        print("Error hahaha")
+                        return
 
                     self.err = qec
                     self.h(pos=0)
                     #############################
-                    for j in range(2**(iter-t-1)):
+                    for _ in range(2**(iter-t-1)):
                         self.cu_ramsey(a[2*o+1])
                     ###############################
                     for l in rots:
@@ -171,7 +156,7 @@ CORR_FLAG_7Q = {
 }
 
 class Steane7q:
-    def __init__(self, n: int, magic = 1):
+    def __init__(self, n: int, magic = 1, noise = 0):
         self.n = n
 
         self.zeros = 0
@@ -187,7 +172,7 @@ class Steane7q:
         self.classical_ec = False
         self.postselection = True
 
-        self.noise_model = self.__noise_model__(0,0)
+        self.noise_model = self.__noise_model__(noise,0)
 
         qr = QuantumRegister(7*(n+magic)+2,"q")
         cbits = ClassicalRegister(3, "c")
@@ -826,7 +811,7 @@ class Steane7q:
             #cbits[0] is NOT an initialization flag, t()/tdg() measure the state injection into it, so it is
             #1 in about half of the shots. The flags sit in cbits[1..n], and the slice is printed MSB first.
             if preselection[:-1].count("1") != 0:
-                self.preselection_flag = True               #an sich kann man hier mit der Simulation aufhören, aber wie skippe ich so weit?
+                self.preselection_flag = True               
                 self.reset_qec(result)                      #trotzdem zuruecksetzen, sonst bleibt das save_statevector("psi") im Circuit
                 return 
 
@@ -1137,8 +1122,6 @@ class Steane7q:
         for i in range(7):
             self.qc.id(i+7*pos)
             self.qc.measure(i+7*pos,read[6-i])
-
-        # self.qc = transpile(self.qc, optimization_level=1)
 
         sim = AerSimulator()
         job = sim.run(self.qc, shots=shots, noise_model=noise_model)
