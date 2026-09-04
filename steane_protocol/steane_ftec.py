@@ -36,7 +36,7 @@ def parity_values(n):
 def gates(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
     hmm["reset"] = 0
-    hmm["measure"] = 00
+    hmm["measure"] = 0
     hmm["swap"] = 0
     return sum(hmm.values())
 
@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.flagFTec(0)
+                        self.qec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -114,7 +114,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             rots.append(0.5)
                             break
                     counter += 1
-                    print("Angle {}, {}%% errorrate, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
+                    print("Angle {}, {}% errorrate, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
                     del self
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
@@ -337,7 +337,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.flagFTec(pos=pos)
+            self.qec(pos=pos)
 
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
@@ -421,7 +421,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.flagFTec(pos=pos)
+            self.qec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
