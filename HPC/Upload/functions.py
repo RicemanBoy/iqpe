@@ -1,7 +1,8 @@
 import steane_ftec as s
 
 def gen_data(name):                           #code OG
-    p = s.np.linspace(0.00,0.005,20)
+    # p = s.np.linspace(0.00,0.005,20)
+    p = s.np.linspace(0.0015, 0.005, 4)
     # p = [np.linspace(0,0.005,6)[2]]
     y, y_qec = [],[]
     err, err_qec = [], []
@@ -14,4 +15,4 @@ def gen_data(name):                           #code OG
 
     data = s.np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    s.np.savetxt("steane_OG_ftqec+PS{}.txt".format(name), data, delimiter=",")
+    s.np.savetxt("steane_OG_ftqec+PS2{}.txt".format(name), data, delimiter=",")
