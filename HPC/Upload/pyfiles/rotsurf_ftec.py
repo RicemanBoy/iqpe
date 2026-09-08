@@ -143,8 +143,8 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
 # self.hadamards[pos]:
 #   hadamards even -> set A is measured as X-Stabilizers (detects Z errors), set B as Z-Stabilizers
 #   hadamards odd  -> set A is measured as Z-Stabilizers (detects X errors), set B as X-Stabilizers
-STABS_A_9Q = ((0,1), (4,5,1,2), (3,4,6,7), (7,8))       #order matches qecc[3],qecc[2],qecc[1],qecc[0]
-STABS_B_9Q = ((3,6), (1,4,0,3), (4,7,5,8), (2,5))       #order matches qecc[7],qecc[6],qecc[5],qecc[4]
+STABS_A_9Q = ((0,1), (1,2,4,5), (3,4,6,7), (7,8))       #order matches qecc[3],qecc[2],qecc[1],qecc[0]
+STABS_B_9Q = ((3,6), (0,1,3,4), (4,5,7,8), (2,5))       #order matches qecc[7],qecc[6],qecc[5],qecc[4]
 
 # E_min(s) per stabilizer set. Key = the 4 bit sub-syndrome of that set, read MSB..LSB, i.e. in the
 # order the stabilizers are listed above. Value = a minimum weight error support producing it.
