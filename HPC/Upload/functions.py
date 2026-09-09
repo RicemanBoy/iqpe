@@ -16,4 +16,4 @@ def gen_data(name):                           #code OG
 
     data = s.np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    s.np.savetxt("rotsurf_protocol{}.txt".format(name), data, delimiter=",")
+    s.np.savetxt("rotsurf_protocol1{}.txt".format(name), data, delimiter=",")

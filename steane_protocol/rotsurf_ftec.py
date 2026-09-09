@@ -34,6 +34,14 @@ t_ideal = UnitaryGate(matrix_t)
 matrix_tdg = ([[1,0],[0,np.exp(-1j*(np.pi/4))]])
 tdg_ideal = UnitaryGate(matrix_tdg)
 
+def majority_values(n):
+    threshold = n // 2 + 1
+    return [
+        value
+        for value in range(2**n)
+        if value.bit_count() >= threshold
+    ]
+
 def parity_values(n):
     return [
         value
@@ -490,7 +498,7 @@ class RotSurf9q:
         self.cnot(control = 0, target=1)
         self.h(pos=1)
 
-    def s(self, pos: int):
+    def s_anc(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
 
@@ -519,7 +527,44 @@ class RotSurf9q:
                 self.qc.z(1+9*pos)
                 self.qc.z(4+9*pos)
                 self.qc.z(7+9*pos)
-   
+
+    def s(self, pos: int):                  #muss phaseflipcode, damit das CNOT mit dem RotSurf funktioniert...
+        anc = self.qc.num_qubits - 1
+
+        self.qc.reset([anc-3, anc-2, anc-1])
+
+        self.qc.h(anc-3)
+        self.qc.cx(anc-3, anc-2)
+        self.qc.cx(anc-3, anc-1)
+
+        self.qc.s(anc-1)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(9*pos+3, anc-3)
+            self.qc.cx(9*pos+4, anc-2)
+            self.qc.cx(9*pos+5, anc-1)
+        else:
+            self.qc.cx(9*pos+1, anc-3)
+            self.qc.cx(9*pos+4, anc-2)
+            self.qc.cx(9*pos+7, anc-1)
+
+        test = ClassicalRegister(3)
+        self.qc.add_register(test)
+
+        self.qc.measure((anc-3, anc-2, anc-1), (test[0], test[1], test[2]))
+
+        maj = majority_values(3)               #do majority vote to ensure FT, somewhat of an QEC step in itself
+
+        if self.hadamards[pos]%2 == 0:
+            for value in maj:
+                with self.qc.if_test((test, value)):
+                    self.qc.z([9*pos+3, 9*pos+4, 9*pos+5])
+        else:
+            for value in maj:
+                with self.qc.if_test((test, value)):
+                    self.qc.z([9*pos+1, 9*pos+4, 9*pos+7])
+        return
+    
     def s_cheat(self, pos: int):
         if self.hadamards[pos]%2==0:
             self.qc.cx(9*pos+3, 9*pos+5)
