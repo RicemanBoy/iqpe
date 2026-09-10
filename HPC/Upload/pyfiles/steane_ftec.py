@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec_ft(0)
+                        self.qec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -337,7 +337,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec_ft(pos=pos)
+            self.qec(pos=pos)
 
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
@@ -421,7 +421,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec_ft(pos=pos)
+            self.qec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
@@ -833,7 +833,7 @@ class Steane7q:
 
 #######################################################################################################################################
 
-    def qec(self, pos: int):
+    def qec_og(self, pos: int):
         self.qec_counter += 1
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
@@ -975,6 +975,10 @@ class Steane7q:
             with self.qc.if_test((self.qecc[4],1)):
                 with self.qc.if_test((self.qecc[5],1)):
                     self.qc.z(6+7*pos)
+
+    def qec(self, pos: int):
+        syndrome = self.syndrome(pos=pos)
+        self.correct_7q(syndrome, pos)
 
     def qec_ideal(self, pos: int):
         self.qec_counter += 1

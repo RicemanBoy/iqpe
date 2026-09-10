@@ -34,6 +34,14 @@ t_ideal = UnitaryGate(matrix_t)
 matrix_tdg = ([[1,0],[0,np.exp(-1j*(np.pi/4))]])
 tdg_ideal = UnitaryGate(matrix_tdg)
 
+def majority_values(n):
+    threshold = n // 2 + 1
+    return [
+        value
+        for value in range(2**n)
+        if value.bit_count() >= threshold
+    ]
+
 def parity_values(n):
     return [
         value
@@ -98,7 +106,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.flagFTec(0)
+                        self.qec2(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -143,8 +151,8 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
 # self.hadamards[pos]:
 #   hadamards even -> set A is measured as X-Stabilizers (detects Z errors), set B as Z-Stabilizers
 #   hadamards odd  -> set A is measured as Z-Stabilizers (detects X errors), set B as X-Stabilizers
-STABS_A_9Q = ((0,1), (1,2,4,5), (3,4,6,7), (7,8))       #order matches qecc[3],qecc[2],qecc[1],qecc[0]
-STABS_B_9Q = ((3,6), (0,1,3,4), (4,5,7,8), (2,5))       #order matches qecc[7],qecc[6],qecc[5],qecc[4]
+STABS_A_9Q = ((0,1), (4,5,1,2), (3,4,6,7), (7,8))       #order matches qecc[3],qecc[2],qecc[1],qecc[0]
+STABS_B_9Q = ((3,6), (1,4,0,3), (4,7,5,8), (2,5))       #order matches qecc[7],qecc[6],qecc[5],qecc[4]
 
 # E_min(s) per stabilizer set. Key = the 4 bit sub-syndrome of that set, read MSB..LSB, i.e. in the
 # order the stabilizers are listed above. Value = a minimum weight error support producing it.
@@ -519,7 +527,44 @@ class RotSurf9q:
                 self.qc.z(1+9*pos)
                 self.qc.z(4+9*pos)
                 self.qc.z(7+9*pos)
-   
+
+    def s_hmm(self, pos: int):                  #muss phaseflipcode, damit das CNOT mit dem RotSurf funktioniert...
+        anc = self.qc.num_qubits - 1
+
+        self.qc.reset([anc-3, anc-2, anc-1])
+
+        self.qc.h(anc-3)
+        self.qc.cx(anc-3, anc-2)
+        self.qc.cx(anc-3, anc-1)
+
+        self.qc.s(anc-1)
+
+        if self.hadamards[pos]%2 == 0:
+            self.qc.cx(9*pos+3, anc-3)
+            self.qc.cx(9*pos+4, anc-2)
+            self.qc.cx(9*pos+5, anc-1)
+        else:
+            self.qc.cx(9*pos+1, anc-3)
+            self.qc.cx(9*pos+4, anc-2)
+            self.qc.cx(9*pos+7, anc-1)
+
+        test = ClassicalRegister(3)
+        self.qc.add_register(test)
+
+        self.qc.measure((anc-3, anc-2, anc-1), (test[0], test[1], test[2]))
+
+        maj = majority_values(3)               #do majority vote to ensure FT, somewhat of an QEC step in itself
+
+        if self.hadamards[pos]%2 == 0:
+            for value in maj:
+                with self.qc.if_test((test, value)):
+                    self.qc.z([9*pos+3, 9*pos+4, 9*pos+5])
+        else:
+            for value in maj:
+                with self.qc.if_test((test, value)):
+                    self.qc.z([9*pos+1, 9*pos+4, 9*pos+7])
+        return
+    
     def s_cheat(self, pos: int):
         if self.hadamards[pos]%2==0:
             self.qc.cx(9*pos+3, 9*pos+5)
@@ -867,7 +912,7 @@ class RotSurf9q:
     def cu_ramsey(self, Ugates: list):
         self.u2(0, Ugates)
         if self.err:
-            self.flagFTec(pos=0)
+            self.qec2(pos=0)
         self.u2(0, Ugates)
 
     def qec(self, pos: int):
@@ -876,42 +921,46 @@ class RotSurf9q:
         if self.hadamards[pos]%2==1:
             #X3 X6 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 3+9*pos)
             self.qc.cx(anc, 6+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #X0 X1 X3 X4 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 1+9*pos)
             self.qc.cx(anc, 4+9*pos)
             self.qc.cx(anc, 0+9*pos)
             self.qc.cx(anc, 3+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,1)
 
             #X4 X5 X7 X8 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 4+9*pos)
             self.qc.cx(anc, 7+9*pos)
             self.qc.cx(anc, 5+9*pos)
             self.qc.cx(anc, 8+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #X2 X5 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 2+9*pos)
             self.qc.cx(anc, 5+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,3)
 
             with self.qc.if_test((0,1)):             #6
@@ -948,34 +997,38 @@ class RotSurf9q:
 
             #Z0 Z1 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(0+9*pos, anc)
             self.qc.cx(1+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #Z1 Z2 Z4 Z5 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
             self.qc.cx(1+9*pos, anc)
             self.qc.cx(2+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z3 Z4 Z6 Z7 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(3+9*pos, anc)
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(6+9*pos, anc)
             self.qc.cx(7+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #Z7 Z8 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(7+9*pos, anc)
             self.qc.cx(8+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,3)
             
             with self.qc.if_test((0,1)):             #0
@@ -1011,42 +1064,46 @@ class RotSurf9q:
         else:
             #X0 X1 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 0+9*pos)
             self.qc.cx(anc, 1+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,0)
             
             #X1 X2 X4 X5 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 4+9*pos)
             self.qc.cx(anc, 5+9*pos)
             self.qc.cx(anc, 1+9*pos)
             self.qc.cx(anc, 2+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,1)
 
             #X3 X4 X6 X7 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 3+9*pos)
             self.qc.cx(anc, 4+9*pos)
             self.qc.cx(anc, 6+9*pos)
             self.qc.cx(anc, 7+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #X7 X8 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.h(anc)
             self.qc.cx(anc, 7+9*pos)
             self.qc.cx(anc, 8+9*pos)
             self.qc.h(anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,3)
 
             with self.qc.if_test((0,1)):             #0
@@ -1083,34 +1140,38 @@ class RotSurf9q:
 
             #Z3 Z6 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(3+9*pos, anc)
             self.qc.cx(6+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,0)
 
             #Z0 Z1 Z3 Z4 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(1+9*pos, anc)
             self.qc.cx(0+9*pos, anc)
             self.qc.cx(3+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,1)
         
             #Z4 Z5 Z7 Z8 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(4+9*pos, anc)
             self.qc.cx(7+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
             self.qc.cx(8+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,2)
 
             #Z2 Z5 Stabilizer:
             self.qc.reset(anc)
+            self.qc.id(anc)
             self.qc.cx(2+9*pos, anc)
             self.qc.cx(5+9*pos, anc)
-            # self.qc.id(anc)
+            self.qc.id(anc)
             self.qc.measure(anc,3)
             
             with self.qc.if_test((0,1)):             #6
@@ -1142,6 +1203,15 @@ class RotSurf9q:
                 with self.qc.if_test((2,1)):
                     with self.qc.if_test((3,0)):
                         self.qc.x(7+9*pos)
+
+    def qec2(self, pos: int):
+        self.qec(pos)
+        self.qec(pos)
+
+    def qec3(self, pos: int):
+        self.qec(pos)
+        self.qec(pos)
+        self.qec(pos)
 
     def qec_ideal(self, pos: int):
         self.qec_counter += 1
