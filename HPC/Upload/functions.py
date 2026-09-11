@@ -18,4 +18,4 @@ def gen_data(name):                           #code OG
 
     data = s.np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    s.np.savetxt("bigsteane_ftqec_lots{}.txt".format(name), data, delimiter=",")
+    s.np.savetxt("bigsteane_ftqec{}.txt".format(name), data, delimiter=",")

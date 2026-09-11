@@ -598,8 +598,8 @@ class BigSteane17q:
         self.sdg(pos)
         self.h(pos)
         self.h(pos)
-        if self.err:
-            self.ec(pos)
+        # if self.err:
+        #     self.ec(pos)
 
     def tdg(self, pos: int):
         self.h(pos)
@@ -624,8 +624,8 @@ class BigSteane17q:
         self.sdg(pos)
         self.h(pos)
         self.h(pos)
-        if self.err:
-            self.ec(pos)
+        # if self.err:
+        #     self.ec(pos)
 
     def u2(self, pos: int, gate: list):
         for i in gate:
