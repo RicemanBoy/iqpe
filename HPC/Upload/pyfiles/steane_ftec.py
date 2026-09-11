@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from qiskit_aer import AerSimulator
 
-from qiskit_aer.noise import (NoiseModel, pauli_error)
+from qiskit_aer.noise import (NoiseModel, pauli_error, depolarizing_error)
 
 from qiskit.circuit.library import UnitaryGate
 
@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec(0)
+                        self.flagFTec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -226,9 +226,10 @@ class Steane7q:
             p_x += p/2
             p_z += p/2
         noise_model = NoiseModel()
-        p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
-        p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
-        p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
+        p_error, p_error_2, p_error_3 = depolarizing_error(p,1), depolarizing_error(p,2) , depolarizing_error(p,3) 
+        # p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
+        # p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
+        # p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
@@ -337,7 +338,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec(pos=pos)
+            self.flagFTec(pos=pos)
 
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
@@ -421,7 +422,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec(pos=pos)
+            self.flagFTec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
@@ -1113,8 +1114,9 @@ class Steane7q:
                     self.qc.append(z_ideal, [6+7*pos])
 
     def readout(self, pos: int, shots: int, p = 0):
-        p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
-        p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
+        p_error, p_error_2 = depolarizing_error(p,1), depolarizing_error(p,2)
+        # p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
+        # p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
 
         noise_model = NoiseModel()
         noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "id", "t", "tdg"])  # Apply to single-qubit gates

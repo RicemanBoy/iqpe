@@ -77,7 +77,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                 rots = [k*0.5 for k in rots]
                 counter = 0
                 while True:
-                    if code == "steane17":
+                    if code == "bigsteane":
                         self = Steane17q(1)
 
                     self.err = qec
@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec(0)
+                        self.qec_ideal(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -359,7 +359,7 @@ class Steane17q:
             self.qc.h(i+17*pos)
 
         if self.err:
-            self.qec(pos=pos)
+            self.qec_ideal(pos=pos)
 
     def tdg_anc(self, pos = 0):
             anc = self.qc.num_qubits - 1
@@ -407,7 +407,7 @@ class Steane17q:
             self.qc.h(i+17*pos)
 
         if self.err:
-            self.qec(pos=pos)
+            self.qec_ideal(pos=pos)
         
     def u2(self, pos: int, gate: list):
         for i in gate:
@@ -429,7 +429,7 @@ class Steane17q:
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
         if self.err:
-            self.qec(0)
+            self.qec_ideal(0)
         self.u2(0, gate=gate)
 
     def qec(self, pos = 0):
