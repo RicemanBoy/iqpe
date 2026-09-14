@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec_ideal(0)
+                        self.qec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -312,7 +312,7 @@ class Steane17q:
         for i in range(17):
             self.qc.sdg(i+17*pos)
 
-    def t_anc(self, pos = 0):
+    def t(self, pos = 0):
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
         self.qc.h(anc)
@@ -330,11 +330,10 @@ class Steane17q:
             for i in range(17):
                 self.qc.s(i+17*pos)
 
-    def t(self, pos = 0):
-        for i in range(17):
-            self.qc.h(i+17*pos)
-            self.qc.h(i+17*pos)
-            self.qc.s(i+17*pos)
+    def t_ideal(self, pos = 0):
+        # self.h(pos=pos)
+        # self.h(pos=pos)
+        # self.s(pos=pos)
 
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
@@ -353,36 +352,34 @@ class Steane17q:
             for i in range(17):
                 self.qc.s(i+17*pos)
 
+        # self.sdg(pos=pos)
+        # self.h(pos=pos)
+        # self.h(pos=pos)
+
+        # if self.err:
+        #     self.qec(pos=pos)
+
+    def tdg(self, pos = 0):
+        anc = self.qc.num_qubits - 1
+        self.qc.reset(anc)
+        self.qc.h(anc), self.qc.tdg(anc)
+
+        self.qc.cx(0+17*pos, anc)
+        self.qc.cx(1+17*pos, anc)
+        self.qc.cx(2+17*pos, anc)
+        self.qc.cx(4+17*pos, anc)
+        self.qc.cx(6+17*pos, anc)
+
+        self.qc.measure(anc, 0)
+
         for i in range(17):
-            self.qc.sdg(i+17*pos)
-            self.qc.h(i+17*pos)
-            self.qc.h(i+17*pos)
-
-        if self.err:
-            self.qec_ideal(pos=pos)
-
-    def tdg_anc(self, pos = 0):
-            anc = self.qc.num_qubits - 1
-            self.qc.reset(anc)
-            self.qc.h(anc), self.qc.tdg(anc)
-    
-            self.qc.cx(0+17*pos, anc)
-            self.qc.cx(1+17*pos, anc)
-            self.qc.cx(2+17*pos, anc)
-            self.qc.cx(4+17*pos, anc)
-            self.qc.cx(6+17*pos, anc)
-    
-            self.qc.measure(anc, 0)
-    
-            for i in range(17):
                 with self.qc.if_test((0,1)):
                     self.qc.sdg(i+17*pos)
 
-    def tdg(self, pos = 0):
-        for i in range(17):
-            self.qc.h(i+17*pos)
-            self.qc.h(i+17*pos)
-            self.qc.s(i+17*pos)
+    def tdg_ideal(self, pos = 0):
+        # self.h(pos=pos)
+        # self.h(pos=pos)
+        # self.s(pos=pos)
 
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
@@ -401,13 +398,12 @@ class Steane17q:
             for i in range(17):
                 self.qc.sdg(i+17*pos)
 
-        for i in range(17):
-            self.qc.sdg(i+17*pos)
-            self.qc.h(i+17*pos)
-            self.qc.h(i+17*pos)
+        # self.sdg(pos=pos)
+        # self.h(pos=pos)
+        # self.h(pos=pos)
 
-        if self.err:
-            self.qec_ideal(pos=pos)
+        # if self.err:
+        #     self.qec(pos=pos)
         
     def u2(self, pos: int, gate: list):
         for i in gate:
@@ -429,7 +425,7 @@ class Steane17q:
     def cu_ramsey(self, gate: list):
         self.u2(0, gate=gate)
         if self.err:
-            self.qec_ideal(0)
+            self.qec(0)
         self.u2(0, gate=gate)
 
     def qec(self, pos = 0):
