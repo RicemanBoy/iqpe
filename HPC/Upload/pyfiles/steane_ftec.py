@@ -93,7 +93,7 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec_ideal(0)
+                        self.qec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
@@ -338,7 +338,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec_ideal(pos=pos)
+            self.qec(pos=pos)
 
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
@@ -422,7 +422,7 @@ class Steane7q:
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec_ideal(pos=pos)
+            self.qec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)

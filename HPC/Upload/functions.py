@@ -11,11 +11,11 @@ def gen_data(name):                           #code OG
     err, err_qec = [], []
 
     for r in p:  
-        y_list = bst.avg7_ramsey("bigsteane", 3, r, qec = False, k = 1)    
+        y_list = s.avg7_ramsey("steane", 3, r, qec = False, k = 1)    
         y.append(s.np.mean(y_list)), err.append(s.np.std(y_list))
-        y1_list = bst.avg7_ramsey("bigsteane", 3, r, qec = True, k = 1, post = False) 
+        y1_list = s.avg7_ramsey("steane", 3, r, qec = True, k = 1, post = False) 
         y_qec.append(s.np.mean(y1_list)), err_qec.append(s.np.std(y1_list))
 
     data = s.np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    s.np.savetxt("d5_steane_2qec{}.txt".format(name), data, delimiter=",")
+    s.np.savetxt("steane_OG_qec{}.txt".format(name), data, delimiter=",")
