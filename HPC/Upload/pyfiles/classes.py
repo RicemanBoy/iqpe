@@ -553,7 +553,7 @@ def avg7_repcode(code: str, distance: int, iter: int, noise: float, qec = False,
 
     return y_list
 
-def avg7_repcode_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+def avg7_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
     n = 15
     angle = np.linspace(0,1,n+2)
@@ -1080,9 +1080,9 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
                 if self.n == 3:
-                    self.qec_ideal(pos=targ)               #needed for FT
+                    self.qec(pos=targ)               #needed for FT
                 elif self.n == 5:
-                    self.qec5_ideal(pos=targ)
+                    self.qec5(pos=targ)
                 # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
