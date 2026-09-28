@@ -39,12 +39,6 @@ x_ideal = UnitaryGate(matrix_x)
 matrix_z = ([[1,0],[0,-1]])
 z_ideal = UnitaryGate(matrix_z)
 
-@dataclass
-class Command:
-    method: str
-    args: tuple
-    kwargs: dict
-
 
 def majority_values(n):
     threshold = n // 2 + 1
@@ -632,19 +626,11 @@ def avg7_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, 
 
     return y_list
 
-def avg7_repcode_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("HPC/Upload/unitary15_toffh.txt", "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("HPC/Upload/adjunitary15_toffh.txt", "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
     
     y = 0
     y_list, bruh1 = [], []
@@ -660,18 +646,16 @@ def avg7_repcode_ramsey_htoff(distance: int, iter: int, noise: float, qec = Fals
                     self.noise_model = self.__noise_model__(noise, bias)
                     self.err = qec
                     
-                    self.h(pos=0)
-                    self.prep_catalyst(0)       # once per circuit, never between gates
                     #############################
-                    for j in range(2**(iter-t-1)):
-                        self.cu_ramsey_htoff(a[2*o+1])
+                    for _ in range(2**(iter-t-1)):
+                        self.U_htoff(index=2*o+1)
+                        self.U_htoff(index=2*o+1)
                     ###############################
                     for l in rots:
                         if l == 0.25:
-                            self.sdg(pos=0)
+                            self.adj_ry_pi_2()
                         if l == 0.125:
-                            self.tdg(pos=0)
-                    self.h(pos=0)
+                            self.adj_ry_pi_4()
 
                     self.readout(pos=0, shots=1)
             
@@ -1054,6 +1038,28 @@ class RepCode_z:      #Phaseflip protected repetition code
         i = np.random.randint(0,self.n-1)
         self.qc.rx(-np.pi/4, self.n*pos+i)
 
+    def adj_ry_pi_2(self):
+        #implements ry(-pi/2). more or less accurate
+        [[('X', 2), ('X', 1), ('CCX', 1, 2, 0), ('X', 2), ('X', 1), ('H', 0)]]
+        self.x(pos=2), self.x(pos=1)
+        self.toff(1,2,0)
+        self.x(2), self.x(1)
+        self.h(0)
+
+    def adj_ry_pi_4(self):
+        #implements ry(-pi/4) with 1e-2 error, error is defined over the algorithm
+        lists = [('X', 2), ('CCX', 0, 2, 1), ('X', 2), ('X', 1), ('X', 0), ('CCX', 0, 1, 2), ('X', 1), ('X', 0), ('H', 1), ('CCX', 1, 2, 0), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('H', 2), ('X', 2), ('CCX', 0, 2, 1), ('X', 2), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('H', 2), ('X', 2), ('CCX', 0, 2, 1), ('X', 2), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 0), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 1, 2), ('H', 2), ('X', 2), ('CCX', 0, 2, 1), ('X', 2), ('CCX', 1, 2, 0), ('X', 0), ('CCX', 0, 1, 2), ('X', 0), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('H', 0), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 2), ('X', 0), ('CCX', 0, 2, 1), ('X', 0), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('H', 0), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 2), ('X', 2), ('X', 1), ('CCX', 1, 2, 0), ('X', 2), ('X', 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('X', 0), ('CCX', 0, 2, 1), ('X', 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 1, 2, 0), ('CCX', 0, 2, 1), ('H', 0), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('X', 1), ('CCX', 1, 2, 0), ('X', 1), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('CCX', 0, 2, 1), ('CCX', 1, 2, 0), ('CCX', 0, 2, 1), ('H', 1), ('X', 2), ('X', 1), ('CCX', 1, 2, 0), ('X', 2), ('X', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CCX', 0, 2, 1), ('CCX', 0, 1, 2), ('H', 2), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2)]
+
+        for i in lists:
+            if i[0] == "X":
+                self.x(pos=i[1])
+            elif i[0] == "H":
+                self.h(pos=i[1])
+            elif i[0] == "Z":
+                self.z(pos=i[1])
+            elif i[0] == "CCX":
+                self.toff(i[1],i[2],i[3])
+
     def s(self, pos: int):
         self.h(pos=pos)
         self.sqrt_x(pos=pos)
@@ -1079,10 +1085,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                if self.n == 3:
-                    self.qec(pos=targ)               #needed for FT
-                elif self.n == 5:
-                    self.qec5(pos=targ)
+                self.qec(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
@@ -1111,57 +1114,26 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.sqrt_x(pos=pos)
             if i == "sdg_x":
                 self.sqrt_xdg(pos=pos)
+  
+    def U_htoff(self, index=0):             #latest solution, this implements sqrt(U), so we have to apply this twice!
+        with open("htoff15_1e-2.txt", "r") as f:
+            htoff_decomp = [
+                [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
+                for item in line.strip().split(",")]
+                for line in f
+            ]
+        for i in htoff_decomp[index]:
+            if i[0] == "X":
+                self.x(pos=i[1])
 
-    def prep_catalyst(self, pos: int):
-        ####### Prepare catalyst state: [1/sqrt(2)]*|00>  + (1/2)*(|01> - |11>)
-        # Call this ONCE, before the first u2_htoff.  The catalyst on pos+1, pos+2 carries
-        # the imaginary part of every amplitude and stays entangled with the data qubit,
-        # so resetting or re-preparing it between gates destroys the accumulated phase.
+            elif i[0] == "H":
+                self.h(pos=i[1])
 
-        for i in range(self.n*2):
-            self.qc.reset(self.n*(self.logicalq-2)+i)
+            elif i[0] == "Z":
+                self.z(pos=i[1])
 
-        self.h(pos+2)
-
-        self.sqrt_xdg(pos+1)
-        self.h(pos+1)
-        self.sqrt2_xdg(pos+1)
-        self.h(pos+1)
-
-        self.cnot(control=pos+2, target=pos+1)
-
-        self.h(pos+1)
-        self.sqrt2_x(pos+1)
-        self.h(pos+1)
-        self.sqrt_x(pos+1)
-
-        self.h(pos+2)
-        self.cnot(control=pos+1, target=pos+2)
-        self.h(pos+2)
-        #####################################################
-
-    def u2_htoff(self, pos: int, gate: list):
-        # pos is the data qubit; pos+1 and pos+2 are the catalyst register and must
-        # already hold |c_R>, prepared once by prep_catalyst().  Do not reset them here.
-        for i in gate:
-            if i == "z0":
-                self.z(pos=pos)
-            elif i == "h0":
-                self.h(pos=pos)
-            elif i == "h1":
-                self.h(pos=pos+1)
-            elif i == "h2":
-                self.h(pos=pos+2)
-            elif i == "toff":
-                self.toff(control1=pos, control2=pos+1, targ=pos+2)  
-            elif i == "toff(0_2)":
-                self.toff(control1=pos, control2=pos+2, targ=pos+1)
-            elif i == "cnot(0_1)":
-                self.cnot(control = pos, target = pos+1)
-            elif i == "cnot(0_2)":
-                self.cnot(control = pos, target = pos+2)
-            else:
-                print("Error, forgot: ", i)
+            elif i[0] == "CCX":
+                self.toff(i[1],i[2],i[3])
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
