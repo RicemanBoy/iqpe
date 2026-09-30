@@ -5,7 +5,7 @@ import pyfiles.bigsteane_ftec as bstf
 import pyfiles.classes as c
 
 def gen_data(name):                           #code OG
-    p = s.np.linspace(0.00,0.005,3)
+    p = s.np.linspace(0.00,0.001,10)[:2]
     # p = s.np.linspace(0.0015, 0.003, 3)
     # p = [np.linspace(0,0.005,6)[2]]
     y, y_qec = [],[]
@@ -19,4 +19,4 @@ def gen_data(name):                           #code OG
 
     data = s.np.array((p, y, y_qec, err, err_qec))
     #data = np.array((p, y, err))
-    s.np.savetxt("d5_htoff_infbias{}.txt".format(name), data, delimiter=",")
+    s.np.savetxt("d5_htoff_infbias_0{}.txt".format(name), data, delimiter=",")
