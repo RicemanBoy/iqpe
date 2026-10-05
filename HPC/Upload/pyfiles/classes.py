@@ -1424,29 +1424,7 @@ class RepCode_z:      #Phaseflip protected repetition code
     def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
-
-        # for i in range(self.n-1):           #general single qubit correction for arbitrary n
-        #     self.qc.reset(anc)
-        #     self.qc.append(h_ideal, [anc])
-        #     self.qc.append(cx_ideal, [self.n*pos + i, anc])
-        #     self.qc.append(cx_ideal, [self.n*pos + i + 1, anc])
-        #     self.qc.append(h_ideal, [anc])
-        #     self.qc.measure(anc, self.qecc[i])
-
-        # with self.qc.if_test((self.qecc[0], 1)):                #first
-        #     with self.qc.if_test((self.qecc[1], 0)):               #second
-        #         self.qc.append(z_ideal, [self.n*pos])
         
-        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
-        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
-        #         self.qc.append(z_ideal, [self.n*pos+self.n-1])
-
-        # for i in range(self.n-2):       
-        #     with self.qc.if_test((self.qecc[i], 1)):
-        #         with self.qc.if_test((self.qecc[i+1], 1)):
-        #             self.qc.append(z_ideal, [self.n*pos + i + 1])
-        
-
         #specific case for n = 3
         self.qc.reset(anc)      
         self.qc.append(h_ideal, [anc])

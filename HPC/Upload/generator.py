@@ -1,4 +1,4 @@
-N=400
+N=200
 
 for i in range(N):
     file=open('{}.py'.format(i), 'a')
@@ -10,7 +10,7 @@ for i in range(N):
 for i in range(N):
     file=open('job{}.script'.format(i),'a')
     file.write('#!/bin/bash -l \n')
-    file.write('#SBATCH --ntasks=2 \n')
+    file.write('#SBATCH --ntasks=16 \n')
     file.write('#SBATCH --time=23:59:59 \n')
     file.write('#SBATCH --job-name=MScDustin{} \n'.format(i))
     file.write('#SBATCH --export=NONE \n')
@@ -23,5 +23,6 @@ file=open('sc.script','a')
 file.write('#! /bin/bash')
 for i in range(N):
     file.write('\n sbatch.tinyfat job{}.script'.format(i))
+    #file.write('\n sbatch.woody job{}.script'.format(i))   #maybe use this wenn memory kein limiting factor ist
 file.close()
 
