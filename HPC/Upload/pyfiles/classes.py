@@ -854,7 +854,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec(pos=targ)               #needed for FT
+                self.qec_ideal(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
