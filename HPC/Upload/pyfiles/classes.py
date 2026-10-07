@@ -1,6 +1,7 @@
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3, qasm2, qpy
 from qiskit.visualization import plot_histogram
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 from dataclasses import dataclass
@@ -638,42 +639,37 @@ def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1
         for o in range(7):
             bitstring = ""
             rots = []
+            start = time.perf_counter()
             for t in range(iter):
                 rots = [k*0.5 for k in rots]
-                counter = 0
-                while True:
-                    self = RepCode_z(distance, 3)
-                    self.noise_model = self.__noise_model__(noise, bias)
-                    self.err = qec
-                    
-                    #############################
-                    for _ in range(2**(iter-t-1)):
-                        self.U_htoff(index=2*o+1)
-                        self.U_htoff(index=2*o+1)
-                    ###############################
-                    for l in rots:
-                        if l == 0.25:
-                            self.adj_ry_pi_2()
-                        if l == 0.125:
-                            self.adj_ry_pi_4()
+                self = RepCode_z(distance, 3)
+                self.noise_model = self.__noise_model__(noise, bias)
+                self.err = qec
+                
+                #############################
+                for _ in range(2**(iter-t-1)):
+                    self.U_htoff(index=2*o+1)
+                    self.U_htoff(index=2*o+1)
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        self.adj_ry_pi_2()
+                    if l == 0.125:
+                        self.adj_ry_pi_4()
 
-                    self.readout(pos=0, shots=1)
-            
-                    if self.zeros == 1:
-                        bitstring += "0"
-                        break
-                    if self.ones == 1:
-                        bitstring += "1"
-                        rots.append(0.5)
-                        break
-                    counter += 1
-                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(2*o+1, noise*100, t, counter))
-                    del self
+                self.readout(pos=0, shots=1)
+        
+                if self.zeros == 1:
+                    bitstring += "0"
+                if self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
             bitstring = bitstring[::-1]
             hmm = convert(bitstring)
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
-            print("Performance {}for angle {}: ".format("(QEC) " if qec else "", 2*o+1), diff)
+            elapsed = time.perf_counter() - start
+            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed))
             bruh1.append(diff), y_list.append(diff)
     y = y/(7*k)
     arg = 0
@@ -702,7 +698,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self._recording = False
         ##################################################################################
 
-        qr = QuantumRegister(n*(logical_q+2)+3, "q")
+        qr = QuantumRegister(n*(logical_q+2)+1, "q")
         self.qc = QuantumCircuit(qr)
 
         self.qecc = ClassicalRegister(n)
