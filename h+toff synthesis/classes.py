@@ -627,7 +627,33 @@ def avg7_ramsey(code: str, distance: int, iter: int, noise: float, qec = False, 
 
     return y_list
 
-def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = ""):       #only exact angles!  
+def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, path = "", short=False):       #only exact angles!  
+    """
+    Simulates the new iQPE Circuit.
+
+    Parameters
+    ----------
+    distance : int
+        Distance of the phaseflip code. Choose either 3 or 5, above will likely not run due to memory reuqirements.
+    iter : int
+        Amount of iterations of iQPE. Always stick to <3, since the Unitarys are not build for more precision.
+    noise : float
+        Noiserate of the simulation. Stochastic Pauli Noise is used.
+    qec : bool
+        De-/activates QEC for the simulation.
+    k : int
+        Shots
+    bias : float
+        Noisebias of the qubits. Default set to zero, i.e. no bias. Positive bias --> p_x > p_z, negative bias --> p_z > p_x
+    short : bool
+        True implements U of each angle, False implements sqrt(U) twice. The False option is an artifact of the original iQPE Circuit where implementing of sqrt(U) was necessary due to the decomp. of controlled-U.
+
+    Returns
+    -------
+    list
+        Performance for each angle, i.e. the distance to the desired angle.
+    """
+    
     n = 15
     angle = np.linspace(0,1,n+2)
     angle = np.delete(angle, [n+1])
@@ -648,8 +674,7 @@ def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1
                 
                 #############################
                 for _ in range(2**(iter-t-1)):
-                    self.U_htoff(index=2*o+1)
-                    self.U_htoff(index=2*o+1)
+                    self.U_htoff(index=2*o+1, short=short)
                 ###############################
                 for l in rots:
                     if l == 0.25:
@@ -681,6 +706,84 @@ def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1
 
     return y_list
 
+def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, short = False):       #only exact angles!  
+    """
+    Simulates the new iQPE Circuit.
+
+    Parameters
+    ----------
+    distance : int
+        Distance of the phaseflip code. Choose either 3 or 5, above will likely not run due to memory reuqirements.
+    iter : int
+        Amount of iterations of iQPE. Always stick to <3, since the Unitarys are not build for more precision.
+    noise : float
+        Noiserate of the simulation. Stochastic Pauli Noise is used.
+    qec : bool
+        De-/activates QEC for the simulation.
+    k : int
+        Shots
+    bias : float
+        Noisebias of the qubits. Default set to zero, i.e. no bias. Positive bias --> p_x > p_z, negative bias --> p_z > p_x
+    short : bool
+        True implements U of each angle, False implements sqrt(U) twice. The False option is an artifact of the original iQPE Circuit where implementing of sqrt(U) was necessary due to the decomp. of controlled-U.
+
+    Returns
+    -------
+    list
+        Performance for each angle, i.e. the distance to the desired angle.
+    """
+    
+    n = 15
+    angle = np.linspace(0,1,n+2)
+    angle = np.delete(angle, [n+1])
+    angle = np.delete(angle, [0])
+    
+    y = 0
+    y_list, bruh1 = [], []
+    for m in range(k):
+        for o in range(7):
+            bitstring = ""
+            rots = []
+            start = time.perf_counter()
+            for t in range(iter):
+                rots = [k*0.5 for k in rots]
+                self = RepCode_z(distance, 3)
+                self.noise_model = self.__noise_model__(noise, bias)
+                self.err = qec
+                self.h(pos=0)
+                #############################
+                for _ in range(2**(iter-t-1)):
+                    self.U_RZ_htoff(index=2*o+1, short=short)
+                ###############################
+                for l in rots:
+                    if l == 0.25:
+                        self.adj_rz_pi_2()
+                    if l == 0.125:
+                        self.adj_rz_pi_4()
+                self.h(pos=0)
+                self.readout(pos=0, shots=1)
+        
+                if self.zeros == 1:
+                    bitstring += "0"
+                if self.ones == 1:
+                    bitstring += "1"
+                    rots.append(0.5)
+                del self
+            bitstring = bitstring[::-1]
+            hmm = convert(bitstring)
+            diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
+            y += diff
+            elapsed = time.perf_counter() - start
+            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed))
+            bruh1.append(diff), y_list.append(diff)
+    y = y/(7*k)
+    arg = 0
+    for i in range(len(bruh1)):
+        arg += (y-bruh1[i])**2
+    sigma = ((1/(k*n))*arg)**0.5
+    sigma = sigma/((k*n)**0.5)
+
+    return y_list
 
 class RepCode:      #Bitflip protected repetition code
     def __init__(self, n: int, logical_q: int):
@@ -1058,6 +1161,30 @@ class RepCode_z:      #Phaseflip protected repetition code
             elif i[0] == "CX":
                 self.cnot(i[1],i[2])
 
+    def adj_rz_pi_2(self):
+        #implements rz(-pi/2). more or less accurate
+        [('CX', 0, 1), ('CCX', 0, 1, 2), ('Z', 2), ('CCX', 0, 1, 2)]
+        self.cnot(0,1)
+        self.toff(0,1,2)
+        self.z(2)
+        self.toff(0,1,2)
+
+    def adj_rz_pi_4(self):
+        #implements rz(-pi/4) with 1e-2 error, error is defined over the algorithm
+        lists = [('CCX', 0, 1, 2), ('CX', 0, 2), ('H', 1), ('CCX', 0, 1, 2), ('CX', 2, 1), ('CCX', 1, 2, 0), ('H', 1), ('CX', 2, 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('CX', 0, 1), ('CX', 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CX', 2, 1), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CX', 0, 1), ('H', 1), ('CX', 0, 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('CX', 2, 1), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CX', 0, 1), ('CX', 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 1, 2, 0), ('CCX', 0, 1, 2), ('CX', 0, 1), ('H', 1), ('CCX', 0, 1, 2), ('CX', 2, 1), ('CCX', 1, 2, 0), ('H', 1), ('CX', 0, 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('H', 1), ('CCX', 0, 1, 2), ('CCX', 1, 2, 0), ('CX', 0, 1)]
+
+        for i in lists:
+            if i[0] == "X":
+                self.x(pos=i[1])
+            elif i[0] == "H":
+                self.h(pos=i[1])
+            elif i[0] == "Z":
+                self.z(pos=i[1])
+            elif i[0] == "CCX":
+                self.toff(i[1],i[2],i[3])
+            elif i[0] == "CX":
+                self.cnot(i[1],i[2])
+
     def s(self, pos: int):
         self.h(pos=pos)
         self.sqrt_x(pos=pos)
@@ -1113,30 +1240,107 @@ class RepCode_z:      #Phaseflip protected repetition code
             if i == "sdg_x":
                 self.sqrt_xdg(pos=pos)
   
-    def U_htoff(self, index=0):             #latest solution, this implements sqrt(U), so we have to apply this twice!
-        with open("htoffcxbeam64_15_1e-2.txt", "r") as f:
-            htoff_decomp = [
-                [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
-                for item in line.strip().split(",")]
-                for line in f
-            ]
-        for i in htoff_decomp[index]:
-            if i[0] == "X":
-                self.x(pos=i[1])
+    def U_RZ_htoff(self, index=0, short=False):             #latest solution, this implements sqrt(U), so we have to apply this twice!
+        if not short:
+            with open("rz_htoffcxbeam64_15_1e-2.txt", "r") as f:
+                htoff_decomp = [
+                    [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
+                    for item in line.strip().split(",")]
+                    for line in f
+                ]
+            for _ in range(2):
+                for i in htoff_decomp[index]:
+                    if i[0] == "X":
+                        self.x(pos=i[1])
 
-            elif i[0] == "H":
-                self.h(pos=i[1])
+                    elif i[0] == "H":
+                        self.h(pos=i[1])
 
-            elif i[0] == "Z":
-                self.z(pos=i[1])
+                    elif i[0] == "Z":
+                        self.z(pos=i[1])
 
-            elif i[0] == "CCX":
-                self.toff(i[1],i[2],i[3])
+                    elif i[0] == "CCX":
+                        self.toff(i[1],i[2],i[3])
 
-            elif i[0] == "CX":
-                self.cnot(i[1],i[2])
-            else:
-                print("MISSING GATE")
+                    elif i[0] == "CX":
+                        self.cnot(i[1],i[2])
+                    else:
+                        print("MISSING GATE")
+        else:
+            with open("rz_htoffcxbeam64_15_U2_1e-2.txt", "r") as f:
+                htoff_decomp = [
+                    [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
+                    for item in line.strip().split(",")]
+                    for line in f
+                ]
+            for i in htoff_decomp[index]:
+                if i[0] == "X":
+                    self.x(pos=i[1])
+
+                elif i[0] == "H":
+                    self.h(pos=i[1])
+
+                elif i[0] == "Z":
+                    self.z(pos=i[1])
+
+                elif i[0] == "CCX":
+                    self.toff(i[1],i[2],i[3])
+
+                elif i[0] == "CX":
+                    self.cnot(i[1],i[2])
+                else:
+                    print("MISSING GATE")
+
+    def U_htoff(self, index=0, short=False):             #latest solution, this implements sqrt(U), so we have to apply this twice!
+        if not short:
+            with open("htoffcxbeam64_15_1e-2.txt", "r") as f:
+                htoff_decomp = [
+                    [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
+                    for item in line.strip().split(",")]
+                    for line in f
+                ]
+            for _ in range(2):
+                for i in htoff_decomp[index]:
+                    if i[0] == "X":
+                        self.x(pos=i[1])
+
+                    elif i[0] == "H":
+                        self.h(pos=i[1])
+
+                    elif i[0] == "Z":
+                        self.z(pos=i[1])
+
+                    elif i[0] == "CCX":
+                        self.toff(i[1],i[2],i[3])
+
+                    elif i[0] == "CX":
+                        self.cnot(i[1],i[2])
+                    else:
+                        print("MISSING GATE")
+        else:
+            with open("htoffcxbeam64_15_U2_1e-2.txt", "r") as f:
+                htoff_decomp = [
+                    [tuple(item.split("_")[0:1] + [int(x) for x in item.split("_")[1:]])
+                    for item in line.strip().split(",")]
+                    for line in f
+                ]
+            for i in htoff_decomp[index]:
+                if i[0] == "X":
+                    self.x(pos=i[1])
+
+                elif i[0] == "H":
+                    self.h(pos=i[1])
+
+                elif i[0] == "Z":
+                    self.z(pos=i[1])
+
+                elif i[0] == "CCX":
+                    self.toff(i[1],i[2],i[3])
+
+                elif i[0] == "CX":
+                    self.cnot(i[1],i[2])
+                else:
+                    print("MISSING GATE")
 
     def cu(self, gate: list, adjgate: list):
         self.u2(0, gate=gate)
