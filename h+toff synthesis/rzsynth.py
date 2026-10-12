@@ -46,6 +46,11 @@ table over all 8! basis permutations, minimising (#CCX, #gates); the move at
 each level minimises CCX first.  beam=n replaces the greedy choice by a beam
 search over reduction paths.  H count is always exactly k.
 
+RESIDUE VARIANTS (tries=n).  The error depends only on p, q and R, not on
+how R is written as r1^2+r2^2+r3^2+r4^2.  tries=n synthesizes n different
+residues (other four-square decompositions, orders and signs) and keeps the
+circuit with fewest CCX, then fewest gates -- as `tries` in rysynth.
+
 DATA-ROW PAIRING RULE (pair_data_rows=True, the default).  The "data rows"
 are the two rows carrying the data=0 columns |0>, |2> (rows 0 and 2 at the
 start).  Every move must pair these two rows with each other; the other six
@@ -181,11 +186,10 @@ def _residue_variant(r, idx):
     return [(-v if (signs >> i) & 1 else v) for i, v in enumerate(out)]
 
 
-def find_columns(theta, eps, kmax=400, arrangement=0):
-    """Integer 8x4 isometry W (W^T W = 2^k I, k even) within eps of the target.
-
-    Returns (W, k, bound); bound is the exact sup-norm error of the encoded map.
-    """
+def _round_pq(theta, eps, kmax=400):
+    """Rounding step: smallest even k and integers p, q (signs applied) with
+    error <= eps.  Returns (k, p, q, R, bound) where R = 2^k - p^2 - q^2 is
+    the residue that four squares r1..r4 must absorb."""
     c, s = math.cos(theta), math.sin(theta)
     ac, as_ = abs(c), abs(s)
     sc = 1 if c >= 0 else -1
@@ -215,17 +219,96 @@ def find_columns(theta, eps, kmax=400, arrangement=0):
         if best is None or best[0] > eps:
             continue
         err, p, q = best
-        r = _residue_variant(four_squares(N - p * p - q * q), arrangement)
-        p, q = sc * p, ss * q
-        W = [[0] * 4 for _ in range(8)]
-        W[0][0] = rad                                  # |0> -> |0>
-        W[2][2] = rad                                  # |2> -> |2>
-        u = [0, p, 0, q, r[0], r[1], r[2], r[3]]       # image of |1>
-        v = [0, -q, 0, p, -r[1], r[0], -r[3], r[2]]    # image of |3>
-        for i in range(8):
-            W[i][1], W[i][3] = u[i], v[i]
-        return W, k, err
+        return k, sc * p, ss * q, N - p * p - q * q, err
     raise RuntimeError("no solution found; increase kmax")
+
+
+def build_W(k, p, q, r):
+    """Assemble the 8x4 integer isometry from p, q and a residue r1..r4."""
+    rad = 1 << (k // 2)
+    W = [[0] * 4 for _ in range(8)]
+    W[0][0] = rad                                      # |0> -> |0>
+    W[2][2] = rad                                      # |2> -> |2>
+    u = [0, p, 0, q, r[0], r[1], r[2], r[3]]           # image of |1>
+    v = [0, -q, 0, p, -r[1], r[0], -r[3], r[2]]        # image of |3>
+    for i in range(8):
+        W[i][1], W[i][3] = u[i], v[i]
+    return W
+
+
+def find_columns(theta, eps, kmax=400, arrangement=0):
+    """Integer 8x4 isometry W (W^T W = 2^k I, k even) within eps of the target.
+
+    Returns (W, k, bound); bound is the exact sup-norm error of the encoded map.
+    """
+    k, p, q, R, err = _round_pq(theta, eps, kmax)
+    r = _residue_variant(four_squares(R), arrangement)
+    return build_W(k, p, q, r), k, err
+
+
+_REPS_CACHE = {}
+
+
+def _small_four_square_reps(R):
+    """All decompositions R = a^2+b^2+c^2+d^2 with a>=b>=c>=d>=0 (R <= 20000)."""
+    if R not in _REPS_CACHE:
+        out = []
+        for a in range(isqrt(R), -1, -1):
+            ra = R - a * a
+            if 3 * a * a < ra:
+                break
+            for b in range(min(a, isqrt(ra)), -1, -1):
+                rb = ra - b * b
+                if 2 * b * b < rb:
+                    break
+                for c in range(min(b, isqrt(rb)), -1, -1):
+                    d2 = rb - c * c
+                    if c * c < d2:
+                        break
+                    d = isqrt(d2)
+                    if d * d == d2 and d <= c:
+                        out.append((a, b, c, d))
+        _REPS_CACHE[R] = out
+    return _REPS_CACHE[R]
+
+
+def _four_square_reps(R, n, rng):
+    """Up to n distinct (sorted) four-square decompositions of R."""
+    if R <= 20000:
+        reps = _small_four_square_reps(R)
+        return rng.sample(reps, min(n, len(reps)))
+    out, seen = [], set()
+    for _ in range(30 * n):
+        t = tuple(sorted(four_squares(R, random.Random(rng.random())), reverse=True))
+        if t not in seen:
+            seen.add(t)
+            out.append(t)
+            if len(out) >= n:
+                break
+    return out
+
+
+def residue_variants(R, n, seed=0):
+    """n distinct residues (r1..r4) with r1^2+..+r4^2 = R; every one gives the
+    SAME error.  Variant 0 is the default residue (what tries=1 uses); the
+    others mix different four-square decompositions of R with random order
+    and signs."""
+    base = list(four_squares(R))
+    out, seen = [base], {tuple(base)}
+    if n <= 1:
+        return out
+    rng = random.Random(seed)
+    reps = _four_square_reps(R, n, rng) or [tuple(base)]
+    attempts = 0
+    while len(out) < n and attempts < 200 * n:
+        attempts += 1
+        r = list(rng.choice(reps))
+        rng.shuffle(r)
+        r = [x * rng.choice((1, -1)) for x in r]
+        if tuple(r) not in seen:
+            seen.add(tuple(r))
+            out.append(r)
+    return out
 
 
 # ======================================================================
@@ -615,7 +698,8 @@ def optimize(gates):
 # ======================================================================
 
 def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
-                 peephole=True, max_arrangements=48, pair_data_rows=True):
+                 peephole=True, max_arrangements=48, pair_data_rows=True,
+                 tries=1, seed=0):
     """Approximate M_P(theta) = Phi(diag(1, e^{i theta})) to precision eps.
 
     theta    : rotation angle (any real number).
@@ -631,20 +715,45 @@ def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
     pair_data_rows : True (default) -> every Hadamard step pairs the two data
                rows with each other; the reduction provably never gets
                stuck.  False -> previous behaviour (any legal move).
+    tries    : number of residues r1..r4 to try (default 1 = previous
+               behaviour).  All have IDENTICAL error (same p, q and
+               R = r1^2+..+r4^2); they differ in the four-square
+               decomposition of R and in order/signs.  Each is synthesized and
+               the circuit with fewest CCX, then fewest gates, is returned.
+               Runtime grows ~linearly with tries.
+    seed     : random seed for the residue variants (reproducible results).
 
     Returns a dict with 'gates' (time order), 'counts', 'k', 'W', 'bound',
     'error' (computed from the final circuit), and the options used.
     """
     theta = math.remainder(theta, 2 * math.pi)
-    for arr in range(max_arrangements):
-        W, k, bound = find_columns(theta, eps, arrangement=arr)
-        raw = synthesize_isometry(W, k, allow_cx=allow_cx, beam=beam, branch=branch,
-                                  pair_data_rows=pair_data_rows)
-        if raw is not None:
-            break
+    if not (isinstance(tries, int) and not isinstance(tries, bool) and tries >= 1):
+        raise ValueError("tries must be an int >= 1; got %r" % (tries,))
+    k, p, q, R, bound = _round_pq(theta, eps)
+    best = None
+    for idx, r in enumerate(residue_variants(R, tries, seed)):
+        Wc = build_W(k, p, q, r)
+        raw_c = synthesize_isometry(Wc, k, allow_cx=allow_cx, beam=beam,
+                                    branch=branch, pair_data_rows=pair_data_rows)
+        if raw_c is None:
+            continue
+        g = optimize(raw_c) if peephole else raw_c
+        if best is None or _cost(g) < best[0]:
+            best = (_cost(g), g, Wc, r, idx)
+    arr = 0
+    if best is None:                       # only possible with pair_data_rows=False
+        for arr in range(1, max_arrangements):
+            W, k, bound = find_columns(theta, eps, arrangement=arr)
+            raw = synthesize_isometry(W, k, allow_cx=allow_cx, beam=beam, branch=branch,
+                                      pair_data_rows=pair_data_rows)
+            if raw is not None:
+                break
+        else:
+            raise RuntimeError("reduction stuck for every residue arrangement")
+        gates = optimize(raw) if peephole else raw
+        r_used, try_index = [W[i][1] for i in range(4, 8)], None
     else:
-        raise RuntimeError("reduction stuck for every residue arrangement")
-    gates = optimize(raw) if peephole else raw
+        _, gates, W, r_used, try_index = best
     width = _beam_width(beam)
     # rysynth-compatible keys: the two ROUNDED columns (data = 1 block),
     # v0 = image of |1> (data=1, Re), v1 = image of |3> (data=1, Im).
@@ -656,7 +765,9 @@ def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
             'bound': bound, 'error': encoded_error(gates, theta),
             'theta': theta, 'eps': eps, 'allow_cx': bool(allow_cx),
             'beam': width, 'branch': branch, 'arrangement': arr,
-            'pair_data_rows': bool(pair_data_rows)}
+            'pair_data_rows': bool(pair_data_rows),
+            'tries': tries, 'seed': seed, 'residue': list(r_used),
+            'try_index': try_index}
 
 
 # ======================================================================
