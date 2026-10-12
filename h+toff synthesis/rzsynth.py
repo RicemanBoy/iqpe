@@ -46,6 +46,18 @@ table over all 8! basis permutations, minimising (#CCX, #gates); the move at
 each level minimises CCX first.  beam=n replaces the greedy choice by a beam
 search over reduction paths.  H count is always exactly k.
 
+DATA-ROW PAIRING RULE (pair_data_rows=True, the default).  The "data rows"
+are the two rows carrying the data=0 columns |0>, |2> (rows 0 and 2 at the
+start).  Every move must pair these two rows with each other; the other six
+rows are paired among themselves.  This keeps the data=0 columns on two rows
+with entries +-2^floor(k/2) and the data=1 columns zero there, so for k >= 2
+parity vectors only see the data=1 columns and the R_y counting argument
+applies to the remaining six rows.  Hence a legal move PROVABLY exists at
+every level and the reduction always reaches k = 0.  Without the rule
+(pair_data_rows=False, the previous behaviour) the reduction can in principle
+reach states where no Hadamard is legal; such branches are dropped and, if
+all die, a different residue arrangement is tried.
+
 NOTE: M_P(theta) is reproduced exactly only for theta a multiple of pi/2.
 (Even theta = pi/4 needs entries 1 and 1/sqrt2 in the same matrix, which no
 Toffoli-Hadamard circuit has.)  Every other angle is approximated to eps.
@@ -345,11 +357,31 @@ def _table(allow_cx):
 # reduction moves
 # ======================================================================
 
-def _moves(W, table):
-    """All (cost, j, perm) such that perm followed by H_j lowers the lde."""
+def data_rows(W):
+    """Rows on which the data=0 columns (|0>, |2>) are nonzero."""
+    return tuple(i for i in range(8) if W[i][0] != 0 or W[i][2] != 0)
+
+
+def _pairing_invariant(W):
+    """True if the data=0 columns live on exactly two rows and the data=1
+    columns (|1>, |3>) vanish there -- the precondition of the pairing rule."""
+    d = data_rows(W)
+    return len(d) == 2 and all(W[i][1] == 0 and W[i][3] == 0 for i in d)
+
+
+def _moves(W, table, pair_data_rows=False):
+    """All (cost, j, perm) such that perm followed by H_j lowers the lde.
+
+    With pair_data_rows=True only moves that pair the two data rows with each
+    other are returned (the rule is skipped if W does not satisfy its
+    precondition, e.g. for a user-supplied isometry).
+    """
     lab = [tuple(v & 1 for v in r) for r in W]
+    need = data_rows(W) if (pair_data_rows and _pairing_invariant(W)) else None
     out = []
     for key, lst in table.options.items():
+        if need is not None and need not in key:
+            continue
         if all(lab[a] == lab[b] for a, b in key):
             out.extend(lst)
     out.sort()
@@ -482,10 +514,14 @@ def _branch_width(branch):
     raise ValueError("branch must be an int >= 1; got %r" % (branch,))
 
 
-def synthesize_isometry(W, k, allow_cx=False, beam=None, branch=4, finalists=8):
+def synthesize_isometry(W, k, allow_cx=False, beam=None, branch=4, finalists=8,
+                        pair_data_rows=True):
     """Circuit (time order) whose input columns equal W / sqrt(2)^k exactly.
 
-    Returns None if every explored path got stuck (never observed in tests).
+    pair_data_rows : enforce the data-row pairing rule (see module docstring).
+        For a W from find_columns this guarantees the reduction never gets
+        stuck.  Returns None only if every explored path got stuck, which can
+        happen only with pair_data_rows=False (never observed in tests).
     """
     table = _table(allow_cx)
     width = _beam_width(beam)
@@ -505,7 +541,7 @@ def synthesize_isometry(W, k, allow_cx=False, beam=None, branch=4, finalists=8):
                 done.append(((cost[0] + tc[0], cost[1] + tc[1]), nid, tg))
                 continue
             seen, taken = set(), 0
-            for mc, j, p in _moves(V, table):
+            for mc, j, p in _moves(V, table, pair_data_rows):
                 V2, k2 = _apply_move(V, kv, j, p)
                 key2 = _key(V2)
                 if key2 in seen:
@@ -579,7 +615,7 @@ def optimize(gates):
 # ======================================================================
 
 def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
-                 peephole=True, max_arrangements=48):
+                 peephole=True, max_arrangements=48, pair_data_rows=True):
     """Approximate M_P(theta) = Phi(diag(1, e^{i theta})) to precision eps.
 
     theta    : rotation angle (any real number).
@@ -592,6 +628,9 @@ def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
                True         -> beam = DEFAULT_BEAM (16).
     branch   : moves expanded per kept state in beam mode (default 4).
     peephole : run the exact gate-cancellation pass on the result.
+    pair_data_rows : True (default) -> every Hadamard step pairs the two data
+               rows with each other; the reduction provably never gets
+               stuck.  False -> previous behaviour (any legal move).
 
     Returns a dict with 'gates' (time order), 'counts', 'k', 'W', 'bound',
     'error' (computed from the final circuit), and the options used.
@@ -599,7 +638,8 @@ def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
     theta = math.remainder(theta, 2 * math.pi)
     for arr in range(max_arrangements):
         W, k, bound = find_columns(theta, eps, arrangement=arr)
-        raw = synthesize_isometry(W, k, allow_cx=allow_cx, beam=beam, branch=branch)
+        raw = synthesize_isometry(W, k, allow_cx=allow_cx, beam=beam, branch=branch,
+                                  pair_data_rows=pair_data_rows)
         if raw is not None:
             break
     else:
@@ -615,7 +655,8 @@ def synthesize_p(theta, eps=1e-6, allow_cx=False, beam=None, branch=4,
             'v0': v0, 'v1': v1,
             'bound': bound, 'error': encoded_error(gates, theta),
             'theta': theta, 'eps': eps, 'allow_cx': bool(allow_cx),
-            'beam': width, 'branch': branch, 'arrangement': arr}
+            'beam': width, 'branch': branch, 'arrangement': arr,
+            'pair_data_rows': bool(pair_data_rows)}
 
 
 # ======================================================================
