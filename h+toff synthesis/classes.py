@@ -1163,7 +1163,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
     def adj_rz_pi_2(self):
         #implements rz(-pi/2). more or less accurate
-        [('CX', 0, 1), ('CCX', 0, 1, 2), ('Z', 2), ('CCX', 0, 1, 2)]
+        lists = [('CX', 0, 1), ('CCX', 0, 1, 2), ('Z', 2), ('CCX', 0, 1, 2)]
         self.cnot(0,1)
         self.toff(0,1,2)
         self.z(2)
