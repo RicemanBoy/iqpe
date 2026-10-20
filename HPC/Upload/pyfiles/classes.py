@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import ticker
 from dataclasses import dataclass
 import time
+from contextlib import ExitStack
 #import bitstring
 from qiskit_aer import AerSimulator
 from qiskit.transpiler.passes.synthesis import SolovayKitaev
@@ -49,6 +50,110 @@ def majority_values(n):
         if value.bit_count() >= threshold
     ]
 
+def phaseflip_lookup_table(n: int):         #syndrome -> data qubits that get a Z, for the phaseflip repcode with stabilizers X_i X_{i+1}
+    table = {}
+    for value in range(1, 2**(n-1)):        #syndrome 00..0 needs no correction, so it is not in the table
+        syndrome = tuple((value >> i) & 1 for i in range(n-1))       #syndrome[i] = qecc[i] = outcome of X_i X_{i+1}
+        error = [0]
+        for s in syndrome:                  #Z on qubit i flips X_{i-1}X_i and X_i X_{i+1}  -->  e_{i+1} = e_i XOR s_i
+            error.append(error[-1] ^ s)
+        if sum(error) > n//2:               #two error patterns per syndrome (e and its complement), take the lighter one
+            error = [1 - e for e in error]
+        table[syndrome] = tuple(i for i, e in enumerate(error) if e)
+    return table
+
+LUT_PHASEFLIP_3 = phaseflip_lookup_table(3)
+LUT_PHASEFLIP_5 = phaseflip_lookup_table(5)
+
+def phaseflip_mwpm_order(n: int, order = None):            #order in which the checks X_i X_{i+1} are measured each round, default 0, 1, ..., n-2
+    order = tuple(range(n - 1)) if order is None else tuple(int(i) for i in order)
+    if sorted(order) != list(range(n - 1)):
+        raise ValueError(f"order has to be a permutation of 0..{n-2}, got {order}")
+    return order
+
+def phaseflip_mwpm_model(n: int, rounds: int, p_x: float, p_z: float, order = None):      #stim copy of the syndrome rounds in qec_mwpm, with the noise of __noise_model__
+    import stim
+    order = phaseflip_mwpm_order(n, order)
+    c = stim.Circuit()
+    anc = n
+    p1 = [p_x, 0, p_z]                                          #X, Y, Z after every single-qubit gate
+    p2 = [p_x/2, 0, p_z/2, p_x/2] + [0]*7 + [p_z/2, 0, 0, 0]    #IX, IY, IZ, XI, ..., ZI after every cx
+    c.append("RX", range(n))
+    c.append("Z_ERROR", range(n), p_z)                          #errors the block inherits from the gates before it
+    for r in range(rounds):
+        for i in order:
+            c.append("R", [anc])
+            c.append("H", [anc]); c.append("PAULI_CHANNEL_1", [anc], p1)
+            for q in (i, i + 1):
+                c.append("CX", [anc, q]); c.append("PAULI_CHANNEL_2", [anc, q], p2)
+            c.append("H", [anc]); c.append("PAULI_CHANNEL_1", [anc], p1)
+            c.append("I", [anc]); c.append("PAULI_CHANNEL_1", [anc], p1)
+            c.append("M", [anc])
+        for i in range(n - 1):                                  #detectors sorted by check (not by measurement order), so detector r*(n-1)+i <-> syndromes[r][i]
+            now = stim.target_rec(-(n - 1) + order.index(i))
+            if r == 0:                                          #first round is compared to the code space, later rounds to the round before
+                c.append("DETECTOR", [now])
+            else:
+                c.append("DETECTOR", [now, stim.target_rec(-2*(n - 1) + order.index(i))])
+    c.append("MX", range(n))                                    #not in the real circuit, only tells the decoder which data qubits carry a Z
+    for q in range(n):
+        c.append("OBSERVABLE_INCLUDE", [stim.target_rec(-n + q)], q)
+    return c
+
+_MWPM_CACHE = {}
+
+def phaseflip_mwpm_decoder(n: int, rounds: int, p_x: float, p_z: float, order = None):    #matching graphs from the circuit-level error model, built once per setting
+    import pymatching
+    order = phaseflip_mwpm_order(n, order)
+    key = (n, rounds, p_x, p_z, order)
+    if key not in _MWPM_CACHE:
+        model = phaseflip_mwpm_model(n, rounds, p_x, max(p_z, 1e-6), order)  #p_z = 0 would give an empty graph
+        dem = model.detector_error_model(decompose_errors=True, approximate_disjoint_errors=True).flattened()
+
+        edges = {}                  #detectors -> [probability, {data qubits with a Z: probability}]
+        for ins in dem:
+            if ins.type != "error":
+                continue
+            p = ins.args_copy()[0]
+            dets, obs = set(), set()
+            for t in ins.targets_copy() + [None]:
+                if t is None or t.is_separator():                       #end of one graphlike piece of the fault
+                    if dets:                                            #undetectable pieces can't be matched anyway
+                        e = edges.setdefault(frozenset(dets), [0.0, {}])
+                        e[0] = e[0]*(1 - p) + p*(1 - e[0])
+                        e[1][frozenset(obs)] = e[1].get(frozenset(obs), 0) + p
+                    dets, obs = set(), set()
+                elif t.is_relative_detector_id():
+                    dets ^= {t.val}
+                elif t.is_logical_observable_id():
+                    obs ^= {t.val}
+
+        #one matcher per data qubit with the same graph -> same matching, each tells if its qubit gets a Z
+        #(pymatching 2.2.1 + numpy 2 returns wrong vectors for more than one observable)
+        #parallel faults (only in the last round: readout error vs. Z on a data qubit) --> most likely one
+        matchers = []
+        for q in range(n):
+            m = pymatching.Matching()
+            for dets, (p, obs_probs) in edges.items():
+                obs = max(obs_probs, key=obs_probs.get)
+                d = sorted(dets)
+                fid = {0} if q in obs else set()
+                w = np.log((1 - p)/p)
+                if len(d) == 1:
+                    m.add_boundary_edge(d[0], fault_ids=fid, weight=w, error_probability=p)
+                else:
+                    m.add_edge(d[0], d[1], fault_ids=fid, weight=w, error_probability=p)
+            matchers.append(m)
+        _MWPM_CACHE[key] = matchers
+    return _MWPM_CACHE[key]
+
+def phaseflip_mwpm_correction(syndromes, n: int, p_x: float, p_z: float, order = None):   #syndromes[r][i] = outcome of X_i X_{i+1} in round r  -->  data qubits that get a Z
+    syn = np.asarray(syndromes, dtype=np.uint8)
+    det = syn.copy()
+    det[1:] ^= syn[:-1]                                         #detection events: changes between rounds
+    det = det.reshape(-1)
+    return [q for q, m in enumerate(phaseflip_mwpm_decoder(n, len(syn), p_x, p_z, order)) if m.decode(det)[0]]
+
 def gates(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
     hmm["reset"] = 0
@@ -92,293 +197,6 @@ def closest_bitstring(num: float, depth: int):
             bitstring += "0"
     
     return bitstring
-
-def avg15_coin(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
-    assert code in ["steane", "rotsurf9", "rotsurf16", "repcode"], "Code not supported! Choose between 'steane', 'rotsurf9', 'rotsurf16' and 'repcode'."
-    
-    n = 15
-    angle = np.linspace(0,1,n+2)
-    angle = np.delete(angle, [n+1])
-    angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
-    
-    y = 0
-    bruh1 = []
-    for m in range(k):
-        for o in range(n):
-            bitstring = ""
-            rots = []
-            for t in range(iter):
-                if code == "steane":
-                    self = Steane7q(2)
-                elif code == "rotsurf9":
-                    self = RotSurf9q(2)
-                elif code == "rotsurf16":
-                    self = RotSurf16q(2)
-                elif code == "repcode":
-                    self = RepCode(3, 2)
-                self.err = qec
-                rots = [k*0.5 for k in rots]
-
-                self.x(pos=1)
-                self.h(pos=0)
-                #############################
-                for j in range(2**(iter-t-1)):
-                    self.cu(a[o], b[o])
-                ###############################
-                for l in rots:
-                    if l == 0.25:
-                        self.sdg(pos=0)
-                    if l == 0.125:
-                        self.tdg_switch(pos=0)
-                self.h(pos=0)
-                if self.err:
-                    self.qec_ft(pos = 0)
-                # print("Unoptimized: ")
-                # gates(self.qc)
-                self.qc = transpile(self.qc, optimization_level=1)
-                # print("Optimized: ")
-                # gates(self.qc)
-                # print(self.qec_counter)
-                self.readout(pos=0, shots=1, p=noise)
-        
-                if self.zeros == 1:
-                    bitstring += "0"
-                elif self.ones == 1:
-                    bitstring += "1"
-                    rots.append(0.5)
-                else:
-                    print("Error")
-                    if np.random.rand() < 0.5:
-                        bitstring += "0"
-                    else:
-                        bitstring += "1"
-                        rots.append(0.5)
-                del self
-            bitstring = bitstring[::-1]
-            hmm = convert(bitstring)
-            diff = np.abs(hmm-angle[o])
-            y += diff
-            bruh1.append(diff)
-    y = y/(n*k)
-    arg = 0
-    for i in range(len(bruh1)):
-        arg += (y-bruh1[i])**2
-    sigma = ((1/(k*n))*arg)**0.5
-    sigma = sigma/((k*n)**0.5)
-
-    return y, sigma
-
-def avg14_coin_success(code: str, iter: int, noise: float, qec = False, k = 1, path = ""):       #each iteration own circuit
-    n = 14
-    angle = np.linspace(0,1,n+2)
-    angle = np.delete(angle, [n+1])
-    angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
-    
-    y = 0
-    bruh1 = []
-    for m in range(k):
-        for o in range(n):
-            bitstring = ""
-            rots = []
-            for t in range(iter):
-                if code == "steane":
-                    self = Steane7q(2)
-                else:
-                    self = RotSurf9q(2)
-                # else:
-                #     self = RotSurf16q(2)
-                self.err = qec
-                rots = [k*0.5 for k in rots]
-
-                self.x(pos=1)
-                self.h(pos=0)
-                #############################
-                for j in range(2**(iter-t-1)):
-                    self.cu(a[o], b[o])
-                ###############################
-                for l in rots:
-                    if l == 0.25:
-                        self.sdg(pos=0)
-                    if l == 0.125:
-                        self.tdg(pos=0)
-                self.h(pos=0)
-                if self.err:
-                    self.qec(pos = 0)
-                # print("Unoptimized: ")
-                # gates(self.qc)
-                #new_qc = transpile(self.qc, optimization_level=1)
-                self.qc = transpile(self.qc, optimization_level=1)
-                # print("Optimized: ")
-                # gates(new_qc)
-
-                self.readout(pos=0, shots=1, p=noise)
-
-                if self.zeros == 1:
-                    bitstring += "0"
-                elif self.ones == 1:
-                    bitstring += "1"
-                    rots.append(0.5)
-                else:
-                    if np.random.rand() < 0.5:
-                        bitstring += "0"
-                    else:
-                        bitstring += "1"
-                        rots.append(0.5)
-                del self
-            bitstring = bitstring[::-1]
-            angle_bit = closest_bitstring(angle[o], iter)
-            print("bitstring measured: ", bitstring)
-            print("Expected bitstring: ", angle_bit)
-            if bitstring == angle_bit:
-                y += 1
-
-    y = y/(k*n)
-    return y
-
-def avg_15_coin_circ(thisangle: int, iter: int, rots: list, qec = False, path = "", name=""):       #each iteration own circuit
-    n = 15
-    angle = np.linspace(0,1,n+2)
-    angle = np.delete(angle, [n+1])
-    angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
-    
-    bitstring = ""
-    self = RotSurf9q(2)
-    self.err = qec
-    rots = [k*0.5 for k in rots]
-
-    self.x(pos=1)
-    self.h(pos=0)
-    #############################
-    for j in range(2**(2-iter)):
-        self.cu(a[thisangle], b[thisangle])
-    ###############################
-    for l in rots:
-        if l == 0.25:
-            self.sdg_timo(pos=0)
-        if l == 0.125:
-            self.tdg_timo(pos=0)
-    self.h(pos=0)
-    # if self.err:
-    #     self.qec(pos = 0)
-    # for i in range(16):
-    #         self.qc.measure(i, i)
-
-    # print(dict(self.qc.count_ops()))
-    # gates(self.qc)
-
-    new_qc = transpile(self.qc, optimization_level=1)
-    # text_circuit = new_qc.draw(output="text")
-    # with open('Circuits for Timo/{}.txt'.format(name), 'w') as f:
-    #     f.write(str(text_circuit))
-
-
-    # qasm_str = qasm3.dumps(new_qc)
-    # with open("Circuits for Timo/{}.qasm".format(name), "w") as f:
-    #     f.write(qasm_str)
-
-
-    with open("Circuits for Timo/{}.qpy".format(name), "wb") as file:
-        qpy.dump(new_qc, file)
-
-    # print(dict(new_qc.count_ops()))
-    # gates(new_qc)
-
-def avg15(code: str, iter: int, noise: float, qec = False, k = 1, path=""):       #each iteration own circuit
-    assert code in ["steane", "rotsurf9", "rotsurf16"], "Code not supported! Choose between 'steane', 'rotsurf9' and 'rotsurf16'."
-    
-    n = 15
-    angle = np.linspace(0,1,n+2)
-    angle = np.delete(angle, [n+1])
-    angle = np.delete(angle, [0])
-
-    a, b = [], []
-    with open("{}unitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
-    y = 0
-    bruh1 = []
-    for m in range(k):
-        for o in range(n):
-            bitstring = ""
-            rots = []
-            for t in range(iter):
-                rots = [k*0.5 for k in rots]
-                counter = 0                     #counter wie oft was wiederholt werden muss
-                while True:
-                    if code == "steane":
-                        self = Steane7q(2, magic=1)
-                    elif code == "rotsurf9":
-                        self = RotSurf9q(2)
-                    elif code == "rotsurf16":
-                        self = RotSurf16q(2)
-                    self.postselection = True
-                    self.err = qec
-                    self.x(pos=1)
-                    self.h(pos=0)
-                    #############################
-                    for j in range(2**(iter-t-1)):
-                        self.cu(a[o], b[o])
-                    ###############################
-                    for l in rots:
-                        if l == 0.25:
-                            self.sdg(pos=0)
-                        if l == 0.125:
-                            self.tdg(pos=0)
-                    self.h(pos=0)
-                    if self.err:
-                        self.qec_ft(pos = 0)
-                    self.qc = transpile(self.qc, optimization_level=1)
-                    self.readout(pos=0, shots=1, p=noise)
-                    if self.zeros == 1:
-                        bitstring += "0"
-                        break
-                    if self.ones == 1:
-                        bitstring += "1"
-                        rots.append(0.5)
-                        break
-                    counter += 1
-                    print("Angle {}, {}%% error, Iteration {}: {} Repetition".format(o, noise*100, t, counter))
-            bitstring = bitstring[::-1]
-            # print(bitstring)
-            hmm = convert(bitstring)
-            diff = np.abs(hmm-angle[o])
-            y += diff
-            bruh1.append(diff)
-    y = y/(n*k)
-    arg = 0
-    for i in range(len(bruh1)):
-        arg += (y-bruh1[i])**2
-    sigma = ((1/(k*n))*arg)**0.5
-    sigma = sigma/((k*n)**0.5)
-
-    return y, sigma
 
 def avg15_repcode(code: str, distance: int, iter: int, noise: float, qec = False, post = False, k = 1, bias = 0, path = ""):       #for bitflip protected rep code  
     assert code == "x" or code == "z", "Error: Only accept \"x\" or \"z\" as repetition codes!"
@@ -1113,7 +931,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             with self.qc.if_test((self.qecc, value)):
                 self.qc.x(self.n*self.logicalq)
 
-        for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience
+        for i in range(self.n):                     #swap logical qubits such that the target qubit is at the same spot as before for convenience, therefore no noise on these one
             self.qc.swap(self.n*pos+i, self.n*self.logicalq+i)
 
     def rx(self, pos: int, angle: float):
@@ -1163,7 +981,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
     def adj_rz_pi_2(self):
         #implements rz(-pi/2). more or less accurate
-        [('CX', 0, 1), ('CCX', 0, 1, 2), ('Z', 2), ('CCX', 0, 1, 2)]
+        lists = [('CX', 0, 1), ('CCX', 0, 1, 2), ('Z', 2), ('CCX', 0, 1, 2)]
         self.cnot(0,1)
         self.toff(0,1,2)
         self.z(2)
@@ -1210,7 +1028,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec(pos=targ)               #needed for FT
+                self.qec_shor(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
 
     def cnot(self, control: int, target: int):
@@ -1571,6 +1389,115 @@ class RepCode_z:      #Phaseflip protected repetition code
                     with self.qc.if_test((self.qecc[3], 0)): 
                         self.qc.z(5*pos + 3), self.qc.z(5*pos + 4)
 
+    def qec_lut(self, pos: int):            #qec for arbitrary d, correction via lookup table
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        for i in range(self.n - 1):         #measure X_i X_{i+1} into qecc[i]
+            self.qc.reset(anc)
+            self.qc.h(anc)
+            self.qc.cx(anc, self.n*pos + i)
+            self.qc.cx(anc, self.n*pos + i + 1)
+            self.qc.h(anc)
+            self.qc.id(anc)
+            self.qc.measure(anc, self.qecc[i])
+
+        for syndrome, flips in phaseflip_lookup_table(self.n).items():
+            with ExitStack() as stack:      #nested if_tests on qecc[0..n-2] only, qecc[n-1] can still hold the H_L measurement
+                for i, s in enumerate(syndrome):
+                    stack.enter_context(self.qc.if_test((self.qecc[i], s)))
+                for q in flips:
+                    self.qc.z(self.n*pos + q)
+
+    def _noise_params(self):                #(p_x, p_z) of the single-qubit gates, read back from self.noise_model
+        for err in self.noise_model.to_dict()["errors"]:
+            if "h" in err["operations"]:
+                probs = {ins[0]["name"]: pr for ins, pr in zip(err["instructions"], err["probabilities"])}
+                return float(probs.get("x", 0)), float(probs.get("z", 0))
+        return 0.0, 0.0
+
+    def qec_mwpm(self, pos: int, rounds = None, order = None):     #qec for arbitrary d: `rounds` syndrome rounds (default d), decoded together with MWPM
+        rounds = self.n if rounds is None else rounds                   #order: sequence of checks per round, e.g. (0, 2, 1, 3) for d=5 (fewer fatal fault pairs than the default 0, 1, 2, 3)
+        order = phaseflip_mwpm_order(self.n, order)
+        anc = self.qc.num_qubits - 1
+        self.qec_counter += 1
+
+        syn_reg = ClassicalRegister(rounds*(self.n - 1), "mwpm")
+        self.qc.add_register(syn_reg)
+        for r in range(rounds):
+            for i in order:                 #measure X_i X_{i+1} into syn_reg[r*(n-1) + i]
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.cx(anc, self.n*pos + i)
+                self.qc.cx(anc, self.n*pos + i + 1)
+                self.qc.h(anc)
+                self.qc.id(anc)
+                self.qc.measure(anc, syn_reg[r*(self.n - 1) + i])
+
+        self.qc.save_statevector(label="psi")           #simulate this trajectory up to here (1 shot), decode the syndromes in python
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        psi_full = result.data(0)["psi"]
+
+        bits = list(result.get_counts().keys())[0].split()[0][::-1]       #syn_reg was added last, so it is printed first; [::-1] --> bits[k] = syn_reg[k]
+        syndromes = [[int(bits[r*(self.n - 1) + i]) for i in range(self.n - 1)] for r in range(rounds)]
+
+        qr2 = QuantumRegister(self.qc.num_qubits, "q")                     #continue from the sampled state
+        self.qc = QuantumCircuit(qr2)
+        self.qc.add_register(self.qecc)
+        self.qc.set_statevector(psi_full)
+
+        del psi_full
+
+        for q in phaseflip_mwpm_correction(syndromes, self.n, *self._noise_params(), order):
+            self.qc.z(self.n*pos + q)
+
+    def _sample_syndrome_rounds(self, pos: int, rounds: int, order):     #append `rounds` syndrome rounds, simulate this trajectory (1 shot), continue from the sampled state
+        anc = self.qc.num_qubits - 1
+
+        syn_reg = ClassicalRegister(rounds*(self.n - 1), "syn")
+        self.qc.add_register(syn_reg)
+        for r in range(rounds):
+            for i in order:                 #measure X_i X_{i+1} into syn_reg[r*(n-1) + i]
+                self.qc.reset(anc)
+                self.qc.h(anc)
+                self.qc.cx(anc, self.n*pos + i)
+                self.qc.cx(anc, self.n*pos + i + 1)
+                self.qc.h(anc)
+                self.qc.id(anc)
+                self.qc.measure(anc, syn_reg[r*(self.n - 1) + i])
+
+        self.qc.save_statevector(label="psi")
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        psi_full = result.data(0)["psi"]
+
+        bits = list(result.get_counts().keys())[0].split()[0][::-1]       #syn_reg was added last, so it is printed first; [::-1] --> bits[k] = syn_reg[k]
+        syndromes = [tuple(int(bits[r*(self.n - 1) + i]) for i in range(self.n - 1)) for r in range(rounds)]
+
+        qr2 = QuantumRegister(self.qc.num_qubits, "q")
+        self.qc = QuantumCircuit(qr2)
+        self.qc.add_register(self.qecc)
+        self.qc.set_statevector(psi_full)
+
+        del psi_full
+        return syndromes
+
+    def qec_shor(self, pos: int, max_rounds = None, order = None):     #FT qec (Shor): repeat syndrome rounds until the last t+1 agree, then lookup-table correction
+        t = (self.n - 1)//2                                             #with <= t faults this stops after at most (t+1)^2 rounds (default cap)
+        max_rounds = (t + 1)**2 if max_rounds is None else max_rounds
+        order = phaseflip_mwpm_order(self.n, order)
+        self.qec_counter += 1
+
+        history = self._sample_syndrome_rounds(pos, min(t + 1, max_rounds), order)
+        while len(set(history[-(t + 1):])) > 1 and len(history) < max_rounds:
+            history += self._sample_syndrome_rounds(pos, 1, order)
+        self.shor_rounds = len(history)                                 #rounds used by the last qec_shor call
+
+        if any(history[-1]):                                            #cap reached without agreement --> last syndrome
+            for q in phaseflip_lookup_table(self.n)[history[-1]]:
+                self.qc.z(self.n*pos + q)
+
     def qec5_ideal(self, pos: int):         #ideal qec for d=5 repcode
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
@@ -1748,118 +1675,6 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.cx(anc, 5*pos + 4)
         self.qc.h(anc)
         self.qc.measure(anc, self.qecc[3])
-
-    def qec_block(self, pos: int):                     #n Blocks of syndrome extraction, followed by decoding and correction
-
-        spacetime_syndromes = []
-
-        for i in range(self.n):
-            self.syndromes(pos=pos)
-            self.qc.save_statevector(label="psi")
-            sim = AerSimulator(method="statevector", noise_model = self.noise_model)
-            result = sim.run(self.qc, shots=1).result()
-            psi_full = result.data(0)["psi"]
-
-            bit = list(result.get_counts().keys())[0]           #Das ist das gesamte klassische Register, z.B. 0100...0101 , Achtung: Ganz rechts ist der erste Bit und ganz links der letzte Bit!
-
-            spacetime_syndromes.append(bit[1:])
-
-            qr2 = QuantumRegister(self.n*(self.logicalq+2)+3, "q")         #Qcirq+ClassicalRegister für H_L/QEC wiederherstellen und weitermachen
-            self.qc = QuantumCircuit(qr2)
-            self.qc.add_register(self.qecc)
-            self.qc.set_statevector(psi_full)
-
-            del psi_full
-
-        # print(spacetime_syndromes)
-
-        correction = decode_qec_block(spacetime_syndromes)
-
-        # print("Syndromes: ", spacetime_syndromes, "  |   Korrektur hier: ", correction)
-
-        for i in correction:
-            self.qc.z(self.n*pos + i)
-
-    def qec_ft(self, pos: int):
-        anc = self.qc.num_qubits - 1
-        ancc = anc - 1
-        anccc = ancc - 1
-        self.qec_counter += 1
-
-        # for i in range(self.n-1):
-        #     self.qc.reset(anc)
-        #     self.qc.h(anc)
-        #     self.qc.cx(anc, self.n*pos + i)
-        #     self.qc.cx(anc, self.n*pos + i + 1)
-        #     self.qc.h(anc)
-        #     self.qc.id(anc)
-        #     self.qc.measure(anc, self.qecc[i])
-
-        # with self.qc.if_test((self.qecc[0], 1)):                #first
-        #     with self.qc.if_test((self.qecc[1], 0)):               #second
-        #         self.qc.z(self.n*pos)
-        
-        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
-        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
-        #         self.qc.z(self.n*pos+self.n-1)
-
-        # for i in range(self.n-2):       
-        #     with self.qc.if_test((self.qecc[i], 1)):
-        #         with self.qc.if_test((self.qecc[i+1], 1)):
-        #             self.qc.z(self.n*pos + i + 1)
-
-        self.qc.reset(anc), self.qc.reset(ancc)                 #works for d=3
-        self.qc.h(anc), self.qc.h(ancc)
-        self.qc.cx(anc, 3*pos + 0)
-        self.qc.cx(ancc, 3*pos + 1)
-        self.qc.cx(anc, ancc)
-        self.qc.h(anc)
-        self.qc.id(anc)
-        self.qc.measure(anc, self.qecc[0])
-
-        self.qc.reset(anc), self.qc.reset(ancc)
-        self.qc.h(anc), self.qc.h(ancc)
-        self.qc.cx(anc, 3*pos + 1)
-        self.qc.cx(ancc, 3*pos + 2)
-        self.qc.cx(anc, ancc)
-        self.qc.h(anc)
-        self.qc.id(anc)
-        self.qc.measure(anc, self.qecc[1])
-
-        with self.qc.if_test((self.qecc[0], 1)):                
-            with self.qc.if_test((self.qecc[1], 0)):               
-                self.qc.z(3*pos)
-
-        with self.qc.if_test((self.qecc[0], 1)):                
-            with self.qc.if_test((self.qecc[1], 1)):               
-                self.qc.z(3*pos + 1)
-        
-        with self.qc.if_test((self.qecc[0], 0)):                
-            with self.qc.if_test((self.qecc[1], 1)):               
-                self.qc.z(3*pos + 2)
-
-        # self.qc.reset(anc), self.qc.reset(ancc), self.qc.reset(anccc)                 
-        # self.qc.h(anc), self.qc.h(ancc), self.qc.h(anccc)
-        # self.qc.cx(anc, 3*pos + 0)
-        # self.qc.cx(ancc, 3*pos + 1)
-        # self.qc.cx(anccc, 3*pos + 2)
-        # self.qc.cx(ancc, anc), self.qc.cx(ancc, anccc)
-        # self.qc.h(anc), self.qc.h(anccc)
-        # self.qc.id(anc), self.qc.id(anccc)
-        # self.qc.measure(anc, self.qecc[0])
-        # self.qc.measure(anccc, self.qecc[1])
-
-        # with self.qc.if_test((self.qecc[0], 1)):                
-        #     with self.qc.if_test((self.qecc[1], 0)):               
-        #         self.qc.z(3*pos)
-
-        # with self.qc.if_test((self.qecc[0], 1)):                
-        #     with self.qc.if_test((self.qecc[1], 1)):               
-        #         self.qc.z(3*pos + 1)
-        
-        # with self.qc.if_test((self.qecc[0], 0)):                
-        #     with self.qc.if_test((self.qecc[1], 1)):               
-        #         self.qc.z(3*pos + 2)
 
     def qec_ideal(self, pos: int):
         anc = self.qc.num_qubits - 1
