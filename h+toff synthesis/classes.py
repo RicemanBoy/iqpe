@@ -581,22 +581,16 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
                 #############################
                 for _ in range(2**(iter-t-1)):
                     self.U_RZ_htoff(index=2*o+1, short=short)
-                    print("U turn: ", gate_depth_count(self.qc))
                 ###############################
-                print("Right after U: ", gate_depth_count(self.qc))
                 for l in rots:
                     if l == 0.25:
                         self.adj_rz_pi_2()
                     if l == 0.125:
                         self.adj_rz_pi_4()
-                print("Right after correction: ", gate_depth_count(self.qc))
                 self.h(pos=0)
                 self.readout(pos=0, shots=1)
-                if t == 2:
-                    print("Gates saved in last iteration: ", self.countallgates)
-                    print("Gates based on self.qc: ", gate_depth_count(self.qc))
                 self.countallgates = tuple(map(sum,zip(self.countallgates, gate_depth_count(self.qc))))
-                print("Amount of gates in this circuit: ", self.countallgates[0], " with depth ", self.countallgates[1])
+                print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1])
         
                 if self.zeros == 1:
                     bitstring += "0"
@@ -609,7 +603,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
             elapsed = time.perf_counter() - start
-            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed))
+            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed),"\n")
             bruh1.append(diff), y_list.append(diff)
     y = y/(7*k)
     arg = 0
@@ -1487,6 +1481,7 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
         self.qc.save_statevector(label="psi")
+        # print(self.noise_model._default_quantum_errors["h"])
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
         result = sim.run(self.qc, shots=1).result()
         psi_full = result.data(0)["psi"]

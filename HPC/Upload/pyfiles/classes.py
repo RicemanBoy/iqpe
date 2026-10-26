@@ -591,7 +591,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
                 self.readout(pos=0, shots=1)
 
                 self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
-                print("Amount of gates in this circuit: ", self.countallgates[0], " with depth ", self.countallgates[1])
+                print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1])
         
                 if self.zeros == 1:
                     bitstring += "0"
@@ -604,7 +604,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
             elapsed = time.perf_counter() - start
-            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed))
+            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed),"\n")
             bruh1.append(diff), y_list.append(diff)
     y = y/(7*k)
     arg = 0
