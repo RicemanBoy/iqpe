@@ -871,7 +871,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self._recording = False
         ##################################################################################
 
-        qr = QuantumRegister(n*(logical_q+2)+1, "q")
+        qr = QuantumRegister(n*(logical_q+2)+1, "q")           #+2 for H_L, for us we have a total of 16/26 qubits for d=3/5
         self.qc = QuantumCircuit(qr)
 
         self.qecc = ClassicalRegister(n)
