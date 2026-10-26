@@ -1,4 +1,4 @@
-N=400
+N=1
 
 for i in range(N):
     file=open('{}.py'.format(i), 'a')
@@ -10,11 +10,14 @@ for i in range(N):
 for i in range(N):
     file=open('job{}.script'.format(i),'a')
     file.write('#!/bin/bash -l \n')
-    file.write('#SBATCH --ntasks=2 \n')
+    file.write('#SBATCH --ntasks=1 \n')
+    file.write('#SBATCH --cpus-per-task=8 \n')
     file.write('#SBATCH --time=23:59:59 \n')
     file.write('#SBATCH --job-name=MScDustin{} \n'.format(i))
     file.write('#SBATCH --export=NONE \n')
     file.write('unset SLURM_EXPORT_ENV \n')
+    file.write('export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK \n')
+    file.write('export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK \n')
     file.write('module load python \n')
     file.write('python3 {}.py'.format(i)) 
     file.close()

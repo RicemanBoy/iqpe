@@ -156,13 +156,22 @@ def phaseflip_mwpm_correction(syndromes, n: int, p_x: float, p_z: float, order =
 
 def gates(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
-    hmm["reset"] = 0
-    hmm["measure"] = 0
+    # hmm["reset"] = 0
+    # hmm["measure"] = 0
     hmm["if_else"] = 0
     hmm["id"] = 0
     hmm["swap"] = 0
-    return print("Amount of gates in this circuit: ", sum(hmm.values()))
+    return print("Amount of gates in this circuit: ", sum(hmm.values()), " with depth ", qc.depth())
     #return print(hmm)
+
+def gate_depth_count(qc:QuantumCircuit):
+    hmm = dict(qc.count_ops())
+    # hmm["reset"] = 0
+    # hmm["measure"] = 0
+    hmm["if_else"] = 0
+    hmm["id"] = 0
+    hmm["swap"] = 0
+    return (sum(hmm.values()), qc.depth())
 
 def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
     k = list(bin)
@@ -572,14 +581,22 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
                 #############################
                 for _ in range(2**(iter-t-1)):
                     self.U_RZ_htoff(index=2*o+1, short=short)
+                    print("U turn: ", gate_depth_count(self.qc))
                 ###############################
+                print("Right after U: ", gate_depth_count(self.qc))
                 for l in rots:
                     if l == 0.25:
                         self.adj_rz_pi_2()
                     if l == 0.125:
                         self.adj_rz_pi_4()
+                print("Right after correction: ", gate_depth_count(self.qc))
                 self.h(pos=0)
                 self.readout(pos=0, shots=1)
+                if t == 2:
+                    print("Gates saved in last iteration: ", self.countallgates)
+                    print("Gates based on self.qc: ", gate_depth_count(self.qc))
+                self.countallgates = tuple(map(sum,zip(self.countallgates, gate_depth_count(self.qc))))
+                print("Amount of gates in this circuit: ", self.countallgates[0], " with depth ", self.countallgates[1])
         
                 if self.zeros == 1:
                     bitstring += "0"
@@ -846,6 +863,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.logicalq = logical_q
         self.err = False
         self.noise_model = self.__noise_model__(0,0)
+        self.countallgates = (0,0)
 
         ### Speichert welche Gates benutzt wurden, wichtig für Statevector simulation ####
         self.history = []
@@ -1467,6 +1485,7 @@ class RepCode_z:      #Phaseflip protected repetition code
                 self.qc.id(anc)
                 self.qc.measure(anc, syn_reg[r*(self.n - 1) + i])
 
+        self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
         self.qc.save_statevector(label="psi")
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
         result = sim.run(self.qc, shots=1).result()
