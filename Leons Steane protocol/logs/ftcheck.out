@@ -1,0 +1,3 @@
+  CP(pi)               locations  878, faults  6970: bad locations   0, c1 = 0.000  [3070s]
+  CP(pi/2), S_dag      locations 1410, faults 10966: bad locations   0, c1 = 0.000  [1371s]
+  CP(3pi/2), S         locations 1647, faults 12829: bad locations   0, c1 = 0.000  [1858s]
