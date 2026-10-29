@@ -1,10 +1,10 @@
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 import numpy as np
-import matplotlib.pyplot as plt
+import time
 
 from qiskit_aer import AerSimulator
 
-from qiskit_aer.noise import (NoiseModel, pauli_error, depolarizing_error)
+from qiskit_aer.noise import (NoiseModel, pauli_error)
 
 from qiskit.circuit.library import UnitaryGate
 
@@ -40,6 +40,15 @@ def gates(qc:QuantumCircuit):
     hmm["swap"] = 0
     return sum(hmm.values())
 
+def gate_depth_count(qc:QuantumCircuit):
+    hmm = dict(qc.count_ops())
+    # hmm["reset"] = 0
+    # hmm["measure"] = 0
+    hmm["if_else"] = 0
+    hmm["id"] = 0
+    hmm["swap"] = 0
+    return (sum(hmm.values()), qc.depth())
+
 def convert(bin: str):                  #konvertiert den bitstring in decimal, e.g. 0110 = 0.375
     k = list(bin)
     a = [int(i) for i in k]
@@ -55,21 +64,17 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
 
-    a, b = [], []
-    with open("{}unitary{}_improved_with_rs.txt".format(path, n), "r") as file:
+    a = []
+    with open("steane_u2_gridsynth_1e-2.txt".format(path, n), "r") as file:
         for line in file:
             a.append(list(map(str, line.strip().split(","))))
-    with open("{}adjunitary{}_improved_with_rs.txt".format(path, n), "r") as file:
-        for line in file:
-            b.append(list(map(str, line.strip().split(","))))
     
     y = 0
     y_list, bruh1 = [], []
     for _ in range(k):
         for o in range(7):
-            gatecount = 0
-            bitstring = ""
-            rots = []
+            gatecount = 0; bitstring = ""; rots = []
+            start = time.perf_counter()
             for t in range(iter):
                 rots = [k*0.5 for k in rots]
                 counter = 0
@@ -93,10 +98,13 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
                             self.tdg(pos=0)
                     self.h(pos=0)
                     if self.err:
-                        self.qec(0)
+                        self.flagFTec(0)
 
                     self.readout(pos=0, shots=1, p = noise)
                     gatecount += gates(self.qc)
+
+                    self.countallgates = tuple(map(sum,zip(self.countallgates, gate_depth_count(self.qc))))
+                    print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1])
             
                     if self.zeros == 1:
                         bitstring += "0"
@@ -120,7 +128,8 @@ def avg7_ramsey(code: str, iter: int, noise: float, qec = False, k = 1, bias = 0
             hmm = convert(bitstring)
             diff = min(np.abs(hmm-angle[2*o+1]), 1-np.abs(hmm-angle[2*o+1]))
             y += diff
-            print("Performance {}for angle {} ({} gates): ".format("(QEC) " if qec else "", 2*o+1, gatecount), diff)
+            elapsed = time.perf_counter() - start
+            print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed),"\n")
             bruh1.append(diff), y_list.append(diff)
     y = y/(7*k)
     arg = 0
@@ -140,6 +149,15 @@ CORR_7Q = {
 }
 
 STABS_7Q = ((0,2,4,6), (1,2,5,6), (3,4,5,6))    #order matches qecc[2],qecc[1],qecc[0] and qecc[5],qecc[4],qecc[3]
+
+def decode_7q(bits: str):
+    #classical decoding of a transversal Z readout of one block, bits[j] = qubit j. The Z-Stabilizer syndrome
+    #is computed from the bits, E_min(s) flips back one bit and the logical value is the parity of all 7 bits
+    syndrome = "".join(str(sum(int(bits[q]) for q in stab) % 2) for stab in STABS_7Q)
+    corrected = [int(b) for b in bits]
+    for q in CORR_7Q[syndrome]:
+        corrected[q] ^= 1
+    return sum(corrected) % 2
 
 # Flag error sets E(g_i) of the 1-flag circuits in flagsyndrome(), needed for case 3 of the Flag 1-FTEC
 # Protocol. Key = the 6 bit qecc slice of the following unflagged syndrome measurement, value = the qubits
@@ -171,6 +189,8 @@ class Steane7q:
 
         self.classical_ec = False
         self.postselection = True
+
+        self.countallgates = (0,0)
 
         self.noise_model = self.__noise_model__(noise,0)
 
@@ -226,7 +246,6 @@ class Steane7q:
             p_x += p/2
             p_z += p/2
         noise_model = NoiseModel()
-        # p_error, p_error_2, p_error_3 = depolarizing_error(p,1), depolarizing_error(p,2) , depolarizing_error(p,3) 
         p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
         p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
         p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
@@ -320,25 +339,21 @@ class Steane7q:
         for i in range(7):
             self.qc.cx(i+7*self.n,i+7*pos)
         self.s(pos=pos)
-        self.qc.reset(anc-1)
         #############################Measure logical state of the magic state for state injection#############################
         self.sdg(pos=self.n)
         self.h(pos=self.n)
-        for i in range(7):
-            self.qc.cx(i+self.n*7, anc-1)
-        self.qc.measure(anc-1,0)
+        outcome = self._measure_magic()
         #################################Apply conditioned Ry(pi/2) onto the Target###########################
-        for i in range(7):
-            with self.qc.if_test((0,1)):
+        if outcome == 1:
+            for i in range(7):
                 self.qc.h(i+7*pos)
-        for i in range(3):
-            with self.qc.if_test((0,1)):
+            for i in range(3):
                 self.qc.x(i+7*pos)
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec(pos=pos)
+            self.flagFTec(pos=pos)
 
     def t_cheat(self, pos: int):
         self.qc.cx(0+7*pos, 2+7*pos)
@@ -404,25 +419,21 @@ class Steane7q:
         for i in range(7):
             self.qc.cx(i+7*self.n,i+7*pos)
         self.s(pos=pos)
-        self.qc.reset(anc-1)
         #############################Measure logical state of the magic state for state injection#############################
         self.sdg(pos=self.n)
         self.h(pos=self.n)
-        for i in range(7):
-            self.qc.cx(i+self.n*7, anc-1)
-        self.qc.measure(anc-1,0)
+        outcome = self._measure_magic()
         #################################Apply conditioned Ry(pi/2) onto the Target###########################
-        for i in range(3):
-            with self.qc.if_test((0,0)):
+        if outcome == 0:
+            for i in range(3):
                 self.qc.x(i+7*pos)
-        for i in range(7):
-            with self.qc.if_test((0,0)):
+            for i in range(7):
                 self.qc.h(i+7*pos)
         self.h(pos=pos)
         self.s(pos=pos)
         self.h(pos=pos)
         if self.err:
-            self.qec(pos=pos)
+            self.flagFTec(pos=pos)
 
     def cs(self, control: int, target: int):
         self.t(pos=control)
@@ -433,23 +444,20 @@ class Steane7q:
 
     def u2(self, pos: int, gate: list):
         for i in gate:
-            if i == "s":
+            if i == "S":
                 self.s(pos=pos)
-            if i == "sdg":
-                self.sdg(pos=pos)
-            if i == "t":
+            elif i == "T":
                 self.t(pos=pos)
-            if i == "tdg":
-                self.tdg(pos=pos)
-            if i == "h":
+            elif i == "H":
                 self.h(pos=pos)
-            if i == "z":
+            elif i == "Z":
                 self.z(pos=pos)
-            if i == "x":
+            elif i == "X":
                 self.x(pos=pos)
-
+            else:
+                print("MISSING GATE: ", i)
+            
     def cu_ramsey(self, gate: list):
-        self.u2(0, gate=gate)
         self.u2(0, gate=gate)
 
     def qec_ft(self, pos: int):
@@ -726,6 +734,7 @@ class Steane7q:
     def _flag_round(self, pos: int):
         #one round of syndrome extraction with the 1-flag circuits --> (flags, syndrome, bitstring, result)
         flags = self.flagsyndrome(pos=pos)
+        self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
         self.qc.save_statevector(label="psi")
 
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
@@ -736,6 +745,32 @@ class Steane7q:
         bitstring = [i.replace(" ","") for i in bitstring][0]
 
         return self._creg_bits(bitstring, flags), self._creg_bits(bitstring, self.qecc), bitstring, result
+
+    def _measure_magic(self):
+        #transversal readout of the magic block (already rotated into the Z basis) for the state injection. Same
+        #statevector approach as in _flag_round(): one shot, decode the 7 bits classically, load the post-measurement
+        #state back into a fresh circuit --> returns the decoded logical outcome
+        magic = ClassicalRegister(7)
+        self.qc.add_register(magic)
+        for i in range(7):
+            self.qc.id(i+7*self.n)
+            self.qc.measure(i+7*self.n, magic[6-i])     #magic[6-i] so that the bitstring reads qubit 0..6, as in readout()
+        self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
+        self.qc.save_statevector(label="psi")
+
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        bitstring = list(result.get_counts().keys())[0].replace(" ","")
+
+        #reset_qec() starts with empty classical registers, so the initialization flags are lost afterwards and
+        #have to be checked here (same check as in flagFTec())
+        preselection = self._creg_bits(bitstring, self.cbits)
+        if preselection[:-1].count("1") != 0:
+            self.preselection_flag = True
+
+        outcome = decode_7q(self._creg_bits(bitstring, magic))     #before reset_qec(), which drops the magic register
+        self.reset_qec(result)
+        return outcome
 
     def syndrome(self, pos: int):
         #unflagged syndrome measurement, measure only. The outcome is read out classically (so it can be
@@ -761,7 +796,8 @@ class Steane7q:
             self.qc.measure(anc, self.qecc[bit])
             self.qc.reset(anc)
             self.qc.id(anc)
-
+            
+        self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
         self.qc.save_statevector(label="psi")
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
         result = sim.run(self.qc, shots=1).result()
@@ -809,8 +845,8 @@ class Steane7q:
 
         preselection = self._creg_bits(bitstring, self.cbits)
         if preselection is not None:            #cbits, one bit for each logical qubit
-            #cbits[0] is NOT an initialization flag, t()/tdg() measure the state injection into it, so it is
-            #1 in about half of the shots. The flags sit in cbits[1..n], and the slice is printed MSB first.
+            #cbits[0] is NOT an initialization flag (it used to hold the state injection outcome, now unused).
+            #The flags sit in cbits[1..n], and the slice is printed MSB first.
             if preselection[:-1].count("1") != 0:
                 self.preselection_flag = True               
                 self.reset_qec(result)                      #trotzdem zuruecksetzen, sonst bleibt das save_statevector("psi") im Circuit
@@ -834,7 +870,7 @@ class Steane7q:
 
 #######################################################################################################################################
 
-    def qec_og(self, pos: int):
+    def qec(self, pos: int):
         self.qec_counter += 1
         anc = self.qc.num_qubits - 1
         self.qc.reset(anc)
@@ -977,10 +1013,6 @@ class Steane7q:
                 with self.qc.if_test((self.qecc[5],1)):
                     self.qc.z(6+7*pos)
 
-    def qec(self, pos: int):
-        syndrome = self.syndrome(pos=pos)
-        self.correct_7q(syndrome, pos)
-
     def qec_ideal(self, pos: int):
         self.qec_counter += 1
         anc = self.qc.num_qubits - 1
@@ -1114,7 +1146,6 @@ class Steane7q:
                     self.qc.append(z_ideal, [6+7*pos])
 
     def readout(self, pos: int, shots: int, p = 0):
-        # p_error, p_error_2 = depolarizing_error(p,1), depolarizing_error(p,2)
         p_error = pauli_error([["X",p/2],["I",1-p],["Z",p/2]])
         p_error_2 = pauli_error([["XI",p/4],["IX",p/4],["II",1-p],["ZI",p/4],["IZ",p/4]])
 
@@ -1156,32 +1187,9 @@ class Steane7q:
                 bits[i] = "pre"
                 # print("AHAAAA wieso flag???")
 
-        test_0 = ["0000000","1010101","0110011","1100110","0001111","1011010","0111100","1101001"]
-        test_1 = ["1111111","0101010","1001100","0011001","1110000","0100101","1000011","0010110"]
-
-        # if self.classical_ec:
-        #     bits = self.__classical_error_correction__(bits)
-
-        for i in range(len(bits)):
-            for j in test_0:
-                if j == bits[i]:
-                    bits[i] = 0
-                    break
-            if bits[i] != 0:
-                for j in test_1:
-                    if j == bits[i]:
-                        bits[i] = 1
-                        break
-            if bits[i] != 1 and bits[i] != 0 and bits[i] != "pre":
-                # print("Wrong bitstring: ", bits[i])
-                if self.postselection:
-                    bits[i] = "post"
-                    # print("Postselected!")
-                else:
-                    if np.random.rand() < 0.5:
-                        bits[i] = 0
-                    else:
-                        bits[i] = 1
+        for i in range(len(bits)):                      #classical decoding, corrects a single bit flip instead of discarding
+            if bits[i] != "pre":
+                bits[i] = decode_7q(bits[i])
 
         if not self.postselection:                  #wenn postselect aus, dann soll er alle shots, die durch preselection raus sind, coinflip machen
             for i in range(len(bits)):

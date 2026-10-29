@@ -1,0 +1,15 @@
+H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,S,H,Z,
+S,H,T,S,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,X,Z
+S,H,T,H,T,H,T,H,T,S,H,T,S,H,T,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,S,H,T,S,H,Z
+S
+S,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,S,H,Z
+S,H,T,S,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,X,Z,S
+S,H,T,H,T,H,T,H,T,S,H,T,S,H,T,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,S,H,T,S,H,Z,S
+Z
+S,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,S,H,Z,S
+H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,Z,S
+H,T,S,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,H,T,H,T,H,T,S,H,X,Z,S
+S,Z
+H,T,S,H,T,H,T,H,T,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,S,H,X,Z,S
+H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,H,T,H,T,S,H,T,S,H,T,S,H,X,S
+H,T,S,H,T,S,H,T,H,T,H,T,H,T,H,T,S,H,T,S,H,T,S,H,T,S,H,T,H,T,S,H,T,H,T,H,T,H,T,H,T,H,T,S,H,X
