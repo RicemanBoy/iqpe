@@ -173,6 +173,21 @@ CORR_FLAG_7Q = {
     5: {"000001": (4,5,6), "000100": (5,6),   "000111": (6,)},      #C(X{3,4,5,6})
 }
 
+# Hook errors of the 1-flag circuits in flagsyndrome() for the Chao-Reichardt decoding in flagFTec(), as in Leons
+# iqpe_full.py. Stabilizer i is measured as d0, flag, d1, d2, flag, d3 with (d0,d1,d2,d3) = STABS_7Q[i], so the only
+# weight-2 error a single flagged fault leaves on the data is on (d2,d3). Everything else it can leave has weight 1
+# up to a stabilizer and is handled by E_min(s). Same hooks for the Z-Stabilizer circuits (Z errors) and the
+# X-Stabilizer circuits (X errors). HOOK_SYN_7Q = their 3 bit syndrome, same key format as CORR_7Q.
+HOOK_7Q = [stab[2:] for stab in STABS_7Q]
+HOOK_SYN_7Q = ["".join(str(len(set(hook) & set(stab)) % 2) for stab in STABS_7Q) for hook in HOOK_7Q]
+
+# X correction after a fired |0_L> verification flag in __init__ (deterministic FT preparation, no repetition).
+# Key = Z-Stabilizer syndrome qecc[2]qecc[1]qecc[0] of a following non-flag syndrome measurement. Found by enumerating
+# every single fault of the encoder + verification: a fired flag leaves either an error that E_min(s) removes, or one
+# of the two weight-2 errors below, which E_min(s) would turn into a logical X. All other syndromes --> E_min(s).
+# Only valid for the CNOT order of the encoder in __init__!
+PREP_FLAG_CORR_7Q = {"001": (1,5), "010": (4,6)}
+
 class Steane7q:
     def __init__(self, n: int, magic = 1, noise = 0):
         self.n = n
@@ -185,7 +200,7 @@ class Steane7q:
         self.qec_counter = 0
         self.magiccounter = 0
 
-        self.preselection_flag = False      #change to true if the initialization flag striked!
+        self.preselection_flag = False      #stays False, a fired initialization flag is corrected in _verify_prep()
 
         self.classical_ec = False
         self.postselection = True
@@ -224,6 +239,7 @@ class Steane7q:
 
             self.qc.cx(6+7*i,4+7*i)
 
+            self.qc.reset(anc)                  #otherwise block i+1 inherits the measured flag of block i
             self.qc.cx(0+7*i,anc)
             self.qc.cx(5+7*i,anc)
             self.qc.cx(6+7*i,anc)
@@ -233,6 +249,8 @@ class Steane7q:
 
         self.qecc = ClassicalRegister(6)
         self.qc.add_register(self.qecc)
+
+        self._verify_prep()
 
     def __noise_model__(self, p: float, bias: float):
         p_x, p_z = 0, 0
@@ -746,6 +764,25 @@ class Steane7q:
 
         return self._creg_bits(bitstring, flags), self._creg_bits(bitstring, self.qecc), bitstring, result
 
+    def _verify_prep(self):
+        #deterministic FT |0_L> preparation: read the verification flags of __init__ with one statevector shot (as in
+        #_flag_round()). If the flag of block i fired, its syndrome is measured once more with the non-flag circuits and
+        #PREP_FLAG_CORR_7Q / E_min(s) is applied, instead of discarding the run.
+        self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
+        self.qc.save_statevector(label="psi")
+
+        sim = AerSimulator(method="statevector", noise_model = self.noise_model)
+        result = sim.run(self.qc, shots=1).result()
+        bitstring = list(result.get_counts().keys())[0].replace(" ","")
+        flags = self._creg_bits(bitstring, self.cbits)[::-1]      #before reset_qec(); flags[i+1] = flag of block i
+        self.reset_qec(result)
+
+        for i in range(self.n):
+            if flags[i+1] == "1":
+                syndrome = self.syndrome(pos=i)[3:6]                #Z-Stabilizers --> X errors, Z errors are harmless on |0_L>
+                for q in PREP_FLAG_CORR_7Q.get(syndrome, CORR_7Q[syndrome]):
+                    self.qc.x(q+7*i)
+
     def _measure_magic(self):
         #transversal readout of the magic block (already rotated into the Z basis) for the state injection. Same
         #statevector approach as in _flag_round(): one shot, decode the 7 bits classically, load the post-measurement
@@ -761,12 +798,6 @@ class Steane7q:
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
         result = sim.run(self.qc, shots=1).result()
         bitstring = list(result.get_counts().keys())[0].replace(" ","")
-
-        #reset_qec() starts with empty classical registers, so the initialization flags are lost afterwards and
-        #have to be checked here (same check as in flagFTec())
-        preselection = self._creg_bits(bitstring, self.cbits)
-        if preselection[:-1].count("1") != 0:
-            self.preselection_flag = True
 
         outcome = decode_7q(self._creg_bits(bitstring, magic))     #before reset_qec(), which drops the magic register
         self.reset_qec(result)
@@ -831,7 +862,38 @@ class Steane7q:
             else:
                 self.qc.x(q+7*pos)                      #X-Stabilizer circuits flag on X errors
 
+    def correct_flagged(self, syndrome: str, flags: str, pauli: str, pos: int):
+        #decoding of one error type, as correct() in Leons iqpe_full.py. syndrome = 3 bit sub-syndrome (CORR_7Q key),
+        #flags[i] = flag of the circuit of STABS_7Q[i] that causes this error type. E_min(s), unless circuit i flagged
+        #and s is the syndrome of its hook, then the hook is applied instead.
+        qubits = CORR_7Q[syndrome]
+        for i in range(3):
+            if flags[i] == "1" and syndrome == HOOK_SYN_7Q[i]:
+                qubits = HOOK_7Q[i]
+        for q in qubits:
+            if pauli == "x":
+                self.qc.x(q+7*pos)
+            else:
+                self.qc.z(q+7*pos)
+
     def flagFTec(self, pos: int):
+        #Chao-Reichardt flag QEC for the [[7,1,3]] code (arxiv:1705.02329), as qec() in Leons iqpe_full.py:
+        #one round with the 1-flag circuits. If all six syndrome bits and all six flags are trivial nothing is done.
+        #Otherwise the syndrome is measured again with the non-flag circuits and X and Z errors are decoded separately,
+        #the flags of the first round tell the hook errors apart from E_min(s).
+        flags, syndrome_r1, bitstring, result = self._flag_round(pos=pos)
+        self.reset_qec(result)
+
+        if flags.count("1") == 0 and syndrome_r1.count("1") == 0:
+            return
+
+        syndrome = self.syndrome(pos=pos)
+        flags = flags[::-1]                         #the slice is printed MSB first --> flags[i] = flags register bit i
+        self.correct_flagged(syndrome[0:3], flags[0:3], "z", pos=pos)     #X-Stabilizers + flags of the Z-Stabilizer circuits --> Z errors
+        self.correct_flagged(syndrome[3:6], flags[3:6], "x", pos=pos)     #Z-Stabilizers + flags of the X-Stabilizer circuits --> X errors
+
+    def flagFTec_cb(self, pos: int):
+        #OLD version, kept for comparison, flagFTec() is the one that is used.
         #based on https://arxiv.org/pdf/1708.02246 , protocol on page 5, "Flag 1-FTEC Protocol"  --> no need of postselection, but we need statevector simulation for classical decoding
         #The protocol repeats the flagged syndrome measurement until case 1, 2 or 3 applies. After the
         #second round one of the three always applies, so two flagged rounds are enough.

@@ -565,10 +565,10 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
     
-    y = 0
+    y = 0; howmanyangles = 1
     y_list, bruh1 = [], []
     for m in range(k):
-        for o in range(7):
+        for o in range(howmanyangles):
             bitstring = ""
             rots = []
             start = time.perf_counter()
@@ -606,7 +606,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
             elapsed = time.perf_counter() - start
             print("Performance {}for angle {}: {} ({:.2f}s)".format("(QEC) " if qec else "", 2*o+1, diff, elapsed),"\n")
             bruh1.append(diff), y_list.append(diff)
-    y = y/(7*k)
+    y = y/(howmanyangles*k)
     arg = 0
     for i in range(len(bruh1)):
         arg += (y-bruh1[i])**2
