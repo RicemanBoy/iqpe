@@ -26,6 +26,15 @@ t_ideal = UnitaryGate(matrix_t)
 matrix_tdg = ([[1,0],[0,np.exp(-1j*(np.pi/4))]])
 tdg_ideal = UnitaryGate(matrix_tdg)
 
+matrix_ry_p = ([[np.cos(np.pi/8),-np.sin(np.pi/8)],[np.sin(np.pi/8),np.cos(np.pi/8)]])      #Ry(pi/4)
+ry_p_ideal = UnitaryGate(matrix_ry_p)                   #ry is noisy now (magic state factory), t_cy() keeps ideal ones
+matrix_ry_m = ([[np.cos(np.pi/8),np.sin(np.pi/8)],[-np.sin(np.pi/8),np.cos(np.pi/8)]])      #Ry(-pi/4)
+ry_m_ideal = UnitaryGate(matrix_ry_m)
+
+# encoder of the noisy magic state factory, (control, target) in the order of ENC in Leons iqpe_full.py:
+# qubit 2 carries the input state, 0, 1, 3 in |+> are the pivots of the X-Stabilizers (same CNOTs as in t_cy())
+LEON_ENC = [(2,4), (2,5), (0,2), (0,4), (0,6), (1,2), (1,5), (1,6), (3,4), (3,5), (3,6)]
+
 def parity_values(n):
     return [
         value
@@ -201,6 +210,7 @@ class Steane7q:
         self.denseqec = False               #True: QEC cycle after every logical gate except X/Z, see _dense_qec()
         self.qec_counter = 0
         self.magiccounter = 0
+        self.magic_rejects = 0              #rejected attempts of the magic state factory in _prep_magic_A()
 
         self.preselection_flag = False      #stays False, a fired initialization flag is corrected in _verify_prep()
 
@@ -269,7 +279,7 @@ class Steane7q:
         p_error = pauli_error([["X",p_x],["I",1-p],["Z",p_z]])
         p_error_2 = pauli_error([["XI",p_x/2],["IX",p_x/2],["II",1-p],["ZI",p_z/2],["IZ",p_z/2]])
         p_error_3 = pauli_error([["XII",p_x/3],["IXI",p_x/3],["IIX",p_x/3],["III",1-p],["ZII",p_z/3],["IZI",p_z/3],["IIZ",p_z/3]])
-        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx"])  # Apply to single-qubit gates
+        noise_model.add_all_qubit_quantum_error(p_error, ['x', "z", 'h', "s", "sdg", "t", "tdg", 'id',"rx","ry"])  # Apply to single-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_2, ['cx'])  # Apply to 2-qubit gates
         noise_model.add_all_qubit_quantum_error(p_error_3, ['ccx'])  # Apply to 3-qubit gates
         return noise_model
@@ -322,8 +332,53 @@ class Steane7q:
         self._dense_qec(pos)
 
     def _prep_magic_A(self):
-        #magic state |A_L> = T_L|+_L> on the magic block, ideal (noiseless) like the |H_L> preparation in t_cy():
-        #T|+> on the input qubit 2 of the same ideal encoder
+        #FT magic state |A_L> = T_L|+_L> with noisy gates, magic_prep() in Leons iqpe_full.py:
+        # 1. non-FT encoding of |H_L> (H eigenstate): Ry(pi/4) on the input qubit 2, H on the pivots 0,1,3, LEON_ENC
+        # 2. flagged measurement of the logical Hadamard H_L (transversal): anc = A in |+>, controlled-H on every qubit
+        #    as ry(pi/4) . CX . ry(-pi/4), flag ancc = F coupled after qubit 0 and 5
+        # 3. flagged syndrome round on the magic block (one statevector shot as in _flag_round())
+        #accepted only if A, F, all syndrome bits and all flags are 0, otherwise ONLY the magic block is prepared again
+        #(the data block is untouched). Then transversal S^dg_L and H_L turn |H_L> into |A_L>.
+        anc = self.qc.num_qubits - 1
+        ancc = anc - 1
+        m = 7*self.n
+        while True:
+            for i in range(7):
+                self.qc.reset(i+m)
+            self.qc.ry(np.pi/4, 2+m)
+            for i in (0, 1, 3):
+                self.qc.h(i+m)
+            for c, t in LEON_ENC:
+                self.qc.cx(c+m, t+m)
+            ##############################flagged measurement of H_L######################################
+            self.qc.reset(anc), self.qc.reset(ancc)
+            self.qc.h(anc)
+            for j in range(7):
+                self.qc.ry(np.pi/4, j+m)
+                self.qc.cx(anc, j+m)
+                self.qc.ry(-np.pi/4, j+m)
+                if j in (0, 5):
+                    self.qc.cx(anc, ancc)
+            verify = ClassicalRegister(2)
+            self.qc.add_register(verify)
+            self.qc.h(anc)
+            self.qc.id(anc), self.qc.id(ancc)
+            self.qc.measure(anc, verify[0]), self.qc.measure(ancc, verify[1])
+            ##############################flagged syndrome round + accept/reject##############################
+            flags, syndrome, bitstring, result = self._flag_round(pos=self.n)
+            accepted = (self._creg_bits(bitstring, verify) + flags + syndrome).count("1") == 0      #before reset_qec()
+            self.reset_qec(result)
+            if accepted:
+                break
+            self.magic_rejects += 1
+        for i in range(7):
+            self.qc.s(i+m)                      #S^dg_L as in sdg()
+        for i in range(7):
+            self.qc.h(i+m)
+
+    def _prep_magic_A_ideal(self):
+        #OLD, not used: magic state |A_L> = T_L|+_L> on the magic block, ideal (noiseless) like the |H_L> preparation
+        #in t_cy(): T|+> on the input qubit 2 of the same ideal encoder
         for i in range(7):
             self.qc.reset(i+7*self.n)
 
@@ -390,7 +445,7 @@ class Steane7q:
 
         self.qc.append(h_ideal,[0+7*self.n])
         self.qc.append(h_ideal,[1+7*self.n])
-        self.qc.ry(np.pi/4,2+7*self.n)
+        self.qc.append(ry_p_ideal,[2+7*self.n])
         self.qc.append(h_ideal,[3+7*self.n])
 
         self.qc.append(cx_ideal, [4+7*self.n, 2+7*self.n])
@@ -414,9 +469,9 @@ class Steane7q:
         self.qc.reset(ancc)
         self.qc.append(h_ideal,[ancc])
         for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+self.n*7)
+            self.qc.append(ry_m_ideal,[6-i+self.n*7])
             self.qc.cz(ancc,6-i+self.n*7)
-            self.qc.ry(np.pi/4,6-i+self.n*7)
+            self.qc.append(ry_p_ideal,[6-i+self.n*7])
         self.qc.append(h_ideal,[ancc])
         # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
@@ -471,7 +526,7 @@ class Steane7q:
 
         self.qc.append(h_ideal,[0+7*self.n])
         self.qc.append(h_ideal,[1+7*self.n])
-        self.qc.ry(np.pi/4,2+7*self.n)
+        self.qc.append(ry_p_ideal,[2+7*self.n])
         self.qc.append(h_ideal,[3+7*self.n])
 
         self.qc.append(cx_ideal, [4+7*self.n, 2+7*self.n])
@@ -495,9 +550,9 @@ class Steane7q:
         self.qc.reset(ancc)
         self.qc.append(h_ideal,[ancc])
         for i in range(7):
-            self.qc.ry(-np.pi/4,6-i+self.n*7)
+            self.qc.append(ry_m_ideal,[6-i+self.n*7])
             self.qc.cz(ancc,6-i+self.n*7)
-            self.qc.ry(np.pi/4,6-i+self.n*7)
+            self.qc.append(ry_p_ideal,[6-i+self.n*7])
         self.qc.append(h_ideal,[ancc])
         # self.qc.measure(ancc, state_inj[0])
         ########################Controlled-Y Gate####################################################
