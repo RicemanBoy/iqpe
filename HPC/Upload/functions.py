@@ -6,7 +6,7 @@ import pyfiles.classes as c
 import numpy as np
 
 def gen_data(name):                           #code OG
-    p = [1e-4]
+    p = [1e-2]
     # p = [10**(-i-1) for i in range(7)][1:]
     # p = np.linspace(0.00,0.001,10)
     y, y_qec = [],[]
@@ -20,7 +20,7 @@ def gen_data(name):                           #code OG
 
     # data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("d5_rz_short_shorqec_crossover_angle0_1{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d5_rz_short_shorqec_crossover_angle0_2{}.txt".format(name), data, delimiter=",")
 ############################################################################################################################
     # for r in p:  
     #         y_list = s.avg7_ramsey("steane", 3, r, qec = False, k = 1, bias = 0, post = True)  
