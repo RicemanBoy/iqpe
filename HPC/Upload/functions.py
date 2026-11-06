@@ -8,7 +8,7 @@ import numpy as np
 def gen_data(name):                           #code OG
     # p = [1e-2]
     # p = [10**(-i-1) for i in range(7)][1:]
-    p = np.linspace(0.00,0.001,10)
+    p = np.linspace(0.001,0.005,5)
     y, y_qec = [],[]
     err, err_qec = [], []
 
@@ -30,5 +30,5 @@ def gen_data(name):                           #code OG
     
     data = np.array((p, y, y_qec, err, err_qec))
     # data = np.array((p, y, err))
-    np.savetxt("steane_leonprotocol{}.txt".format(name), data, delimiter=",")
+    np.savetxt("steane_leonprotocol_further{}.txt".format(name), data, delimiter=",")
     

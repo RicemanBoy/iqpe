@@ -574,9 +574,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
             start = time.perf_counter()
             for t in range(iter):
                 rots = [k*0.5 for k in rots]
-                self = RepCode_z(distance, 3)
-                self.noise_model = self.__noise_model__(noise, bias)
-                self.err = qec
+                self = RepCode_z(distance, 3, noise, bias, qec)
                 self.h(pos=0)
                 #############################
                 for _ in range(2**(iter-t-1)):
@@ -849,14 +847,14 @@ class RepCode:      #Bitflip protected repetition code
         self.post += post/shots
 
 class RepCode_z:      #Phaseflip protected repetition code
-    def __init__(self, n: int, logical_q: int):              
+    def __init__(self, n: int, logical_q: int, noise=0, bias=0, qec=False):              
         self.ones = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
         self.magiccounter = 0
         self.logicalq = logical_q
-        self.err = False
+        self.err = qec
         self.noise_model = self.__noise_model__(0,0)
         self.countallgates = (0,0)
 
@@ -871,6 +869,8 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         self.qecc = ClassicalRegister(n)
         self.qc.add_register(self.qecc)
+
+        self.noise_model = self.__noise_model__(noise, bias)
 
         for i in range(n*logical_q):
             # self.qc.id(i)
