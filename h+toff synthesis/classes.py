@@ -166,8 +166,8 @@ def gates(qc:QuantumCircuit):
 
 def gate_depth_count(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
-    # hmm["reset"] = 0
-    # hmm["measure"] = 0
+    hmm["reset"] = 0
+    hmm["measure"] = 0
     hmm["if_else"] = 0
     hmm["id"] = 0
     hmm["swap"] = 0
@@ -565,7 +565,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
     
-    y = 0; howmanyangles = 1
+    y = 0; howmanyangles = 7
     y_list, bruh1 = [], []
     for m in range(k):
         for o in range(howmanyangles):
@@ -574,9 +574,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
             start = time.perf_counter()
             for t in range(iter):
                 rots = [k*0.5 for k in rots]
-                self = RepCode_z(distance, 3)
-                self.noise_model = self.__noise_model__(noise, bias)
-                self.err = qec
+                self = RepCode_z(distance, 3, noise, bias, qec)
                 self.h(pos=0)
                 #############################
                 for _ in range(2**(iter-t-1)):
@@ -589,7 +587,8 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
                         self.adj_rz_pi_4()
                 self.h(pos=0)
                 self.readout(pos=0, shots=1)
-                self.countallgates = tuple(map(sum,zip(self.countallgates, gate_depth_count(self.qc))))
+
+                self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
                 print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1])
         
                 if self.zeros == 1:
@@ -848,14 +847,15 @@ class RepCode:      #Bitflip protected repetition code
         self.post += post/shots
 
 class RepCode_z:      #Phaseflip protected repetition code
-    def __init__(self, n: int, logical_q: int):              
+    def __init__(self, n: int, logical_q: int, noise=0, bias=0, qec=False):              
         self.ones = 0
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
+        self.SE_counter = 0
         self.magiccounter = 0
         self.logicalq = logical_q
-        self.err = False
+        self.err = qec
         self.noise_model = self.__noise_model__(0,0)
         self.countallgates = (0,0)
 
@@ -865,11 +865,13 @@ class RepCode_z:      #Phaseflip protected repetition code
         self._recording = False
         ##################################################################################
 
-        qr = QuantumRegister(n*(logical_q+2)+1, "q")           #+2 for H_L, for us we have a total of 16/26 qubits for d=3/5
+        qr = QuantumRegister(n*(logical_q+2)+1, "q")
         self.qc = QuantumCircuit(qr)
 
         self.qecc = ClassicalRegister(n)
         self.qc.add_register(self.qecc)
+
+        self.noise_model = self.__noise_model__(noise, bias)
 
         for i in range(n*logical_q):
             # self.qc.id(i)
@@ -1042,6 +1044,9 @@ class RepCode_z:      #Phaseflip protected repetition code
             if self.err:
                 self.qec_shor(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
+        if self.err:                                  #a Z left on the target spreads as CZ(c1_i, c2_j) onto the controls,
+            self.qec_shor(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
+            self.qec_shor(pos=control2)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -1465,7 +1470,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.z(self.n*pos + q)
 
     def _sample_syndrome_rounds(self, pos: int, rounds: int, order):     #append `rounds` syndrome rounds, simulate this trajectory (1 shot), continue from the sampled state
-        anc = self.qc.num_qubits - 1
+        anc = self.qc.num_qubits - 1; self.SE_counter += 1
 
         syn_reg = ClassicalRegister(rounds*(self.n - 1), "syn")
         self.qc.add_register(syn_reg)
@@ -1481,7 +1486,6 @@ class RepCode_z:      #Phaseflip protected repetition code
 
         self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
         self.qc.save_statevector(label="psi")
-        # print(self.noise_model._default_quantum_errors["h"])
         sim = AerSimulator(method="statevector", noise_model = self.noise_model)
         result = sim.run(self.qc, shots=1).result()
         psi_full = result.data(0)["psi"]

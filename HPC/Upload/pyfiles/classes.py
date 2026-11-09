@@ -565,7 +565,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
     
-    y = 0; howmanyangles = 1
+    y = 0; howmanyangles = 7
     y_list, bruh1 = [], []
     for m in range(k):
         for o in range(howmanyangles):
@@ -852,6 +852,7 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.zeros = 0
         self.n = n          # number of physical qubits per logical qubit
         self.qec_counter = 0
+        self.SE_counter = 0
         self.magiccounter = 0
         self.logicalq = logical_q
         self.err = qec
@@ -1043,6 +1044,9 @@ class RepCode_z:      #Phaseflip protected repetition code
             if self.err:
                 self.qec_shor(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
+        if self.err:                                  #a Z left on the target spreads as CZ(c1_i, c2_j) onto the controls,
+            self.qec_shor(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
+            self.qec_shor(pos=control2)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -1466,7 +1470,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.z(self.n*pos + q)
 
     def _sample_syndrome_rounds(self, pos: int, rounds: int, order):     #append `rounds` syndrome rounds, simulate this trajectory (1 shot), continue from the sampled state
-        anc = self.qc.num_qubits - 1
+        anc = self.qc.num_qubits - 1; self.SE_counter += 1
 
         syn_reg = ClassicalRegister(rounds*(self.n - 1), "syn")
         self.qc.add_register(syn_reg)
