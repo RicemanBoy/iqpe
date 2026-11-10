@@ -20,7 +20,7 @@ def gen_data(name):                           #code OG
 
     # data = np.array((p, y, y_qec, err, err_qec))
     data = np.array((p, y, err))
-    np.savetxt("d3_rz_short_newshorqec_crossover{}.txt".format(name), data, delimiter=",")
+    np.savetxt("d3_rz_short_newshorqec_crossover_angle0{}.txt".format(name), data, delimiter=",")
 ############################################################################################################################
     # for r in p:  
     #         y_list = s.avg7_ramsey("steane", 3, r, qec = False, k = 1, bias = 0, post = True)  

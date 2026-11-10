@@ -565,7 +565,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
     
-    y = 0; howmanyangles = 7
+    y = 0; howmanyangles = 1
     y_list, bruh1 = [], []
     for m in range(k):
         for o in range(howmanyangles):
