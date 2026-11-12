@@ -1042,11 +1042,11 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec_shor(pos=targ)               #needed for FT
+                self.qec_ideal(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
         if self.err:                                  #a Z left on the target spreads as CZ(c1_i, c2_j) onto the controls,
-            self.qec_shor(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
-            self.qec_shor(pos=control2)
+            self.qec_ideal(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
+            self.qec_ideal(pos=control2)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
@@ -1519,6 +1519,7 @@ class RepCode_z:      #Phaseflip protected repetition code
     def qec5_ideal(self, pos: int):         #ideal qec for d=5 repcode
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
+        self.SE_counter += 1
 
         self.qc.reset(anc)
         self.qc.append(h_ideal, [anc])
@@ -1695,30 +1696,13 @@ class RepCode_z:      #Phaseflip protected repetition code
         self.qc.measure(anc, self.qecc[3])
 
     def qec_ideal(self, pos: int):
+        if self.n == 5:
+            self.qec5_ideal(pos=pos)
+            return
+
         anc = self.qc.num_qubits - 1
         self.qec_counter += 1
-
-        # for i in range(self.n-1):           #general single qubit correction for arbitrary n
-        #     self.qc.reset(anc)
-        #     self.qc.append(h_ideal, [anc])
-        #     self.qc.append(cx_ideal, [self.n*pos + i, anc])
-        #     self.qc.append(cx_ideal, [self.n*pos + i + 1, anc])
-        #     self.qc.append(h_ideal, [anc])
-        #     self.qc.measure(anc, self.qecc[i])
-
-        # with self.qc.if_test((self.qecc[0], 1)):                #first
-        #     with self.qc.if_test((self.qecc[1], 0)):               #second
-        #         self.qc.append(z_ideal, [self.n*pos])
-        
-        # with self.qc.if_test((self.qecc[self.n-2], 1)):                 #last
-        #     with self.qc.if_test((self.qecc[self.n-3], 0)):                #one before last
-        #         self.qc.append(z_ideal, [self.n*pos+self.n-1])
-
-        # for i in range(self.n-2):       
-        #     with self.qc.if_test((self.qecc[i], 1)):
-        #         with self.qc.if_test((self.qecc[i+1], 1)):
-        #             self.qc.append(z_ideal, [self.n*pos + i + 1])
-        
+        self.SE_counter += 1
 
         #specific case for n = 3
         self.qc.reset(anc)      
