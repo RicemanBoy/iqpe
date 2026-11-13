@@ -167,8 +167,8 @@ def gates(qc:QuantumCircuit):
 def gate_depth_count(qc:QuantumCircuit):
     hmm = dict(qc.count_ops())
     hmm["reset"] = 0
-    hmm["measure"] = 0
-    hmm["if_else"] = 0
+    # hmm["measure"] = 0
+    # hmm["if_else"] = 0
     hmm["id"] = 0
     hmm["swap"] = 0
     return (sum(hmm.values()), qc.depth())
