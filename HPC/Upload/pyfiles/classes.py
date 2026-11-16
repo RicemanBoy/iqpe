@@ -565,7 +565,7 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
     angle = np.delete(angle, [n+1])
     angle = np.delete(angle, [0])
     
-    y = 0; howmanyangles = 7
+    y = 0; howmanyangles = 1
     y_list, bruh1 = [], []
     for m in range(k):
         for o in range(howmanyangles):
@@ -1042,11 +1042,11 @@ class RepCode_z:      #Phaseflip protected repetition code
             for j in range(self.n):
                 self.qc.ccx(self.n*control1 + i, self.n*control2 + j, self.n*targ + j)
             if self.err:
-                self.qec_ideal(pos=targ)               #needed for FT
+                self.qec_shor(pos=targ)               #needed for FT
                 # self.qec_counter -= 1
         if self.err:                                  #a Z left on the target spreads as CZ(c1_i, c2_j) onto the controls,
-            self.qec_ideal(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
-            self.qec_ideal(pos=control2)
+            self.qec_shor(pos=control1)               #a later CX_L between them would turn it into weight 2 --> correct both controls
+            self.qec_shor(pos=control2)
 
     def cnot(self, control: int, target: int):
         for i in range(self.n):
