@@ -12,7 +12,7 @@ for i in range(N):
     file.write('#!/bin/bash -l \n')
     file.write('#SBATCH --ntasks=1 \n')
     file.write('#SBATCH --cpus-per-task=2 \n')
-    file.write('#SBATCH --time=23:59:59 \n')
+    file.write('#SBATCH --time=02:59:59 \n')
     file.write('#SBATCH --job-name=MScDustin{} \n'.format(i))
     file.write('#SBATCH --export=NONE \n')
     file.write('unset SLURM_EXPORT_ENV \n')

@@ -533,7 +533,7 @@ def avg7_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1
 
     return y_list
 
-def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, short = False):       #only exact angles!  
+def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k = 1, bias = 0, short = True):       #only exact angles!  
     """
     Simulates the new iQPE Circuit.
 
@@ -589,7 +589,11 @@ def avg7_RZ_ramsey_htoff(distance: int, iter: int, noise: float, qec = False, k 
                 self.readout(pos=0, shots=1)
 
                 self.countallgates = tuple(map(sum,zip(self.countallgates,gate_depth_count(self.qc))))
-                print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1], " ({} rounds of SE)".format(self.SE_counter))
+                if self.err == True:
+                    avg_SEperQEC = self.SE_counter/self.qec_counter
+                else:
+                    avg_SEperQEC = 0
+                print("Amount of gates in iteration {}: ".format(t), self.countallgates[0], " with depth ", self.countallgates[1], " ({} rounds of SE, {} SE per QEC)".format(self.SE_counter, avg_SEperQEC))
         
                 if self.zeros == 1:
                     bitstring += "0"
@@ -1470,7 +1474,7 @@ class RepCode_z:      #Phaseflip protected repetition code
             self.qc.z(self.n*pos + q)
 
     def _sample_syndrome_rounds(self, pos: int, rounds: int, order):     #append `rounds` syndrome rounds, simulate this trajectory (1 shot), continue from the sampled state
-        anc = self.qc.num_qubits - 1; self.SE_counter += 1
+        anc = self.qc.num_qubits - 1; self.SE_counter += rounds
 
         syn_reg = ClassicalRegister(rounds*(self.n - 1), "syn")
         self.qc.add_register(syn_reg)
